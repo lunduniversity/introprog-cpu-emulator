@@ -1,6 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/eclipse,visualstudiocode,intellij,java,gradle,maven,macos,netbeans
 # Edit at https://www.toptal.com/developers/gitignore?templates=eclipse,visualstudiocode,intellij,java,gradle,maven,macos,netbeans
 
+
 ### Eclipse ###
 .metadata
 bin/
@@ -313,3 +314,6 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/eclipse,visualstudiocode,intellij,java,gradle,maven,macos,netbeans
+
+!libs/*
+
