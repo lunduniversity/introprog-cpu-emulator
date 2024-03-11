@@ -1,22 +1,20 @@
 package instruction;
 
-import args.Address;
-import args.Constant;
+import args.Operand;
 import model.AddressableStorage;
 import model.ProgramCounter;
 
 public class Sub extends Instruction {
 
-    public Sub() {
-        super(InstructionFactory.INST_NAME_SUB);
-    }
+  public Sub(int operand) {
+    super(InstructionFactory.INST_NAME_SUB, operand);
+  }
 
-    @Override
-    public void execute(AddressableStorage mem, ProgramCounter pc) {
-        int a = mem.getValueAt(Address.of(pc.next()));
-        int b = mem.getValueAt(Address.of(pc.next()));
-        int result = (int) (a - b);
-        mem.setValueAt(Address.of(pc.next()), Constant.of(result));
-    }
-
+  @Override
+  public void execute(AddressableStorage mem, ProgramCounter pc) {
+    int a = mem.getValueAt(Operand.reg("OP1"));
+    int b = mem.getValueAt(Operand.reg("OP2"));
+    int result = (int) (a - b);
+    mem.setValueAt(Operand.reg("RES"), Operand.of(result));
+  }
 }

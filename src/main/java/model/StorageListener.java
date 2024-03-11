@@ -1,9 +1,8 @@
 package model;
 
-import args.Address;
+import args.Operand;
 
 public interface StorageListener {
 
-	void onMemoryChanged(Address address, int value);
-
+  void onMemoryChanged(Operand address, int value);
 }

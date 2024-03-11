@@ -2,6 +2,7 @@ package model;
 
 public interface ObservableStorage extends AddressableStorage {
 
-    public void addListener(StorageListener listener);
+  public int size();
 
+  public void addListener(StorageListener listener);
 }

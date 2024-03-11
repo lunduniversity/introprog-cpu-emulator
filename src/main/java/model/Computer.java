@@ -1,96 +1,87 @@
 package model;
 
-import args.Address;
-import args.Argument;
-import args.Constant;
+import args.Operand;
+import instruction.InstructionFactory;
 
 public class Computer {
 
-    private ObservableStorage memory;
-    private ObservableStorage registry;
-    private ProgramCounter pc;
-    private CPU cpu;
+  private ObservableStorage memory;
+  private ObservableStorage registry;
+  private ProgramCounter pc;
+  private CPU cpu;
 
-    public Computer(int memorySize, int registrySize) {
-        this.memory = new ByteStorage(memorySize);
-        this.registry = new ByteStorage(registrySize);
-        this.pc = new ProgramCounter();
-        this.cpu = new CPU(new AddressableStorage() {
-            public void setValueAt(Address address, Argument value) {
+  public Computer(int memorySize) {
+    this.memory = new ByteStorage(memorySize);
+    this.registry = new ByteStorage(6);
+    this.pc = new ProgramCounter();
+    this.cpu =
+        new CPU(
+            new AddressableStorage() {
+              public void setValueAt(Operand address, Operand value) {
                 if (address.isRegister()) {
-                    registry.setValueAt(address, value);
+                  registry.setValueAt(address, value);
+                } else if (address.isMemory()) {
+                  memory.setValueAt(address, value);
                 } else {
-                    memory.setValueAt(address, value);
+                  throw new IllegalArgumentException("Invalid address type");
                 }
-            }
+              }
 
-            public int getValueAt(Address address) {
+              public int getValueAt(Operand address) {
                 if (address.isRegister()) {
-                    return registry.getValueAt(address);
+                  return registry.getValueAt(address);
+                } else if (address.isMemory()) {
+                  return memory.getValueAt(address);
                 } else {
-                    return memory.getValueAt(address);
+                  throw new IllegalArgumentException("Invalid address type");
                 }
-            }
+              }
+            },
+            pc,
+            new InstructionFactory());
+  }
 
-            public int size() {
-                return memory.size();
-            }
+  public int memorySize() {
+    return memory.size();
+  }
 
-        }, pc);
-    }
+  public void addMemoryListener(StorageListener listener) {
+    memory.addListener(listener);
+  }
 
-    public int memorySize() {
-        return memory.size();
-    }
+  public void addRegistryListener(StorageListener listener) {
+    registry.addListener(listener);
+  }
 
-    public int registrySize() {
-        return registry.size();
-    }
+  public void addProgramCounterListener(ProgramCounterListener listener) {
+    pc.addListener(listener);
+  }
 
-    public void addMemoryListener(StorageListener listener) {
-        memory.addListener(listener);
-    }
+  public void setProgramCounter(int value) {
+    pc.setCurrentIndex(value);
+  }
 
-    public void addRegistryListener(StorageListener listener) {
-        registry.addListener(listener);
-    }
+  public int getProgramCounter() {
+    return pc.getCurrentIndex();
+  }
 
-    public void addProgramCounterListener(ProgramCounterListener listener) {
-        pc.addListener(listener);
-    }
+  public int readMemory(int address) {
+    return memory.getValueAt(Operand.of(address));
+  }
 
-    public void setProgramCounter(int value) {
-        pc.setCurrentIndex(value);
-    }
+  public void writeMemory(int address, int value) {
+    memory.setValueAt(Operand.of(address), Operand.of(value));
+  }
 
-    public int getProgramCounter() {
-        return pc.getCurrentIndex();
-    }
+  public int readRegistry(int address) {
+    return registry.getValueAt(Operand.of(address));
+  }
 
-    public int readMemory(int address) {
-        return memory.getValueAt(Address.of(address));
-    }
+  public void writeRegistry(int address, int value) {
+    registry.setValueAt(Operand.of(address), Operand.of(value));
+  }
 
-    public void writeMemory(int address, int value) {
-        memory.setValueAt(Address.of(address), Constant.of(value));
-    }
-
-    public int readRegistry(int address) {
-        return registry.getValueAt(Address.of(address));
-    }
-
-    public void writeRegistry(int address, int value) {
-        registry.setValueAt(Address.of(address), Constant.of(value));
-    }
-
-    public void step() {
-        cpu.step();
-    }
-
-    public void loadProgram(int[] program) {
-        for (int i = 0; i < program.length; i++) {
-            memory.setValueAt(Address.of(i), Constant.of(program[i]));
-        }
-    }
-
+  public void step() {
+    cpu.step();
+  }
 }

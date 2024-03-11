@@ -1,14 +1,10 @@
 package model;
 
-import args.Address;
-import args.Argument;
+import args.Operand;
 
 public interface AddressableStorage {
 
-    public void setValueAt(Address address, Argument value);
+  public void setValueAt(Operand address, Operand value);
 
-    public int getValueAt(Address address);
-
-    public int size();
-
+  public int getValueAt(Operand address);
 }

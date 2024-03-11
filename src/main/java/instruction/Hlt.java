@@ -5,13 +5,12 @@ import model.ProgramCounter;
 
 public class Hlt extends Instruction {
 
-    public Hlt() {
-        super(InstructionFactory.INST_NAME_HLT);
-    }
+  public Hlt(int operand) {
+    super(InstructionFactory.INST_NAME_HLT, operand);
+  }
 
-    @Override
-    public void execute(AddressableStorage mem, ProgramCounter pc) {
-        pc.halt();
-    }
-
+  @Override
+  public void execute(AddressableStorage mem, ProgramCounter pc) {
+    pc.halt();
+  }
 }

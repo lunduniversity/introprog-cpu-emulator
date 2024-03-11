@@ -1,5 +1,5 @@
 package model;
 
 public interface ProgramCounterListener {
-    void onProgramCounterChanged(int value);
+  void onProgramCounterChanged(int value);
 }

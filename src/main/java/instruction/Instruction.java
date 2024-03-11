@@ -1,25 +1,21 @@
 package instruction;
 
-import java.util.List;
-
-import args.Argument;
 import model.AddressableStorage;
 import model.ProgramCounter;
 
 public abstract class Instruction {
 
-	protected final String name;
-	protected final List<Argument> args;
+  protected final String name;
+  protected final int operand;
 
-	public Instruction(String name) {
-		this.name = name;
-		this.args = null;
-	}
+  public Instruction(String name, int operand) {
+    this.name = name;
+    this.operand = operand;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public abstract void execute(AddressableStorage mem, ProgramCounter pc);
-
+  public abstract void execute(AddressableStorage mem, ProgramCounter pc);
 }
