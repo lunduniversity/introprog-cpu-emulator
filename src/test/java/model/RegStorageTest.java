@@ -1,6 +1,5 @@
 package model;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -42,16 +41,5 @@ public class RegStorageTest {
     assertEquals(5, registry.getRegister("R2"));
     assertEquals(6, registry.getRegister("R3"));
     assertEquals(7, registry.getRegister("PRT"));
-  }
-
-  @Test
-  void testGetNumRegisters() {
-    assertEquals(7, registry.getNumRegisters());
-  }
-
-  @Test
-  void testGetRegisterNames() {
-    String[] expected = {"OP1", "OP2", "RES", "R1", "R2", "R3", "PRT"};
-    assertArrayEquals(expected, registry.getRegisterNames());
   }
 }

@@ -12,6 +12,8 @@ public class Jmp extends Instruction {
 
   @Override
   public void execute(Memory mem, Registry reg, ProgramCounter pc) {
-    pc.jumpTo(pc.next());
+    // Destination address is read from register indexed by operand.
+    int dst = reg.getRegister(operand);
+    pc.jumpTo(dst);
   }
 }

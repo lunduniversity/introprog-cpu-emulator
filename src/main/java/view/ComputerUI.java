@@ -1,15 +1,20 @@
 package view;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import model.CPU;
 import model.Memory;
@@ -42,6 +47,8 @@ public class ComputerUI {
 
     memCells[programCounterFocusIdx].setProgramCounterFocus();
 
+    frame.pack();
+    frame.setLocationRelativeTo(null);
     frame.setVisible(true);
   }
 
@@ -50,58 +57,36 @@ public class ComputerUI {
     frame = new JFrame();
     frame.setBounds(100, 100, 800, 725);
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    frame
-        .getContentPane()
-        .setLayout(new MigLayout("", "[grow][][][][grow]", "[][][][grow][grow][grow]"));
+    frame.getContentPane().setLayout(new MigLayout("", "[][][grow,shrink]", "[][][][][][][grow]"));
 
-    JLabel lblComputerHeader = new JLabel("Computer");
+    JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
-    frame.getContentPane().add(lblComputerHeader, "cell 0 0 5 1,grow");
+    frame.getContentPane().add(lblComputerHeader, "cell 0 0 3 1");
 
-    JLabel lblDescription =
-        new JLabel(
-            "A simple simulation of a CPU and memory. This computer has an 8-bit processor, with 64"
-                + " bytes of memory and 6 registers.");
-    frame.getContentPane().add(lblDescription, "cell 0 1 5 1");
+    JTextArea lblDescription =
+        new JTextArea(
+            "A simple simulation of a CPU and memory."
+                + System.lineSeparator()
+                + "This computer has an 8-bit processor, with 64 bytes of memory and (7+1)"
+                + " registers (including program counter).");
+    lblDescription.setLineWrap(true);
+    lblDescription.setWrapStyleWord(true);
+    lblDescription.setEditable(false);
+    lblDescription.setBorder(null);
+    lblDescription.setBackground(UIManager.getColor("Label.background"));
+    frame.getContentPane().add(lblDescription, "cell 0 1 3 1, grow");
 
     Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
     frame.getContentPane().add(rigidArea, "cell 0 2");
 
-    JPanel memoryPanel = new JPanel();
-    frame.getContentPane().add(memoryPanel, "cell 0 3 1 3,grow");
-    memoryPanel.setLayout(
-        new MigLayout(
-            "", "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px]", "[][][][]"));
-
-    JLabel lblMemoryHeader = new JLabel("Memory");
-    memoryPanel.add(lblMemoryHeader, "cell 0 0 4 1");
-    lblMemoryHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
-
-    Component rigidArea_3 = Box.createRigidArea(new Dimension(20, 10));
-    memoryPanel.add(rigidArea_3, "cell 0 1 2 1");
-
-    JLabel lblAddress = new JLabel("Addr.");
-    lblAddress.setBorder(null);
-    lblAddress.setHorizontalAlignment(SwingConstants.RIGHT);
-    memoryPanel.add(lblAddress, "cell 0 2,alignx right");
-
-    JLabel lblValue = new JLabel("Value");
-    lblValue.setHorizontalAlignment(SwingConstants.RIGHT);
-    memoryPanel.add(lblValue, "cell 1 2,alignx center");
-
-    JLabel lblHex = new JLabel("Hex");
-    lblHex.setHorizontalAlignment(SwingConstants.RIGHT);
-    memoryPanel.add(lblHex, "cell 2 2,alignx right");
-
-    JLabel lblDec = new JLabel("Dec");
-    lblDec.setHorizontalAlignment(SwingConstants.RIGHT);
-    memoryPanel.add(lblDec, "cell 3 2,alignx right");
+    JPanel memoryPanel = createCellPanel("Memory");
+    frame.getContentPane().add(memoryPanel, "cell 0 3 1 3, top, left");
 
     // Memory cells
     {
       JPanel memoryCellsPanel = new JPanel();
       memoryCellsPanel.setBorder(null);
-      memoryPanel.add(memoryCellsPanel, "cell 0 3 4 1,alignx left,aligny top");
+      memoryPanel.add(memoryCellsPanel, "cell 0 3,alignx left,aligny top");
       memoryCellsPanel.setLayout(new BoxLayout(memoryCellsPanel, BoxLayout.Y_AXIS));
 
       memCells = new Cell[memory.size()];
@@ -126,33 +111,26 @@ public class ComputerUI {
       }
 
       {
-        memory.addListener((address, value) -> memCells[address].setValue(value));
+        memory.addListener(
+            (address, value) ->
+                SwingUtilities.invokeLater(() -> memCells[address].setValue(value)));
       }
     }
 
     // Registers and program counter
     {
-      JPanel registerPanel = new JPanel();
-      frame.getContentPane().add(registerPanel, "cell 4 3,grow");
-      registerPanel.setLayout(new MigLayout("", "[][][]", "[][][][][][]"));
-
-      JLabel lblRegisterHeader = new JLabel("Registers");
-      lblRegisterHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
-      registerPanel.add(lblRegisterHeader, "cell 0 0 3 1");
-
-      Component rigidArea_4 = Box.createRigidArea(new Dimension(20, 10));
-      registerPanel.add(rigidArea_4, "cell 0 1");
+      JPanel registerPanel = createCellPanel("Registers");
+      frame.getContentPane().add(registerPanel, "cell 1 3,grow");
 
       // Computer has 6 registers, OP1-OP3 and R1-R3.
       // R1-R3 are general purpose registers, OP1-OP3 are used for operations.
-      regCells = new Register[registry.getNumRegisters()];
-      int offset = 2;
-      String[] regNames = registry.getRegisterNames();
+      regCells = new Register[Registry.NUM_REGISTERS];
+      int offset = 3;
       for (int i = 0; i < regCells.length; i++) {
         final int idx = i;
         regCells[i] =
             new Register(
-                regNames[i],
+                Registry.REGISTER_NAMES[i],
                 value -> registry.setRegister(idx, value),
                 new CellNav() {
                   @Override
@@ -192,24 +170,36 @@ public class ComputerUI {
       {
         cpu.addRegistryListener(
             (address, value) -> {
-              regCells[address].setValue(value);
-              regCells[address].highlight();
+              SwingUtilities.invokeLater(
+                  () -> {
+                    regCells[address].setValue(value);
+                    regCells[address].highlight();
+                  });
             });
         pc.addListener(
             value -> {
-              memCells[programCounterFocusIdx].clearProgramCounterFocus();
-              pcCell.setValue(value);
-              pcCell.highlight();
-              programCounterFocusIdx = value;
-              memCells[programCounterFocusIdx].setProgramCounterFocus();
+              SwingUtilities.invokeLater(
+                  () -> {
+                    memCells[programCounterFocusIdx].clearProgramCounterFocus();
+                    pcCell.setValue(value);
+                    pcCell.highlight();
+                    programCounterFocusIdx = value;
+                    memCells[programCounterFocusIdx].setProgramCounterFocus();
+                  });
             });
       }
+    }
+
+    // Divider between registers and controls
+    {
+      frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 1 4");
     }
 
     // Execution controls
     {
       JPanel controlPanel = new JPanel();
-      frame.getContentPane().add(controlPanel, "cell 4 5,grow");
+      controlPanel.setBorder(BorderFactory.createTitledBorder(null, "Controls", 0, 0, null));
+      frame.getContentPane().add(controlPanel, "cell 1 5,growx,aligny top");
       controlPanel.setLayout(new MigLayout("", "[][]", "[][][]"));
 
       JLabel lblControlHeader = new JLabel("Controls");
@@ -258,5 +248,50 @@ public class ComputerUI {
 
   private void handleError(Exception ex) {
     lblErrorMessage.setText(ex.getMessage());
+  }
+
+  private JPanel createCellPanel(String header) {
+    JPanel cellPanel = new JPanel();
+    cellPanel.setBorder(BorderFactory.createLineBorder(Color.RED));
+    cellPanel.setLayout(
+        new MigLayout(
+            "gap 5 5",
+            "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][5px:5px:5px][110px::,grow]",
+            "[][][][]"));
+
+    JLabel lblHeader = new JLabel(header);
+    cellPanel.add(lblHeader, "cell 0 0 4 1");
+    lblHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
+
+    cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "cell 0 1 2 1");
+
+    JLabel lblAddress = new JLabel("Addr");
+    lblAddress.setBorder(null);
+    lblAddress.setHorizontalAlignment(SwingConstants.RIGHT);
+    cellPanel.add(lblAddress, "cell 0 2,alignx right");
+
+    JLabel lblValue = new JLabel("Value");
+    lblValue.setHorizontalAlignment(SwingConstants.CENTER);
+    cellPanel.add(lblValue, "cell 1 2,alignx center");
+
+    JLabel lblHex = new JLabel("Hex");
+    lblHex.setHorizontalAlignment(SwingConstants.LEFT);
+    cellPanel.add(lblHex, "cell 2 2,alignx left");
+
+    JLabel lblDec = new JLabel("Dec");
+    lblDec.setHorizontalAlignment(SwingConstants.LEFT);
+    cellPanel.add(lblDec, "cell 3 2,alignx left");
+
+    JLabel lblAscii = new JLabel("Ascii");
+    lblAscii.setHorizontalAlignment(SwingConstants.LEFT);
+    cellPanel.add(lblAscii, "cell 4 2,alignx left");
+
+    cellPanel.add(Box.createRigidArea(new Dimension(5, 5)), "cell 5 2");
+
+    JLabel lblInstruction = new JLabel("Instr");
+    lblInstruction.setHorizontalAlignment(SwingConstants.LEFT);
+    cellPanel.add(lblInstruction, "cell 6 2,alignx left");
+
+    return cellPanel;
   }
 }

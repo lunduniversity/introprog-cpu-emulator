@@ -1,7 +1,7 @@
 package view;
 
+import instruction.InstructionPrettyPrinter;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -32,38 +32,39 @@ public abstract class AbstractCell extends JPanel {
 
   private static HexFormat hexFormat = HexFormat.of().withUpperCase();
 
+  private JLabel lblIndex;
+  private JPanel bitPanel;
   private JTextField[] bits;
   private JLabel lblHex;
   private JLabel lblDec;
-  private JPanel bitPanel;
-  private Component rigidArea;
-  private Component rigidArea_1;
+  private JLabel lblAscii;
+  private JLabel lblInstruction;
 
   private CellListener listener;
+
+  private int currentValue = 0;
 
   /** Create the panel. */
   public AbstractCell(String label, CellListener listener, CellNav cellNav) {
     setBorder(null);
     setLayout(
         new MigLayout(
-            "gap 0, insets 0",
-            "[30px:30px:30px][][100px:100px:100px][][30px:30px:30px][30px:30px:30px]",
+            "gap 5 5, insets 0",
+            "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px][30px:30px:30px][5px:5px:5px][110px::,grow]",
             "[]"));
     this.listener = listener;
 
-    JLabel lblIndex = new JLabel(label);
+    lblIndex = new JLabel(label);
     lblIndex.setBorder(null);
     lblIndex.setHorizontalTextPosition(SwingConstants.RIGHT);
     lblIndex.setPreferredSize(new Dimension(30, 20));
     lblIndex.setHorizontalAlignment(SwingConstants.RIGHT);
     add(lblIndex, "cell 0 0,alignx right");
 
-    rigidArea = Box.createRigidArea(new Dimension(5, 10));
-    add(rigidArea, "cell 1 0");
     bitPanel = new JPanel();
     bitPanel.setBorder(PC_NO_FOCUS_BORDER);
     bitPanel.setBackground(UIManager.getColor("TextField.background"));
-    add(bitPanel, "cell 2 0,grow");
+    add(bitPanel, "cell 1 0,grow");
     bitPanel.setLayout(new BoxLayout(bitPanel, BoxLayout.X_AXIS));
 
     bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
@@ -80,14 +81,11 @@ public abstract class AbstractCell extends JPanel {
             public void keyTyped(KeyEvent e) {
               if (e.getKeyChar() == '0' || e.getKeyChar() == '1') {
                 bit.setText(Character.toString(e.getKeyChar()));
+                userChangedValue();
                 if (idx < bits.length - 1) {
                   bits[idx + 1].requestFocusInWindow();
-                } else {
-                  cellNav.nextCell(0);
                 }
-                updateValue();
               } else {
-                // bit.setText("0");
                 bit.setCaretPosition(0);
               }
               e.consume();
@@ -135,22 +133,43 @@ public abstract class AbstractCell extends JPanel {
     }
     bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
 
-    rigidArea_1 = Box.createRigidArea(new Dimension(5, 10));
-    add(rigidArea_1, "cell 3 0");
-
     lblHex = new JLabel(hex(0));
     lblHex.setBorder(null);
     lblHex.setHorizontalTextPosition(SwingConstants.RIGHT);
     lblHex.setHorizontalAlignment(SwingConstants.RIGHT);
     lblHex.setPreferredSize(new Dimension(30, 20));
-    add(lblHex, "cell 4 0,alignx right");
+    add(lblHex, "cell 2 0,alignx right");
 
     lblDec = new JLabel(pad(0));
     lblDec.setBorder(null);
     lblDec.setHorizontalTextPosition(SwingConstants.RIGHT);
     lblDec.setHorizontalAlignment(SwingConstants.RIGHT);
     lblDec.setPreferredSize(new Dimension(30, 20));
-    add(lblDec, "cell 5 0,alignx right");
+    add(lblDec, "cell 3 0,alignx right");
+
+    lblAscii = new JLabel("");
+    lblAscii.setBorder(null);
+    lblAscii.setHorizontalTextPosition(SwingConstants.RIGHT);
+    lblAscii.setHorizontalAlignment(SwingConstants.RIGHT);
+    lblAscii.setPreferredSize(new Dimension(30, 20));
+    add(lblAscii, "cell 4 0,alignx right");
+
+    add(Box.createRigidArea(new Dimension(5, 5)), "cell 5 0");
+
+    lblInstruction = new JLabel();
+    lblInstruction.setBorder(null);
+    lblInstruction.setHorizontalTextPosition(SwingConstants.LEFT);
+    lblInstruction.setHorizontalAlignment(SwingConstants.LEFT);
+    lblInstruction.setMinimumSize(new Dimension(60, 20));
+    add(lblInstruction, "cell 6 0,alignx left grow");
+
+    updateValue();
+  }
+
+  // Inform the rest of the UI that the value has changed
+  private void userChangedValue() {
+    updateValue();
+    listener.onCellChanged(currentValue);
   }
 
   private void updateValue() {
@@ -159,9 +178,14 @@ public abstract class AbstractCell extends JPanel {
       int b = bits[i].getText().equals("1") ? 1 : 0;
       value |= b << (bits.length - i - 1);
     }
+    currentValue = value;
     lblHex.setText(hex(value));
     lblDec.setText(pad(value));
-    listener.onCellChanged(value);
+    // if value is a printable ascii charcter, display it
+    // (0-31 are control characters, 32-126 are printable ascii characters, 127 is DEL)
+    if (value >= 32 && value <= 126) lblAscii.setText(Character.toString((char) value));
+    else lblAscii.setText("--");
+    lblInstruction.setText(InstructionPrettyPrinter.prettyPrint(value));
   }
 
   private static String hex(int value) {
@@ -191,15 +215,12 @@ public abstract class AbstractCell extends JPanel {
     for (int i = 0; i < 8; i++) {
       bits[7 - i].setText(Integer.toString(((value >> i) & 1)));
     }
+    updateValue();
     highlight();
   }
 
   public int getValue() {
-    StringBuilder sb = new StringBuilder();
-    for (JTextField bit : bits) {
-      sb.append(bit.getText());
-    }
-    return Integer.parseInt(sb.toString(), 2);
+    return currentValue;
   }
 
   public void highlight() {
