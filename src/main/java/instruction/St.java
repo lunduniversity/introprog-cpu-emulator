@@ -1,8 +1,8 @@
 package instruction;
 
-import args.Operand;
-import model.AddressableStorage;
+import model.Memory;
 import model.ProgramCounter;
+import model.Registry;
 
 public class St extends Instruction {
 
@@ -11,8 +11,11 @@ public class St extends Instruction {
   }
 
   @Override
-  public void execute(AddressableStorage mem, ProgramCounter pc) {
-    int a = mem.getValueAt(Operand.of(pc.next()));
-    mem.setValueAt(Operand.of(pc.next()), Operand.of(a));
+  public void execute(Memory mem, Registry reg, ProgramCounter pc) {
+    // Register src is specified by the operand.
+    // Read the destination address from the next memory location.
+    int value = reg.getRegister(operand);
+    int dst = mem.getValueAt(pc.next());
+    mem.setValueAt(dst, value);
   }
 }

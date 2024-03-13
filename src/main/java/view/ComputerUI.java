@@ -11,7 +11,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-import model.Computer;
+import model.CPU;
+import model.Memory;
+import model.ProgramCounter;
+import model.Registry;
 import net.miginfocom.swing.MigLayout;
 
 public class ComputerUI {
@@ -19,15 +22,22 @@ public class ComputerUI {
   private JFrame frame;
   private Cell[] memCells;
   private Register[] regCells;
-  private Register pc;
+  private Register pcCell;
   private int programCounterFocusIdx;
   private JLabel lblErrorMessage;
 
-  private final Computer computer;
+  private final Memory memory;
+  private final ProgramCounter pc;
+  private final CPU cpu;
+  private final Registry registry;
 
-  public ComputerUI(Computer computer) {
-    this.computer = computer;
-    this.programCounterFocusIdx = computer.getProgramCounter();
+  public ComputerUI(Memory memory, ProgramCounter pc, CPU cpu) {
+    this.memory = memory;
+    this.pc = pc;
+    this.cpu = cpu;
+    this.registry = cpu.getRegistry();
+
+    this.programCounterFocusIdx = pc.getCurrentIndex();
     initialize();
 
     memCells[programCounterFocusIdx].setProgramCounterFocus();
@@ -94,30 +104,29 @@ public class ComputerUI {
       memoryPanel.add(memoryCellsPanel, "cell 0 3 4 1,alignx left,aligny top");
       memoryCellsPanel.setLayout(new BoxLayout(memoryCellsPanel, BoxLayout.Y_AXIS));
 
-      memCells = new Cell[computer.memorySize()];
-      for (int i = 0; i < computer.memorySize(); i++) {
+      memCells = new Cell[memory.size()];
+      for (int i = 0; i < memory.size(); i++) {
         final int idx = i;
         memCells[i] =
             new Cell(
                 i,
-                value -> computer.writeMemory(idx, value),
+                value -> memory.setValueAt(idx, value),
                 new CellNav() {
                   @Override
                   public void prevCell(int xpos) {
-                    memCells[(idx - 1 + computer.memorySize()) % computer.memorySize()].focus(xpos);
+                    memCells[(idx - 1 + memory.size()) % memory.size()].focus(xpos);
                   }
 
                   @Override
                   public void nextCell(int xpos) {
-                    memCells[(idx + 1) % computer.memorySize()].focus(xpos);
+                    memCells[(idx + 1) % memory.size()].focus(xpos);
                   }
                 });
         memoryCellsPanel.add(memCells[i]);
       }
 
       {
-        computer.addMemoryListener(
-            (address, value) -> memCells[address.getOperand()].setValue(value));
+        memory.addListener((address, value) -> memCells[address].setValue(value));
       }
     }
 
@@ -136,15 +145,15 @@ public class ComputerUI {
 
       // Computer has 6 registers, OP1-OP3 and R1-R3.
       // R1-R3 are general purpose registers, OP1-OP3 are used for operations.
-      regCells = new Register[6];
+      regCells = new Register[registry.getNumRegisters()];
       int offset = 2;
-      String[] regNames = {"OP1", "OP2", "RES", "R1", "R2", "R3"};
+      String[] regNames = registry.getRegisterNames();
       for (int i = 0; i < regCells.length; i++) {
         final int idx = i;
         regCells[i] =
             new Register(
                 regNames[i],
-                value -> computer.writeRegistry(idx, value),
+                value -> registry.setRegister(idx, value),
                 new CellNav() {
                   @Override
                   public void prevCell(int xpos) {
@@ -167,10 +176,10 @@ public class ComputerUI {
       Component rigidArea_6 = Box.createRigidArea(new Dimension(20, 10));
       registerPanel.add(rigidArea_6, String.format("cell 0 %d", offset + 6));
 
-      pc =
+      pcCell =
           new Register(
               "PC",
-              value -> computer.setProgramCounter(value),
+              value -> pc.setCurrentIndex(value),
               new CellNav() {
                 @Override
                 public void prevCell(int xpos) {}
@@ -178,19 +187,19 @@ public class ComputerUI {
                 @Override
                 public void nextCell(int xpos) {}
               });
-      registerPanel.add(pc, String.format("cell 0 %d", offset + 6 + 1));
+      registerPanel.add(pcCell, String.format("cell 0 %d", offset + 6 + 1));
 
       {
-        computer.addRegistryListener(
+        cpu.addRegistryListener(
             (address, value) -> {
-              regCells[address.getOperand()].setValue(value);
-              regCells[address.getOperand()].highlight();
+              regCells[address].setValue(value);
+              regCells[address].highlight();
             });
-        computer.addProgramCounterListener(
+        pc.addListener(
             value -> {
               memCells[programCounterFocusIdx].clearProgramCounterFocus();
-              pc.setValue(value);
-              pc.highlight();
+              pcCell.setValue(value);
+              pcCell.highlight();
               programCounterFocusIdx = value;
               memCells[programCounterFocusIdx].setProgramCounterFocus();
             });
@@ -217,7 +226,7 @@ public class ComputerUI {
             e -> {
               try {
                 resetCellColors();
-                computer.step();
+                cpu.step();
               } catch (Exception ex) {
                 handleError(ex);
                 ex.printStackTrace();
@@ -244,7 +253,7 @@ public class ComputerUI {
     for (Register r : regCells) {
       r.unhighlight();
     }
-    pc.unhighlight();
+    pcCell.unhighlight();
   }
 
   private void handleError(Exception ex) {

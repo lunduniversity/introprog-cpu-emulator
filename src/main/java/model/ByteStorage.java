@@ -1,36 +1,41 @@
 package model;
 
-import args.Operand;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ByteStorage implements ObservableStorage {
+public class ByteStorage implements Memory {
 
-  private int[] memory;
+  private int[] store;
   private Set<StorageListener> listeners = new HashSet<>();
 
   public ByteStorage(int size) {
-    memory = new int[size];
+    store = new int[size & 0xFF];
   }
 
-  public void setValueAt(Operand address, Operand value) {
-    memory[address.getOperand()] = value.getOperand();
-    notifyListeners(address, value.getOperand());
+  @Override
+  public void setValueAt(int address, int value) {
+    int cleanedAddress = address & 0xFF;
+    int cleanedValue = value & 0xFF;
+    store[cleanedAddress] = cleanedValue;
+    notifyListeners(cleanedAddress, cleanedValue);
   }
 
-  public int getValueAt(Operand address) {
-    return memory[address.getOperand()];
+  @Override
+  public int getValueAt(int address) {
+    return store[address & 0xFF];
   }
 
+  @Override
   public int size() {
-    return memory.length;
+    return store.length;
   }
 
+  @Override
   public void addListener(StorageListener listener) {
     listeners.add(listener);
   }
 
-  private void notifyListeners(Operand address, int value) {
+  private void notifyListeners(int address, int value) {
     for (StorageListener listener : listeners) {
       listener.onMemoryChanged(address, value);
     }

@@ -1,33 +1,40 @@
 package instruction;
 
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import args.Operand;
-import model.ObservableStorage;
-import model.ProgramCounter;
+import model.Registry;
 import org.junit.jupiter.api.Test;
 
 public class SubTest {
 
   @Test
   public void testSubOperation() {
-    ObservableStorage mockMemory = mock(ObservableStorage.class);
-    ProgramCounter mockPC = mock(ProgramCounter.class);
+    Registry mockRegistry = mock(Registry.class);
 
-    // Assuming pc starts at 0, and addresses for operands are 1 and 2, and for the
-    // result is 3
-    when(mockPC.next()).thenReturn((int) 1, (int) 2, (int) 3);
-    when(mockMemory.getValueAt(Operand.of((int) 1))).thenReturn((int) 10); // First operand
-    when(mockMemory.getValueAt(Operand.of((int) 2))).thenReturn((int) 5); // Second operand
+    when(mockRegistry.getRegister("OP1")).thenReturn(10); // First operand
+    when(mockRegistry.getRegister("OP2")).thenReturn(5); // Second operand
 
     Sub subInstruction = new Sub(0);
-    subInstruction.execute(mockMemory, mockPC);
+    subInstruction.execute(null, mockRegistry, null);
 
-    verify(mockMemory)
-        .setValueAt(eq(Operand.of((int) 3)), argThat(argument -> argument.getOperand() == (int) 5));
+    verify(mockRegistry).setRegister(eq("RES"), eq(5));
+  }
+
+  @Test
+  public void testSubOperationWithNegativeResult() {
+    // The instruction should not do any special handling for negative results. The byte storage
+    // will handle it when the value is stored.
+    Registry mockRegistry = mock(Registry.class);
+
+    when(mockRegistry.getRegister("OP1")).thenReturn(10); // First operand
+    when(mockRegistry.getRegister("OP2")).thenReturn(25); // Second operand
+
+    Sub subInstruction = new Sub(0);
+    subInstruction.execute(null, mockRegistry, null);
+
+    verify(mockRegistry).setRegister(eq("RES"), eq(-15));
   }
 }

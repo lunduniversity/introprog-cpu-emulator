@@ -1,7 +1,8 @@
 package instruction;
 
-import model.AddressableStorage;
+import model.Memory;
 import model.ProgramCounter;
+import model.Registry;
 
 public abstract class Instruction {
 
@@ -17,5 +18,5 @@ public abstract class Instruction {
     return name;
   }
 
-  public abstract void execute(AddressableStorage mem, ProgramCounter pc);
+  public abstract void execute(Memory mem, Registry reg, ProgramCounter pc);
 }

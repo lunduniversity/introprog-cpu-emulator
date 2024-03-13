@@ -6,46 +6,56 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import args.Operand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class ByteStorageTest {
 
-  private ByteStorage memory;
+  private ByteStorage store;
   private final int memorySize = 10;
 
   @BeforeEach
   void setUp() {
-    memory = new ByteStorage(memorySize);
+    store = new ByteStorage(memorySize);
   }
 
   @Test
   void testSetValueAtAndGetValues() {
-    int addressValue = 5;
-    int intValue = 12;
-    Operand address = Operand.mem(addressValue);
-    Operand value = Operand.of(intValue);
-    memory.setValueAt(address, value);
+    int address = 5;
+    int value = 12;
+    store.setValueAt(address, value);
 
-    int storedValue = memory.getValueAt(address);
-    assertEquals(intValue, storedValue, "The value retrieved should match the value set.");
+    int storedValue = store.getValueAt(address);
+    assertEquals(value, storedValue, "The value retrieved should match the value set.");
+  }
+
+  @Test
+  void testSetAndGetNegativeValue() {
+    // The storage should truncate the value to 0-255 range, i.e. use only the last 8 bits.
+    // Since Java int uses 2's complement, -12 is represented as 1...1 1111 0100.
+    int address = 5;
+    int value = -12;
+    int expectedValue = 0b1111_0100; // 244
+    store.setValueAt(address, value);
+
+    int storedValue = store.getValueAt(address);
+    assertEquals(expectedValue, storedValue, "The value retrieved should match the value set.");
   }
 
   @Test
   void testMemorySize() {
     assertEquals(
-        memorySize, memory.size(), "Memory size should match the size provided at initialization.");
+        memorySize, store.size(), "Memory size should match the size provided at initialization.");
   }
 
   @Test
   void testNotifyListenersOnValueSet() {
     StorageListener mockListener = mock(StorageListener.class);
-    Operand address = Operand.of((int) 3);
-    Operand value = Operand.of((int) 100);
+    int address = 3;
+    int value = 100;
 
-    memory.addListener(mockListener);
-    memory.setValueAt(address, value);
+    store.addListener(mockListener);
+    store.setValueAt(address, value);
 
     verify(mockListener, times(1)).onMemoryChanged(eq(address), eq((int) 100));
   }
@@ -54,14 +64,14 @@ public class ByteStorageTest {
   void testAddListener() {
     StorageListener listener1 = mock(StorageListener.class);
     StorageListener listener2 = mock(StorageListener.class);
-    memory.addListener(listener1);
-    memory.addListener(listener2);
+    store.addListener(listener1);
+    store.addListener(listener2);
 
-    Operand address = Operand.of((int) 1);
-    Operand value = Operand.of((int) 50);
-    memory.setValueAt(address, value);
+    int address = 1;
+    int value = 50;
+    store.setValueAt(address, value);
 
-    verify(listener1, times(1)).onMemoryChanged(eq(address), eq((int) 50));
-    verify(listener2, times(1)).onMemoryChanged(eq(address), eq((int) 50));
+    verify(listener1, times(1)).onMemoryChanged(eq(address), eq(value));
+    verify(listener2, times(1)).onMemoryChanged(eq(address), eq(value));
   }
 }

@@ -4,14 +4,15 @@ import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
 
-public class Ld extends Instruction {
+public class LdA extends Instruction {
 
-  public Ld(int operand) {
+  public LdA(int operand) {
     super(InstructionFactory.INST_NAME__LD, operand);
   }
 
   @Override
   public void execute(Memory mem, Registry reg, ProgramCounter pc) {
-    reg.setRegister(operand, mem.getValueAt(pc.next()));
+    int address = mem.getValueAt(pc.next());
+    reg.setRegister(operand, mem.getValueAt(address));
   }
 }

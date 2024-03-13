@@ -112,4 +112,16 @@ public class Operand {
   public int hashCode() {
     return code;
   }
+
+  @Override
+  public String toString() {
+    String bin = Integer.toBinaryString(code); // does not include leading zeros
+    bin = "00000000".substring(bin.length()) + bin;
+    bin = String.format("%8s", bin);
+    bin = bin.length() > 8 ? bin.substring(bin.length() - 8) : bin;
+    String operation = bin.substring(0, 4);
+    String operand = bin.substring(4);
+
+    return String.format("%S %S (0x%02X)", operation, operand, code);
+  }
 }

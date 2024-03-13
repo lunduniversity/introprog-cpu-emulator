@@ -1,8 +1,8 @@
 package instruction;
 
-import args.Operand;
-import model.AddressableStorage;
+import model.Memory;
 import model.ProgramCounter;
+import model.Registry;
 
 public class Sub extends Instruction {
 
@@ -11,10 +11,10 @@ public class Sub extends Instruction {
   }
 
   @Override
-  public void execute(AddressableStorage mem, ProgramCounter pc) {
-    int a = mem.getValueAt(Operand.reg("OP1"));
-    int b = mem.getValueAt(Operand.reg("OP2"));
+  public void execute(Memory mem, Registry reg, ProgramCounter pc) {
+    int a = reg.getRegister("OP1");
+    int b = reg.getRegister("OP2");
     int result = (int) (a - b);
-    mem.setValueAt(Operand.reg("RES"), Operand.of(result));
+    reg.setRegister("RES", result);
   }
 }

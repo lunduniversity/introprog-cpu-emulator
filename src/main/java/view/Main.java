@@ -1,7 +1,10 @@
 package view;
 
+import instruction.InstructionFactory;
 import javax.swing.SwingUtilities;
-import model.Computer;
+import model.ByteStorage;
+import model.CPU;
+import model.ProgramCounter;
 
 public class Main {
 
@@ -9,8 +12,10 @@ public class Main {
 
   public static void main(String[] args) {
     // Create the model
-    Computer computer = new Computer(NUM_MEMORY_CELLS);
+    ByteStorage memory = new ByteStorage(NUM_MEMORY_CELLS);
+    ProgramCounter pc = new ProgramCounter();
+    CPU cpu = new CPU(memory, pc, new InstructionFactory());
 
-    SwingUtilities.invokeLater(() -> new ComputerUI(computer));
+    SwingUtilities.invokeLater(() -> new ComputerUI(memory, pc, cpu));
   }
 }

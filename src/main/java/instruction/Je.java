@@ -1,8 +1,8 @@
 package instruction;
 
-import args.Operand;
-import model.AddressableStorage;
+import model.Memory;
 import model.ProgramCounter;
+import model.Registry;
 
 public class Je extends Instruction {
 
@@ -11,13 +11,16 @@ public class Je extends Instruction {
   }
 
   @Override
-  public void execute(AddressableStorage mem, ProgramCounter pc) {
-    int a = mem.getValueAt(Operand.of(pc.next()));
-    int b = mem.getValueAt(Operand.of(pc.next()));
+  public void execute(Memory mem, Registry reg, ProgramCounter pc) {
+    // Destination address is read from register indexed by operand.
+    // Values being compared are read from the registers OP1 and OP2.
+
+    int a = reg.getRegister("OP1");
+    int b = reg.getRegister("OP2");
+
     if (a == b) {
-      pc.jumpTo(pc.next());
-    } else {
-      pc.next();
+      int dst = reg.getRegister(operand);
+      pc.jumpTo(dst);
     }
   }
 }

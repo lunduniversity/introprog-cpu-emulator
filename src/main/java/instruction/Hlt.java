@@ -1,7 +1,8 @@
 package instruction;
 
-import model.AddressableStorage;
+import model.Memory;
 import model.ProgramCounter;
+import model.Registry;
 
 public class Hlt extends Instruction {
 
@@ -10,7 +11,7 @@ public class Hlt extends Instruction {
   }
 
   @Override
-  public void execute(AddressableStorage mem, ProgramCounter pc) {
+  public void execute(Memory mem, Registry reg, ProgramCounter pc) {
     pc.halt();
   }
 }

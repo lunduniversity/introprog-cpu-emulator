@@ -1,34 +1,24 @@
 package instruction;
 
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import args.Operand;
-import model.ObservableStorage;
-import model.ProgramCounter;
+import model.Registry;
 import org.junit.jupiter.api.Test;
 
 public class AddTest {
-
   @Test
   public void testAddOperation() {
-    ObservableStorage mockMemory = mock(ObservableStorage.class);
-    ProgramCounter mockPC = mock(ProgramCounter.class);
+    Registry mockRegistry = mock(Registry.class);
 
-    // Assuming pc starts at 0, and addresses for operands are 1 and 2, and for the
-    // result is 3
-    when(mockPC.next()).thenReturn((int) 1, (int) 2, (int) 3);
-    when(mockMemory.getValueAt(Operand.of((int) 1))).thenReturn((int) 5); // First operand
-    when(mockMemory.getValueAt(Operand.of((int) 2))).thenReturn((int) 10); // Second operand
+    // Assuming that values have been loaded into registers OP1 and OP2
+    when(mockRegistry.getRegister("OP1")).thenReturn(5); // First operand
+    when(mockRegistry.getRegister("OP2")).thenReturn(10); // Second operand
 
     Add addInstruction = new Add(0);
-    addInstruction.execute(mockMemory, mockPC);
+    addInstruction.execute(null, mockRegistry, null);
 
-    verify(mockMemory)
-        .setValueAt(
-            eq(Operand.of((int) 3)), argThat(argument -> argument.getOperand() == (int) 15));
+    verify(mockRegistry).setRegister("RES", 15);
   }
 }

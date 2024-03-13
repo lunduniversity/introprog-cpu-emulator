@@ -34,6 +34,9 @@ public class InstructionFactoryTest {
         factory.isInstruction(InstructionFactory.INST__LD),
         "INST__LD should be recognized as an instruction.");
     assertTrue(
+        factory.isInstruction(InstructionFactory.INST_LDA),
+        "INST_LDA should be recognized as an instruction.");
+    assertTrue(
         factory.isInstruction(InstructionFactory.INST__ST),
         "INST__ST should be recognized as an instruction.");
     assertTrue(
@@ -76,6 +79,10 @@ public class InstructionFactoryTest {
     assertInstanceOf(
         Ld.class,
         factory.createInstruction(InstructionFactory.INST__LD),
+        "Should create an instance of Ld.");
+    assertInstanceOf(
+        LdA.class,
+        factory.createInstruction(InstructionFactory.INST_LDA),
         "Should create an instance of Ld.");
     assertInstanceOf(
         St.class,
