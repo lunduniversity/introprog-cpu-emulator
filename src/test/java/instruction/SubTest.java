@@ -18,7 +18,7 @@ public class SubTest {
     when(mockRegistry.getRegister("OP2")).thenReturn(5); // Second operand
 
     Sub subInstruction = new Sub(0);
-    subInstruction.execute(null, mockRegistry, null);
+    subInstruction.execute(null, mockRegistry, null, null);
 
     verify(mockRegistry).setRegister(eq("RES"), eq(5));
   }
@@ -33,7 +33,7 @@ public class SubTest {
     when(mockRegistry.getRegister("OP2")).thenReturn(25); // Second operand
 
     Sub subInstruction = new Sub(0);
-    subInstruction.execute(null, mockRegistry, null);
+    subInstruction.execute(null, mockRegistry, null, null);
 
     verify(mockRegistry).setRegister(eq("RES"), eq(-15));
   }

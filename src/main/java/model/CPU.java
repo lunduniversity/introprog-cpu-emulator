@@ -23,7 +23,7 @@ public class CPU {
       throw new IllegalStateException("CPU is halted");
     }
     int value = memory.getValueAt(pc.next());
-    factory.createInstruction(value).execute(memory, registry, pc);
+    factory.createInstruction(value).execute(memory, registry, pc, null);
   }
 
   public void run() {
@@ -32,8 +32,13 @@ public class CPU {
     }
     while (!pc.isHalted()) {
       int value = memory.getValueAt(pc.next());
-      factory.createInstruction(value).execute(memory, registry, pc);
+      factory.createInstruction(value).execute(memory, registry, pc, null);
     }
+  }
+
+  public void reset() {
+    pc.reset();
+    registry.reset();
   }
 
   public void addRegistryListener(StorageListener listener) {

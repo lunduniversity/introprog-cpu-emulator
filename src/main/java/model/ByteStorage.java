@@ -30,6 +30,13 @@ public class ByteStorage implements Memory {
     return store.length;
   }
 
+  public void reset() {
+    for (int i = 0; i < store.length; i++) {
+      store[i] = 0;
+      notifyListeners(i, 0);
+    }
+  }
+
   @Override
   public void addListener(StorageListener listener) {
     listeners.add(listener);

@@ -22,7 +22,7 @@ public class JmpTest {
     when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
 
     Jmp jmpInstruction = new Jmp(operand);
-    jmpInstruction.execute(null, mockRegistry, mockPC);
+    jmpInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify that jumpTo is called with the correct destination address
     verify(mockPC).jumpTo(destinationAddress);

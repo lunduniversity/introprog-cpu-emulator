@@ -1,5 +1,6 @@
 package instruction;
 
+import io.IO;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
@@ -12,7 +13,7 @@ public class Mov extends Instruction {
   }
 
   @Override
-  public void execute(Memory mem, Registry reg, ProgramCounter pc) {
+  public void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // operand is the 4 right-most bits of the instruction. Out of these 4 bits, use bits 1 and 2
     // (from the left) for the source, and bits 3 and 4 for the destination, according to this rule:
     // 00: constant value (only for source, not for destination)

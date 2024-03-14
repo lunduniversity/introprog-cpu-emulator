@@ -40,7 +40,7 @@ public class CpyTest {
     when(mockRegistry.getRegister(srcRegister)).thenReturn(value);
 
     Cpy cpyInstruction = new Cpy(operand);
-    cpyInstruction.execute(mockMemory, mockRegistry, mockPC);
+    cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied to the destination register
     verify(mockRegistry).getRegister(srcRegister);
@@ -49,8 +49,7 @@ public class CpyTest {
 
   @Test
   public void testCopyMemoryToRegister() {
-    // Similar setup to the previous test, but with operand encoding for memory to register (10 to
-    // 01)
+    // Similar to previous test, but with operand encoding for memory to register (10 to 01)
     int operand = (0b10 << 2) | 0b01;
     int memoryAddress = 16; // Example memory address
     int destRegister = Registry.nameToIdx("R1"); // Destination register index
@@ -63,7 +62,7 @@ public class CpyTest {
     when(mockMemory.getValueAt(memoryAddress)).thenReturn(value);
 
     Cpy cpyInstruction = new Cpy(operand);
-    cpyInstruction.execute(mockMemory, mockRegistry, mockPC);
+    cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied from memory to the register
     verify(mockRegistry).setRegister(destRegister, value);
@@ -77,7 +76,7 @@ public class CpyTest {
     Cpy cpyInstruction = new Cpy(operand);
     assertThrows(
         IllegalArgumentException.class,
-        () -> cpyInstruction.execute(mockMemory, mockRegistry, mockPC));
+        () -> cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null));
   }
 
   @Test
@@ -89,10 +88,10 @@ public class CpyTest {
     Cpy cpyInstruction1 = new Cpy(operand1);
     assertThrows(
         IllegalArgumentException.class,
-        () -> cpyInstruction1.execute(mockMemory, mockRegistry, mockPC));
+        () -> cpyInstruction1.execute(mockMemory, mockRegistry, mockPC, null));
     Cpy cpyInstruction2 = new Cpy(operand2);
     assertThrows(
         IllegalArgumentException.class,
-        () -> cpyInstruction2.execute(mockMemory, mockRegistry, mockPC));
+        () -> cpyInstruction2.execute(mockMemory, mockRegistry, mockPC, null));
   }
 }

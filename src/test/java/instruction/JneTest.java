@@ -26,7 +26,7 @@ public class JneTest {
     when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
 
     Jne jneInstruction = new Jne(operand);
-    jneInstruction.execute(null, mockRegistry, mockPC);
+    jneInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is called with the correct destination address
     verify(mockPC).jumpTo(destinationAddress);
@@ -47,7 +47,7 @@ public class JneTest {
     when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
 
     Jne jneInstruction = new Jne(operand);
-    jneInstruction.execute(null, mockRegistry, mockPC);
+    jneInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is never called since the conditions for jumping are not met
     verify(mockPC, never()).jumpTo(anyInt());

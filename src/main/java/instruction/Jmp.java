@@ -1,5 +1,6 @@
 package instruction;
 
+import io.IO;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
@@ -11,7 +12,7 @@ public class Jmp extends Instruction {
   }
 
   @Override
-  public void execute(Memory mem, Registry reg, ProgramCounter pc) {
+  public void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Destination address is read from register indexed by operand.
     int dst = reg.getRegister(operand);
     pc.jumpTo(dst);

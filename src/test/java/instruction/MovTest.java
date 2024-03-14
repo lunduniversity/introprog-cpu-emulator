@@ -22,7 +22,7 @@ public class MovTest {
     when(mockMemory.getValueAt(((int) 1))).thenReturn(sourceValue); // Source value to move
 
     Mov movInstruction = new Mov(0);
-    movInstruction.execute(mockMemory, null, mockPC);
+    movInstruction.execute(mockMemory, null, mockPC, null);
 
     // Verify the source value is copied to the destination address
     verify(mockMemory).setValueAt(eq(((int) 2)), argThat(argument -> argument == sourceValue));

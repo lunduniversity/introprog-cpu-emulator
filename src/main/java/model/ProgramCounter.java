@@ -37,6 +37,11 @@ public class ProgramCounter {
     return currentIndex == -1;
   }
 
+  public void reset() {
+    currentIndex = 0;
+    notifyListeners();
+  }
+
   public void addListener(ProgramCounterListener listener) {
     listeners.add(listener);
   }

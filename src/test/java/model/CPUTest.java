@@ -39,7 +39,7 @@ public class CPUTest {
 
     cpu.step();
 
-    verify(mockInstruction, times(1)).execute(eq(memory), any(Registry.class), eq(pc));
+    verify(mockInstruction, times(1)).execute(eq(memory), any(Registry.class), eq(pc), null);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class CPUTest {
 
     cpu.run();
 
-    verify(mockInstruction, times(2)).execute(eq(memory), any(Registry.class), eq(pc));
+    verify(mockInstruction, times(2)).execute(eq(memory), any(Registry.class), eq(pc), null);
   }
 
   @Test

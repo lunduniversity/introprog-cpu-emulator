@@ -1,5 +1,6 @@
 package instruction;
 
+import io.IO;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
@@ -18,5 +19,5 @@ public abstract class Instruction {
     return name;
   }
 
-  public abstract void execute(Memory mem, Registry reg, ProgramCounter pc);
+  public abstract void execute(Memory mem, Registry reg, ProgramCounter pc, IO io);
 }

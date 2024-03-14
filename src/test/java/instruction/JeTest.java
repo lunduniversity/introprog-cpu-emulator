@@ -26,7 +26,7 @@ public class JeTest {
     when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
 
     Je jeInstruction = new Je(operand);
-    jeInstruction.execute(null, mockRegistry, mockPC);
+    jeInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is called with the correct destination address
     verify(mockPC).jumpTo(destinationAddress);
@@ -47,7 +47,7 @@ public class JeTest {
     when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
 
     Je jeInstruction = new Je(operand);
-    jeInstruction.execute(null, mockRegistry, mockPC);
+    jeInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is never called since the conditions for jumping are not met
     verify(mockPC, never()).jumpTo(anyInt());

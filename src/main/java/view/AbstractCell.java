@@ -50,7 +50,7 @@ public abstract class AbstractCell extends JPanel {
     setLayout(
         new MigLayout(
             "gap 5 5, insets 0",
-            "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px][30px:30px:30px][5px:5px:5px][110px::,grow]",
+            "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px][30px:30px:30px][][110px::,grow]",
             "[]"));
     this.listener = listener;
 
@@ -154,7 +154,7 @@ public abstract class AbstractCell extends JPanel {
     lblAscii.setPreferredSize(new Dimension(30, 20));
     add(lblAscii, "cell 4 0,alignx right");
 
-    add(Box.createRigidArea(new Dimension(5, 5)), "cell 5 0");
+    add(Box.createRigidArea(new Dimension(2, 5)), "cell 5 0");
 
     lblInstruction = new JLabel();
     lblInstruction.setBorder(null);

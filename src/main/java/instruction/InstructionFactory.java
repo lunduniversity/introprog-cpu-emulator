@@ -11,7 +11,9 @@ public class InstructionFactory {
   public static final int INST_JMP = 0x80; // Jump to address
   public static final int INST__JE = 0x90; // Jump if equal
   public static final int INST_JNE = 0xA0; // Jump if not equal
-  public static final int INST_HLT = 0xB0; // Halt
+  public static final int INST_PRT = 0xB0; // Print
+  public static final int INST_PRL = 0xC0; // Print Loop
+  public static final int INST_HLT = 0xD0; // Halt
 
   // PRT
   // Add 2 columns: Instr, Char
@@ -26,6 +28,8 @@ public class InstructionFactory {
   public static final String INST_NAME_JMP = "JMP";
   public static final String INST_NAME__JE = "JE";
   public static final String INST_NAME_JNE = "JNE";
+  public static final String INST_NAME_PRT = "PRT";
+  public static final String INST_NAME_PRL = "PRL";
   public static final String INST_NAME_HLT = "HLT";
 
   public boolean isInstruction(int code) {
@@ -39,6 +43,8 @@ public class InstructionFactory {
         || code == INST_JMP
         || code == INST__JE
         || code == INST_JNE
+        || code == INST_PRT
+        || code == INST_PRL
         || code == INST_HLT;
   }
 
@@ -67,6 +73,10 @@ public class InstructionFactory {
         return new Je(operand);
       case INST_JNE:
         return new Jne(operand);
+      case INST_PRT:
+        return new Prt(operand);
+      case INST_PRL:
+        return new PrL(operand);
       case INST_HLT:
         return new Hlt(operand);
       default:
