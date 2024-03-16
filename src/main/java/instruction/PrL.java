@@ -21,10 +21,8 @@ public class PrL extends Instruction {
   public void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     int start = reg.getRegister("OP1");
     int end = reg.getRegister("OP2");
-    System.out.println("Start: " + start + " End: " + end);
 
     int character = mem.getValueAt(start);
-    System.out.println("Character: " + character + ", " + (char) character);
     reg.setRegister("PRT", character);
     reg.setRegister("OP1", start + 1);
     io.print(character);

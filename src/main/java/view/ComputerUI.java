@@ -4,8 +4,11 @@ import instruction.InstructionFactory;
 import io.ObservableIO;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +18,7 @@ import javax.swing.BoxLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,6 +30,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 import model.CPU;
 import model.Memory;
 import model.ProgramCounter;
@@ -45,6 +50,7 @@ public class ComputerUI {
   private int programCounterFocusIdx;
   private JLabel lblPrintOutput;
   private JLabel lblErrorMessage;
+  private JScrollPane scrollPane;
 
   private final Memory memory;
   private final ProgramCounter pc;
@@ -65,17 +71,40 @@ public class ComputerUI {
     memCells[programCounterFocusIdx].setProgramCounterFocus();
 
     frame.pack();
+    scrollPane.setMaximumSize(new Dimension(400, Integer.MAX_VALUE));
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
+
+    // _showBorders(frame);
+  }
+
+  @SuppressWarnings("unused")
+  private void _showBorders(Component component) {
+    // Define a simple border
+    Border border = BorderFactory.createLineBorder(Color.BLACK, 1);
+    Random r = new Random();
+
+    // Set the border on JComponents
+    if (component instanceof JComponent) {
+      ((JComponent) component).setBorder(border);
+    }
+    component.setBackground(new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)));
+
+    // Recursively set the border on child components if the component is a container
+    if (component instanceof Container) {
+      for (Component child : ((Container) component).getComponents()) {
+        _showBorders(child);
+      }
+    }
   }
 
   /** Initialize the contents of the frame. */
   private void initialize() {
     frame = new JFrame();
-    frame.setBounds(100, 100, 800, 725);
+    // frame.setBounds(100, 100, 800, 725);
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    frame.setResizable(false);
-    frame.getContentPane().setLayout(new MigLayout("", "[][][][]", "[][][][][][grow]"));
+    // frame.setResizable(false);
+    frame.getContentPane().setLayout(new MigLayout("", "[][][][]", "[][][][][][]"));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -98,12 +127,12 @@ public class ComputerUI {
     frame.getContentPane().add(rigidArea, "cell 0 2");
 
     JPanel memoryPanel = createCellPanel("Memory");
-    frame.getContentPane().add(memoryPanel, "cell 0 3 1 9, top, left");
+    frame.getContentPane().add(memoryPanel, "cell 0 3 1 3, top, left, grow");
 
     // Memory cells
     {
       JPanel memoryCellsPanel = new JPanel();
-      JScrollPane scrollPane =
+      scrollPane =
           new JScrollPane(
               memoryCellsPanel,
               JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -111,6 +140,7 @@ public class ComputerUI {
       memoryCellsPanel.setBorder(null);
       scrollPane.setBorder(null);
       scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+      scrollPane.setMaximumSize(new Dimension(400, 700));
 
       // Remove arrow key bindings for vertical and horizontal scroll bars
       InputMap im = scrollPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -119,8 +149,7 @@ public class ComputerUI {
       im.put(KeyStroke.getKeyStroke("LEFT"), "none");
       im.put(KeyStroke.getKeyStroke("RIGHT"), "none");
 
-      memoryPanel.add(
-          scrollPane, "cell 0 3,alignx left,aligny top, grow, w 370px::, h 400px:600px:800px");
+      memoryPanel.add(scrollPane, "cell 0 3, top, left, grow, w 370px:370px:, h 400px::");
       memoryCellsPanel.setLayout(new BoxLayout(memoryCellsPanel, BoxLayout.Y_AXIS));
 
       memCells = new Cell[memory.size()];
@@ -154,7 +183,6 @@ public class ComputerUI {
     // Registers and program counter
     {
       JPanel registerPanel = createCellPanel("Registers");
-      registerPanel.setBorder(null);
       frame.getContentPane().add(registerPanel, "cell 1 3, top");
 
       // Computer has 6 registers, OP1-OP3 and R1-R3.
@@ -321,14 +349,14 @@ public class ComputerUI {
     // Divider before right-side panel. Vertical line or border that fills all vertical space.
     {
       JSeparator rightDivider = new JSeparator(SwingConstants.VERTICAL);
-      frame.getContentPane().add(rightDivider, "cell 2 3 1 9, growy, gaptop 45");
+      frame.getContentPane().add(rightDivider, "cell 2 3 1 3, growy");
     }
 
     // Right-side panel with instruction descriptions
     {
       JPanel instructionPanel = new JPanel();
-      frame.getContentPane().add(instructionPanel, "cell 3 3 1 5, top, grow");
-      instructionPanel.setLayout(new MigLayout("", "[fill,grow]", "[]"));
+      frame.getContentPane().add(instructionPanel, "cell 3 3 1 3, top, shrink");
+      instructionPanel.setLayout(new MigLayout("", "[fill,grow]", "[shrink]"));
 
       JLabel lblInstructionHeader = new JLabel("Instruction Descriptions");
       lblInstructionHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -354,9 +382,10 @@ public class ComputerUI {
       // Instruction table
       {
         JPanel table =
-            new JPanel(new MigLayout("wrap 4, gap 10px", "[][][grow 50][grow 50]", "[]"));
+            new JPanel(
+                new MigLayout("wrap 4, gap 5px 0, insets 0", "[][][grow 50][grow 50]", "[]"));
         table.setBorder(null);
-        instructionPanel.add(table, "cell 0 4, grow, gap 0");
+        instructionPanel.add(table, "cell 0 4, gap 0");
         // Headers
         {
           for (String hdr : new String[] {"Instr", "Opcode", "Operand (abcd)", "Description"}) {
@@ -382,28 +411,72 @@ public class ComputerUI {
               table,
               InstructionFactory.INST_NAME_CPY,
               InstructionFactory.INST_CPY,
-              "ab is src address*,\ncd is dst address*",
-              "Reads the next two memory values (src and dst) and copies src to the dst.");
+              "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
+              "Reads the next two memory values (src and dst) and copies <u>src</u> to"
+                  + " <u>dst</u>.");
           appendToTable(
-              table, InstructionFactory.INST_NAME_MOV, InstructionFactory.INST_MOV, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME_MOV,
+              InstructionFactory.INST_MOV,
+              "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
+              "Reads the next two memory values (src and dst) and moves <u>src</u> to <u>dst</u>."
+                  + " Afterwards, <u>src</u> is set to 0.");
           appendToTable(
-              table, InstructionFactory.INST_NAME__LD, InstructionFactory.INST__LD, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME__LD,
+              InstructionFactory.INST__LD,
+              "Specifies destination register.",
+              "Reads next memory <b>value</b> and loads it into a register.");
           appendToTable(
-              table, InstructionFactory.INST_NAME_LDA, InstructionFactory.INST_LDA, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME_LDA,
+              InstructionFactory.INST_LDA,
+              "Specifies destination register.",
+              "Reads next memory <b>address</b> and loads the addressed value into a register.");
           appendToTable(
-              table, InstructionFactory.INST_NAME__ST, InstructionFactory.INST__ST, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME__ST,
+              InstructionFactory.INST__ST,
+              "Specifies source regsiter.",
+              "Reads next memory <b>address</b> and stores register value at it.");
           appendToTable(
-              table, InstructionFactory.INST_NAME_JMP, InstructionFactory.INST_JMP, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME_JMP,
+              InstructionFactory.INST_JMP,
+              "Specifies source register.",
+              "Jumps to address given by a register.");
           appendToTable(
-              table, InstructionFactory.INST_NAME__JE, InstructionFactory.INST__JE, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME__JE,
+              InstructionFactory.INST__JE,
+              "Specifies source register.",
+              "Jumps to address given by a register IF OP1 and OP2 are equal.");
           appendToTable(
-              table, InstructionFactory.INST_NAME_JNE, InstructionFactory.INST_JNE, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME_JNE,
+              InstructionFactory.INST_JNE,
+              "Specifies source register.",
+              "Jumps to address given by a register IF OP1 and OP2 are NOT equal.");
           appendToTable(
-              table, InstructionFactory.INST_NAME_PRT, InstructionFactory.INST_PRT, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME_PRT,
+              InstructionFactory.INST_PRT,
+              "--",
+              "Reads value in PRT and sends to I/O output channel.");
           appendToTable(
-              table, InstructionFactory.INST_NAME_PRL, InstructionFactory.INST_PRL, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME_PRL,
+              InstructionFactory.INST_PRL,
+              "--",
+              "Reads memory address from OP1, loads value at that address into PRT and sends it to"
+                  + " I/O output channel, and increments OP1. Increments PC only if OP1 and OP2 are"
+                  + " equal.");
           appendToTable(
-              table, InstructionFactory.INST_NAME_HLT, InstructionFactory.INST_HLT, "todo", "todo");
+              table,
+              InstructionFactory.INST_NAME_HLT,
+              InstructionFactory.INST_HLT,
+              "--",
+              "Halts PC, thus terminating program successfully.");
         }
 
         // Legend
@@ -413,6 +486,12 @@ public class ComputerUI {
           instructionPanel.add(lblLegend, "cell 0 5");
         }
       }
+    }
+
+    // Divider after right-side panel. Vertical line or border that fills all vertical space.
+    {
+      JSeparator rightDivider = new JSeparator(SwingConstants.VERTICAL);
+      frame.getContentPane().add(rightDivider, "cell 4 3 1 3, growy");
     }
   }
 
@@ -448,7 +527,7 @@ public class ComputerUI {
         new MigLayout(
             "gap 5 5",
             "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
-            "[][][][]"));
+            "[][][]"));
 
     JLabel lblHeader = new JLabel(header);
     cellPanel.add(lblHeader, "cell 0 0 4 1");
@@ -490,21 +569,31 @@ public class ComputerUI {
     String codeStr = String.format("%4s", bin).replace(' ', '0');
     JLabel lblOpcode = new JLabel(codeStr);
 
-    JTextArea lblOperand = new JTextArea(operand);
-    lblOperand.setLineWrap(true);
-    lblOperand.setWrapStyleWord(true);
+    String html = "<html>%s</html>";
+    JEditorPane lblOperand = new JEditorPane();
+    lblOperand.setContentType("text/html");
+    lblOperand.setText(String.format(html, operand));
     lblOperand.setOpaque(false);
     lblOperand.setEditable(false);
+    lblOperand.setHighlighter(null);
+    lblOperand.setMaximumSize(new Dimension(130, 400));
+    lblOperand.setPreferredSize(new Dimension(130, 20));
+    lblOperand.setMargin(new Insets(0, 0, 0, 0));
 
-    JTextArea lblDesc = new JTextArea(desc);
-    lblDesc.setLineWrap(true);
-    lblDesc.setWrapStyleWord(true);
+    JEditorPane lblDesc = new JEditorPane();
+    lblDesc.setContentType("text/html");
+    lblDesc.setText(String.format(html, desc));
     lblDesc.setOpaque(false);
     lblDesc.setEditable(false);
+    lblDesc.setHighlighter(null);
+    lblDesc.setMaximumSize(new Dimension(300, 600));
+    lblDesc.setPreferredSize(new Dimension(300, 20));
+    lblDesc.setMargin(new Insets(0, 0, 0, 0));
 
-    table.add(lblInstr);
-    table.add(lblOpcode);
-    table.add(lblOperand);
-    table.add(lblDesc, "grow");
+    // table.add(new JSeparator(), "growx, span 4 1");
+    table.add(lblInstr, "aligny top, gaptop 2");
+    table.add(lblOpcode, "aligny top, gaptop 2");
+    table.add(lblOperand, "growx, shrinky, aligny top");
+    table.add(lblDesc, "growx, shrinky, aligny top");
   }
 }
