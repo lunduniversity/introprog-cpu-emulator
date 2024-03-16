@@ -33,12 +33,7 @@ public class Cpy extends Instruction {
               .replace(" ", "0"));
     }
 
-    int next = pc.next();
-    System.out.println("next: " + next);
-    int src = mem.getValueAt(next);
-
-    next = pc.next();
-    System.out.println("next: " + next);
+    int src = mem.getValueAt(pc.next());
     int dst = mem.getValueAt(pc.next());
     int value = getSrcValue(srcType, src, mem, reg);
 

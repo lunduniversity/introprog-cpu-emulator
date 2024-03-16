@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import instruction.Instruction;
 import instruction.InstructionFactory;
+import io.IO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,13 +20,15 @@ public class CPUTest {
   private Memory memory;
   private ProgramCounter pc;
   private InstructionFactory factory;
+  private IO io;
 
   @BeforeEach
   public void setUp() {
     memory = mock(Memory.class);
     pc = mock(ProgramCounter.class);
     factory = mock(InstructionFactory.class);
-    cpu = new CPU(memory, pc, factory);
+    io = mock(IO.class);
+    cpu = new CPU(memory, pc, factory, io);
   }
 
   @Test
@@ -39,7 +42,7 @@ public class CPUTest {
 
     cpu.step();
 
-    verify(mockInstruction, times(1)).execute(eq(memory), any(Registry.class), eq(pc), null);
+    verify(mockInstruction, times(1)).execute(eq(memory), any(Registry.class), eq(pc), eq(io));
   }
 
   @Test
@@ -53,7 +56,7 @@ public class CPUTest {
 
     cpu.run();
 
-    verify(mockInstruction, times(2)).execute(eq(memory), any(Registry.class), eq(pc), null);
+    verify(mockInstruction, times(2)).execute(eq(memory), any(Registry.class), eq(pc), eq(io));
   }
 
   @Test

@@ -1,6 +1,7 @@
 package model;
 
 import instruction.InstructionFactory;
+import io.IO;
 
 public class CPU {
 
@@ -9,12 +10,15 @@ public class CPU {
   private Memory memory;
   private ProgramCounter pc;
   private InstructionFactory factory;
+  private IO io;
+
   private RegStorage registry;
 
-  public CPU(Memory memory, ProgramCounter pc, InstructionFactory factory) {
+  public CPU(Memory memory, ProgramCounter pc, InstructionFactory factory, IO io) {
     this.memory = memory;
     this.pc = pc;
     this.factory = factory;
+    this.io = io;
     this.registry = new RegStorage();
   }
 
@@ -23,7 +27,7 @@ public class CPU {
       throw new IllegalStateException("CPU is halted");
     }
     int value = memory.getValueAt(pc.next());
-    factory.createInstruction(value).execute(memory, registry, pc, null);
+    factory.createInstruction(value).execute(memory, registry, pc, io);
   }
 
   public void run() {
@@ -32,7 +36,7 @@ public class CPU {
     }
     while (!pc.isHalted()) {
       int value = memory.getValueAt(pc.next());
-      factory.createInstruction(value).execute(memory, registry, pc, null);
+      factory.createInstruction(value).execute(memory, registry, pc, io);
     }
   }
 
