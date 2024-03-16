@@ -59,10 +59,12 @@ public class PrLTest {
 
     for (int i = 0; i < message.length(); i++) {
       int count = 1;
-      while (message.charAt(i) == message.charAt(i + count)) {
+      while (i + count < message.length() - 1 && message.charAt(i) == message.charAt(i + count)) {
         count++;
+        i++;
       }
-      inOrder.verify(mockIO, times(1)).print((int) c);
+      System.out.println("Expecting " + count + " " + message.charAt(i));
+      inOrder.verify(mockIO, times(count)).print((int) message.charAt(i));
     }
 
     // Verify that next() is called on the program counter after the last character is printed
