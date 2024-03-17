@@ -22,7 +22,7 @@ public class PrtTest {
     when(mockRegistry.getRegister("PRT")).thenReturn(character);
 
     Prt printInstruction = new Prt(0);
-    printInstruction.execute(null, mockRegistry, mockPC, mockIO);
+    printInstruction._execute(null, mockRegistry, mockPC, mockIO);
 
     verify(mockRegistry).getRegister("PRT");
     verify(mockPC).next();

@@ -17,7 +17,7 @@ public class HltTest {
     Hlt hltInstruction = new Hlt(0);
 
     // Execute the instruction with the mocked ProgramCounter
-    hltInstruction.execute(null, null, mockPC, null);
+    hltInstruction._execute(null, null, mockPC, null);
 
     // Verify that pc.halt() was called exactly once
     verify(mockPC, times(1)).halt();

@@ -26,7 +26,7 @@ public class CPU {
     if (pc.isHalted()) {
       throw new IllegalStateException("CPU is halted");
     }
-    int value = memory.getValueAt(pc.next());
+    int value = memory.getValueAt(pc.getCurrentIndex());
     factory.createInstruction(value).execute(memory, registry, pc, io);
   }
 
@@ -34,8 +34,19 @@ public class CPU {
     if (pc.isHalted()) {
       throw new IllegalStateException("CPU is halted");
     }
+    int prevIdx = -1;
+    int stuckCounter = 0;
     while (!pc.isHalted()) {
-      int value = memory.getValueAt(pc.next());
+      if (pc.getCurrentIndex() == prevIdx) {
+        stuckCounter++;
+        if (stuckCounter > 100) {
+          throw new IllegalStateException("Infinite loop detected");
+        }
+      } else {
+        prevIdx = pc.getCurrentIndex();
+        stuckCounter = 0;
+      }
+      int value = memory.getValueAt(pc.getCurrentIndex());
       factory.createInstruction(value).execute(memory, registry, pc, io);
     }
   }

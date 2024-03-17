@@ -38,6 +38,10 @@ public class InstructionPrettyPrinter {
       case InstructionFactory.INST_JNE:
         return String.format(
             "%s (dst: %s)", InstructionFactory.INST_NAME_JNE, Registry.idxToName(operand));
+      case InstructionFactory.INST_PRT:
+        return String.format("%s", InstructionFactory.INST_NAME_PRT);
+      case InstructionFactory.INST_PRL:
+        return String.format("%s", InstructionFactory.INST_NAME_PRL);
       case InstructionFactory.INST_HLT:
         return String.format("%s", InstructionFactory.INST_NAME_HLT);
       default:

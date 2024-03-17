@@ -12,7 +12,7 @@ public class Add extends Instruction {
   }
 
   @Override
-  public void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     int a = reg.getRegister("OP1");
     int b = reg.getRegister("OP2");
     int result = (int) (a + b);

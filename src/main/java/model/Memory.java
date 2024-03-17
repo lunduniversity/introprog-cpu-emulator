@@ -2,9 +2,13 @@ package model;
 
 public interface Memory extends ObservableStorage {
 
-  public void setValueAt(int address, int value);
+  void setValueAt(int address, int value);
 
-  public int getValueAt(int address);
+  int getValueAt(int address);
 
-  public int size();
+  int size();
+
+  String exportAsBase64();
+
+  void importFromBase64(String base64);
 }

@@ -14,11 +14,11 @@ import model.Registry;
 public class PrL extends Instruction {
 
   public PrL(int operand) {
-    super(InstructionFactory.INST_NAME_PRT, operand);
+    super(InstructionFactory.INST_NAME_PRT, operand, false);
   }
 
   @Override
-  public void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     int start = reg.getRegister("OP1");
     int end = reg.getRegister("OP2");
 

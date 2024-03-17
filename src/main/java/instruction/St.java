@@ -12,7 +12,7 @@ public class St extends Instruction {
   }
 
   @Override
-  public void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Register src is specified by the operand.
     // Read the destination address from the next memory location.
     int value = reg.getRegister(operand);

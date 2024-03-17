@@ -28,7 +28,7 @@ public class LdTest {
     when(mockMemory.getValueAt(memoryAddress)).thenReturn(memoryValue);
 
     Ld ldInstruction = new Ld(operand);
-    ldInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+    ldInstruction._execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the registry's setRegister method is called with the correct arguments
     verify(mockRegistry).setRegister(operand, memoryValue);

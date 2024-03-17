@@ -34,7 +34,7 @@ public class StTest {
     when(mockMemory.getValueAt(nextMemoryLocation)).thenReturn(memoryAddress);
 
     St stInstruction = new St(operand);
-    stInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+    stInstruction._execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify memory's setValueAt method is called with the correct destination address and value
     verify(mockMemory).setValueAt(memoryAddress, registerValue);

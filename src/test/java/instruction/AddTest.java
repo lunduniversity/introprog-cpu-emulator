@@ -17,7 +17,7 @@ public class AddTest {
     when(mockRegistry.getRegister("OP2")).thenReturn(10); // Second operand
 
     Add addInstruction = new Add(0);
-    addInstruction.execute(null, mockRegistry, null, null);
+    addInstruction._execute(null, mockRegistry, null, null);
 
     verify(mockRegistry).setRegister("RES", 15);
   }

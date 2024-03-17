@@ -78,6 +78,11 @@ public class ByteStorage implements Memory {
         chunks.add(chunk);
       }
     }
+
+    if (chunks.isEmpty()) {
+      return "";
+    }
+
     Encoder encoder = Base64.getEncoder();
     List<String> base64List =
         chunks.stream().map(chunk -> encoder.encodeToString(chunk)).collect(Collectors.toList());
@@ -98,6 +103,10 @@ public class ByteStorage implements Memory {
   }
 
   public void importFromBase64(String base64) {
+    // Check with regex that input has correct format
+    if (!base64.matches("(:\\d+:)?([A-Za-z0-9+/]+={0,2}:\\d+:)*[A-Za-z0-9+/]+={0,2}")) {
+      throw new IllegalArgumentException("Invalid format!");
+    }
     Decoder decoder = Base64.getDecoder();
     int offset = 0;
     for (int i = 0; i < base64.length(); ) {
@@ -119,6 +128,7 @@ public class ByteStorage implements Memory {
         byte[] decoded = decoder.decode(chunk);
         for (int j = 0; j < decoded.length; j++) {
           store[offset + j] = decoded[j] & 0xFF;
+          notifyListeners(offset + j, store[offset + j]);
         }
         offset += decoded.length;
         i = end;

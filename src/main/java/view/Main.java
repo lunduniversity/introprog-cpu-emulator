@@ -9,7 +9,7 @@ import model.ProgramCounter;
 
 public class Main {
 
-  private static final int NUM_MEMORY_CELLS = 64;
+  private static final int NUM_MEMORY_CELLS = 128;
 
   public static void main(String[] args) {
     // Create the model

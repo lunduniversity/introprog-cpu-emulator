@@ -12,7 +12,7 @@ public class Je extends Instruction {
   }
 
   @Override
-  public void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Destination address is read from register indexed by operand.
     // Values being compared are read from the registers OP1 and OP2.
 

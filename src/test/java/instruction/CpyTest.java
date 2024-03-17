@@ -40,7 +40,7 @@ public class CpyTest {
     when(mockRegistry.getRegister(srcRegister)).thenReturn(value);
 
     Cpy cpyInstruction = new Cpy(operand);
-    cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+    cpyInstruction._execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied to the destination register
     verify(mockRegistry).getRegister(srcRegister);
@@ -62,7 +62,7 @@ public class CpyTest {
     when(mockMemory.getValueAt(memoryAddress)).thenReturn(value);
 
     Cpy cpyInstruction = new Cpy(operand);
-    cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+    cpyInstruction._execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied from memory to the register
     verify(mockRegistry).setRegister(destRegister, value);
@@ -76,7 +76,7 @@ public class CpyTest {
     Cpy cpyInstruction = new Cpy(operand);
     assertThrows(
         IllegalArgumentException.class,
-        () -> cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null));
+        () -> cpyInstruction._execute(mockMemory, mockRegistry, mockPC, null));
   }
 
   @Test
@@ -88,10 +88,10 @@ public class CpyTest {
     Cpy cpyInstruction1 = new Cpy(operand1);
     assertThrows(
         IllegalArgumentException.class,
-        () -> cpyInstruction1.execute(mockMemory, mockRegistry, mockPC, null));
+        () -> cpyInstruction1._execute(mockMemory, mockRegistry, mockPC, null));
     Cpy cpyInstruction2 = new Cpy(operand2);
     assertThrows(
         IllegalArgumentException.class,
-        () -> cpyInstruction2.execute(mockMemory, mockRegistry, mockPC, null));
+        () -> cpyInstruction2._execute(mockMemory, mockRegistry, mockPC, null));
   }
 }

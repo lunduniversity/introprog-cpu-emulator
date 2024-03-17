@@ -34,7 +34,7 @@ public class LdATest {
     when(mockMemory.getValueAt(intermediateAddress)).thenReturn(finalValue);
 
     LdA ldaInstruction = new LdA(operand);
-    ldaInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+    ldaInstruction._execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the registry's setRegister method is called with the correct value
     verify(mockRegistry).setRegister(operand, finalValue);

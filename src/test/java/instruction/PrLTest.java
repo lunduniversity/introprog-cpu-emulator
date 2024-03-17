@@ -54,7 +54,7 @@ public class PrLTest {
     // Execute the instruction. Note: This prints one character at a time, so we need to call it
     // until pc.next() is called.
     for (int i = 0; i < message.length(); i++) {
-      printLoopInstr.execute(mockMemory, mockRegistry, mockPC, mockIO);
+      printLoopInstr._execute(mockMemory, mockRegistry, mockPC, mockIO);
     }
 
     for (int i = 0; i < message.length(); i++) {

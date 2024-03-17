@@ -21,6 +21,10 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -36,6 +40,7 @@ import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
 import net.miginfocom.swing.MigLayout;
+import view.SnapshotDialog.Mode;
 
 public class ComputerUI {
 
@@ -71,6 +76,7 @@ public class ComputerUI {
     memCells[programCounterFocusIdx].setProgramCounterFocus();
 
     frame.pack();
+    frame.setMinimumSize(frame.getSize());
     scrollPane.setMaximumSize(new Dimension(400, Integer.MAX_VALUE));
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
@@ -104,6 +110,53 @@ public class ComputerUI {
     // frame.setBounds(100, 100, 800, 725);
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     // frame.setResizable(false);
+
+    // Add menu bar
+    JMenuBar menuBar = new JMenuBar();
+    JMenu myMenu = new JMenu("Tools");
+    menuBar.add(myMenu);
+
+    // Add menu items
+    JMenuItem mnuExport = new JMenuItem("Export memory snapshot");
+    JMenuItem mnuImport = new JMenuItem("Import memory snapshot");
+    JMenuItem mnuReset = new JMenuItem("Reset all data");
+    myMenu.add(mnuExport);
+    myMenu.add(mnuImport);
+    myMenu.addSeparator();
+    myMenu.add(mnuReset);
+
+    // Add action listeners to the buttons  UBJRF8DQ:12:SEVMTE8h
+    mnuExport.addActionListener(
+        (e) -> {
+          String memorySnapdhot = memory.exportAsBase64();
+          if (memorySnapdhot.isEmpty()) {
+            memorySnapdhot = "(Memory is empty)";
+          }
+          SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
+          dialog.setText(memorySnapdhot);
+          dialog.setVisible(true);
+        });
+    mnuImport.addActionListener(
+        (e) -> {
+          SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
+          dialog.setVisible(true);
+          if (dialog.isConfirmed()) {
+            String memorySnapshot = dialog.getText();
+            try {
+              memory.importFromBase64(memorySnapshot);
+            } catch (IllegalArgumentException ex) {
+              JOptionPane.showMessageDialog(
+                  frame,
+                  "The given input has the wrong format, and cannot be imported.",
+                  "Invalid memory snapdhot",
+                  JOptionPane.WARNING_MESSAGE);
+            }
+          }
+        });
+    mnuReset.addActionListener((e) -> handleResetAllData());
+
+    frame.setJMenuBar(menuBar);
+
     frame.getContentPane().setLayout(new MigLayout("", "[][][][]", "[][][][][][]"));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
@@ -114,7 +167,9 @@ public class ComputerUI {
         new JTextArea(
             String.format(
                 "A simple simulation of a CPU and memory.%nThis computer has an 8-bit processor,"
-                    + " with %d bytes of memory and (%d+1) registers (including program counter).",
+                    + " with %d bytes of memory and (%d+1) registers (including program counter).\n"
+                    + "Note that all registers have names, but are still addressed using their"
+                    + " indices 0\u20147.",
                 memory.size(), Registry.NUM_REGISTERS));
     lblDescription.setLineWrap(true);
     lblDescription.setWrapStyleWord(true);
@@ -123,7 +178,7 @@ public class ComputerUI {
     lblDescription.setBackground(UIManager.getColor("Label.background"));
     frame.getContentPane().add(lblDescription, "cell 0 1 3 1, grow");
 
-    Component rigidArea = Box.createRigidArea(new Dimension(20, 20));
+    Component rigidArea = Box.createRigidArea(new Dimension(20, 10));
     frame.getContentPane().add(rigidArea, "cell 0 2");
 
     JPanel memoryPanel = createCellPanel("Memory");
@@ -267,7 +322,7 @@ public class ComputerUI {
       JPanel controlPanel = new JPanel();
       controlPanel.setBorder(BorderFactory.createTitledBorder(null, "Controls", 0, 0, null));
       frame.getContentPane().add(controlPanel, "cell 1 5,growx, top");
-      controlPanel.setLayout(new MigLayout("", "[][][grow,fill][][]", "[][][]"));
+      controlPanel.setLayout(new MigLayout("", "[][][grow,fill]", "[][][][][]"));
 
       JLabel lblControlHeader = new JLabel("Controls");
       lblControlHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
@@ -303,23 +358,6 @@ public class ComputerUI {
         controlPanel.add(btnRun, "cell 1 1");
       }
 
-      // Reset button
-      {
-        JButton btnReset = new JButton("Reset");
-        btnReset.addActionListener(
-            e -> {
-              cpu.reset();
-              memory.reset();
-              memCells[0].focus(0);
-
-              executor.schedule(
-                  () -> SwingUtilities.invokeLater(() -> resetCellColors()),
-                  700,
-                  TimeUnit.MILLISECONDS);
-            });
-        controlPanel.add(btnReset, "cell 3 1");
-      }
-
       // Small space
       controlPanel.add(Box.createRigidArea(new Dimension(10, 10)), "cell 0 2");
 
@@ -344,6 +382,23 @@ public class ComputerUI {
         lblErrorMessage.setOpaque(true);
         controlPanel.add(lblErrorMessage, "cell 1 4 3 1, grow");
       }
+
+      // Small space
+      controlPanel.add(Box.createRigidArea(new Dimension(10, 10)), "cell 0 5");
+
+      // Reset button
+      {
+        JButton btnReset = new JButton("Reset program");
+        btnReset.addActionListener(
+            e -> {
+              lblPrintOutput.setText("");
+              lblErrorMessage.setText("");
+              pc.setCurrentIndex(0);
+              registry.reset();
+              SwingUtilities.invokeLater(() -> resetCellColors());
+            });
+        controlPanel.add(btnReset, "cell 0 6 2 1");
+      }
     }
 
     // Divider before right-side panel. Vertical line or border that fills all vertical space.
@@ -366,10 +421,10 @@ public class ComputerUI {
 
       JTextArea instrDesc =
           new JTextArea(
-              "All instructions are made up of 4 + 4 bits. The 4 highest (left-most) bits is the"
-                  + " opcode, which identifies the instruction. The 4 lowest (right-most) bits is"
-                  + " the operand, which is used as an argument to the instruction. The purpose of"
-                  + " the operand differs between instructions.");
+              "All instructions are made up of 4 + 4 bits. The 4 highest (left-most) bits is"
+                  + " the opcode, which identifies the instruction. The 4 lowest (right-most) bits"
+                  + " is the operand, which is used as an argument to the instruction. The purpose"
+                  + " of the operand differs between instructions.");
       instrDesc.setLineWrap(true);
       instrDesc.setWrapStyleWord(true);
       instrDesc.setEditable(false);
@@ -377,7 +432,15 @@ public class ComputerUI {
       instrDesc.setMinimumSize(new Dimension(400, 30));
       instructionPanel.add(instrDesc, "cell 0 2");
 
-      instructionPanel.add(Box.createRigidArea(new Dimension(20, 10)), "cell 0 3");
+      JLabel addreessNote =
+          new JLabel(
+              "<html>Note: An underlined name, like <u>src</u>, means it's being used as an"
+                  + " <b>address</b>, rather than a<br><b>value</b> directly. If src has the value"
+                  + " 17, then <u>src</u> has the value of the memory slot at index 17.</html>");
+      addreessNote.setFont(instrDesc.getFont());
+      instructionPanel.add(addreessNote, "cell 0 3, gaptop 5, gapbottom 15");
+
+      // instructionPanel.add(Box.createRigidArea(new Dimension(20, 10)), "cell 0 3");
 
       // Instruction table
       {
@@ -477,12 +540,15 @@ public class ComputerUI {
               InstructionFactory.INST_HLT,
               "--",
               "Halts PC, thus terminating program successfully.");
+          table.add(new JSeparator(), "growx, span 4 1, gapy 3");
         }
 
         // Legend
         {
           JLabel lblLegend =
-              new JLabel("* An address is two bits: 00=constant, 01=register, 10=memory");
+              new JLabel(
+                  "<html>* An addressing <i>type</i> is two bits: 00=constant, 01=register,"
+                      + " 10=memory</html>");
           instructionPanel.add(lblLegend, "cell 0 5");
         }
       }
@@ -503,10 +569,18 @@ public class ComputerUI {
       r.unhighlight();
     }
     pcCell.unhighlight();
-    lblPrintOutput.setText("");
     lblPrintOutput.setBackground(UIManager.getColor("Panel.background"));
     lblErrorMessage.setText("");
     lblErrorMessage.setBackground(UIManager.getColor("Panel.background"));
+  }
+
+  private void handleResetAllData() {
+    cpu.reset();
+    memory.reset();
+    memCells[0].focus(0);
+
+    executor.schedule(
+        () -> SwingUtilities.invokeLater(() -> resetCellColors()), 700, TimeUnit.MILLISECONDS);
   }
 
   private void handlePrint(int value) {
@@ -590,10 +664,10 @@ public class ComputerUI {
     lblDesc.setPreferredSize(new Dimension(300, 20));
     lblDesc.setMargin(new Insets(0, 0, 0, 0));
 
-    // table.add(new JSeparator(), "growx, span 4 1");
-    table.add(lblInstr, "aligny top, gaptop 2");
-    table.add(lblOpcode, "aligny top, gaptop 2");
-    table.add(lblOperand, "growx, shrinky, aligny top");
-    table.add(lblDesc, "growx, shrinky, aligny top");
+    table.add(new JSeparator(), "growx, span 4 1, gapy 3");
+    table.add(lblInstr, "aligny top, gaptop 2, gapx 2");
+    table.add(lblOpcode, "aligny top, gaptop 2, gapx 2");
+    table.add(lblOperand, "growx, shrinky, aligny top, gapx 2");
+    table.add(lblDesc, "growx, shrinky, aligny top, gapx 2");
   }
 }
