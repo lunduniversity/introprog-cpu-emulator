@@ -83,7 +83,6 @@ public class ByteStorageTest {
     for (int i = 0; i < bigstore.size(); i++) {
       values[i] = i;
       bigstore.setValueAt(i, (i + 1));
-      System.out.println("Storing " + (i) + " at " + i);
     }
 
     String base64 = bigstore.exportAsBase64();
@@ -110,29 +109,88 @@ public class ByteStorageTest {
     // Leave some initial bytes empty
     for (int i = 7; i <= 29; i++) bigstore.setValueAt(i, (i + 1));
 
-    String expected = ":7:CQoLDA0ODxAREhMUFRYXGBkaGxwdHg==";
+    String expected = ":7:CAkKCwwNDg8QERITFBUWFxgZGhscHR4=";
     assertEquals(expected, bigstore.exportAsBase64());
   }
 
   @Test
   public void testExportWithSmallHoles() {
-    // Set bytes in ranges 0-7, 8-14 and 16-36
-    for (int i = 0; i <= 7; i++) bigstore.setValueAt(i, (i + 1));
-    for (int i = 8; i <= 14; i++) bigstore.setValueAt(i, (i + 1));
-    for (int i = 16; i <= 36; i++) bigstore.setValueAt(i, (i + 1));
+    // Set bytes in ranges 0-6, 8-13 and 16-35, leaving holes at 7, 14 and 15
+    for (int i = 0; i < 7; i++) bigstore.setValueAt(i, (i + 1));
+    for (int i = 8; i < 14; i++) bigstore.setValueAt(i, (i + 1));
+    for (int i = 16; i < 36; i++) bigstore.setValueAt(i, (i + 1));
 
-    String expected = "AQIDBAUGBwgJCgsMDQ4P:90:ERITFBUWFxgZGhscHR4fICEiIyQl";
+    String expected = "AQIDBAUGBw==:1:CQoLDA0O:2:ERITFBUWFxgZGhscHR4fICEiIyQ=";
     assertEquals(expected, bigstore.exportAsBase64());
   }
 
   @Test
   public void testExportWithLargeHoles() {
-    // Set bytes in ranges 0-12, 20-29 and 90-107
-    for (int i = 0; i <= 12; i++) bigstore.setValueAt(i, (i + 1));
-    for (int i = 20; i <= 29; i++) bigstore.setValueAt(i, (i + 1));
-    for (int i = 90; i <= 107; i++) bigstore.setValueAt(i, (i + 1));
+    // Set bytes in ranges 0-11, 20-28 and 90-106, leaving holes at 12-19 and 29-89
+    for (int i = 0; i < 12; i++) bigstore.setValueAt(i, (i + 1));
+    for (int i = 20; i < 29; i++) bigstore.setValueAt(i, (i + 1));
+    for (int i = 90; i < 107; i++) bigstore.setValueAt(i, (i + 1));
 
-    String expected = "AQIDBAUGBwgJCgsMDQ==:6:FhcYGRobHB0e:59:XF1eX2BhYmNkZWZnaGlqa2w=";
+    String expected = "AQIDBAUGBwgJCgsM:8:FRYXGBkaGxwd:61:W1xdXl9gYWJjZGVmZ2hpams=";
     assertEquals(expected, bigstore.exportAsBase64());
+  }
+
+  @Test
+  void testImportBasicBase64() {
+    // Corresponds to the bytes set in testBasicExportAsBase64
+    String base64 = "QCATAn8=";
+
+    bigstore.importFromBase64(base64);
+    assertEquals(64, bigstore.getValueAt(0));
+    assertEquals(32, bigstore.getValueAt(1));
+    assertEquals(19, bigstore.getValueAt(2));
+    assertEquals(2, bigstore.getValueAt(3));
+    assertEquals(127, bigstore.getValueAt(4));
+  }
+
+  @Test
+  void testImportWithInitialOffset() {
+    // From testExportWithInitialOffset
+    String encoded = ":7:CAkKCwwNDg8QERITFBUWFxgZGhscHR4=";
+
+    bigstore.importFromBase64(encoded);
+    for (int i = 0; i < 7; i++) assertEquals(0, bigstore.getValueAt(i));
+    for (int i = 7; i < 29; i++) assertEquals(i + 1, bigstore.getValueAt(i));
+  }
+
+  @Test
+  void testImportWithSmallHoles() {
+    // From testExportWithSmallHoles
+    String encoded = "AQIDBAUGBw==:1:CQoLDA0O:2:ERITFBUWFxgZGhscHR4fICEiIyQ=";
+
+    bigstore.importFromBase64(encoded);
+    // Verify bytes before the hole
+    for (int i = 0; i < 7; i++) assertEquals(i + 1, bigstore.getValueAt(i));
+    // Verify the first hole, at position 7
+    assertEquals(0, bigstore.getValueAt(7));
+    // Verify bytes between the holes
+    for (int i = 8; i < 14; i++) assertEquals(i + 1, bigstore.getValueAt(i));
+    // Verify the second hole, at positions 14-15
+    for (int i = 14; i < 16; i++) assertEquals(0, bigstore.getValueAt(i));
+    // Verify bytes after the hole
+    for (int i = 16; i < 36; i++) assertEquals(i + 1, bigstore.getValueAt(i));
+  }
+
+  @Test
+  void testImportWithLargeHoles() {
+    // From testExportWithLargeHoles
+    String encoded = "AQIDBAUGBwgJCgsM:8:FRYXGBkaGxwd:61:W1xdXl9gYWJjZGVmZ2hpams=";
+
+    bigstore.importFromBase64(encoded);
+    // Verify initial range
+    for (int i = 0; i < 12; i++) assertEquals(i + 1, bigstore.getValueAt(i));
+    // Verify first large hole
+    for (int i = 13; i < 19; i++) assertEquals(0, bigstore.getValueAt(i));
+    // Verify second range
+    for (int i = 20; i < 29; i++) assertEquals(i + 1, bigstore.getValueAt(i));
+    // Verify second large hole
+    for (int i = 30; i < 89; i++) assertEquals(0, bigstore.getValueAt(i));
+    // Verify third range
+    for (int i = 90; i < 107; i++) assertEquals(i + 1, bigstore.getValueAt(i));
   }
 }

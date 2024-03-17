@@ -63,7 +63,6 @@ public class PrLTest {
         count++;
         i++;
       }
-      System.out.println("Expecting " + count + " " + message.charAt(i));
       inOrder.verify(mockIO, times(count)).print((int) message.charAt(i));
     }
 

@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,7 +58,7 @@ public class ByteStorage implements Memory {
   public String exportAsBase64() {
     List<Integer> countEmptBytes = new ArrayList<>();
     List<byte[]> chunks = new ArrayList<>();
-    for (int i = 0; i < store.length; i++) {
+    for (int i = 0; i < store.length; ) {
       int count = 0;
       while (i < store.length && store[i] == 0) {
         count++;
@@ -97,10 +98,31 @@ public class ByteStorage implements Memory {
   }
 
   public void importFromBase64(String base64) {
-    byte[] bytes = Base64.getDecoder().decode(base64);
-    for (int i = 0; i < store.length; i++) {
-      store[i] = bytes[i] & 0xFF;
-      notifyListeners(i, store[i]);
+    Decoder decoder = Base64.getDecoder();
+    int offset = 0;
+    for (int i = 0; i < base64.length(); ) {
+      if (base64.charAt(i) == ':') {
+        // Read the number of empty bytes
+        int start = i + 1;
+        int end = base64.indexOf(":", start + 1);
+        int count = Integer.parseInt(base64.substring(start, end));
+        i = end + 1;
+        offset += count;
+      } else {
+        // Read the base64 encoded chunk and fill in the store
+        int start = i;
+        int end = base64.indexOf(":", start + 1);
+        if (end == -1) {
+          end = base64.length();
+        }
+        String chunk = base64.substring(start, end);
+        byte[] decoded = decoder.decode(chunk);
+        for (int j = 0; j < decoded.length; j++) {
+          store[offset + j] = decoded[j] & 0xFF;
+        }
+        offset += decoded.length;
+        i = end;
+      }
     }
   }
 }
