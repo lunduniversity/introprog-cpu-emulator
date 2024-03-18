@@ -1,6 +1,7 @@
 package model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -78,6 +79,31 @@ public class ByteStorageTest {
   }
 
   @Test
+  void testReset() {
+    StorageListener listener = mock(StorageListener.class);
+    store.addListener(listener);
+
+    store.setValueAt(0, 100);
+    store.setValueAt(1, 125);
+    store.setValueAt(2, 150);
+    store.reset();
+
+    verify(listener).onMemoryChanged(eq(0), eq(0));
+    verify(listener).onMemoryChanged(eq(1), eq(0));
+    verify(listener).onMemoryChanged(eq(2), eq(0));
+
+    assertEquals(0, store.getValueAt(0));
+    assertEquals(0, store.getValueAt(1));
+    assertEquals(0, store.getValueAt(2));
+  }
+
+  @Test
+  void testExportEmptyStorageAsBase64() {
+    String base64 = store.exportAsBase64();
+    assertEquals("", base64);
+  }
+
+  @Test
   void testExportFilledStorageAsBase64() {
     int[] values = new int[bigstore.size()];
     for (int i = 0; i < bigstore.size(); i++) {
@@ -133,6 +159,13 @@ public class ByteStorageTest {
 
     String expected = "AQIDBAUGBwgJCgsM:8:FRYXGBkaGxwd:61:W1xdXl9gYWJjZGVmZ2hpams=";
     assertEquals(expected, bigstore.exportAsBase64());
+  }
+
+  @Test
+  void testImportInvalidFormatThrowsException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> bigstore.importFromBase64(":45:invalid format (contains space):3:"));
   }
 
   @Test

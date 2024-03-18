@@ -24,4 +24,9 @@ public class Je extends Instruction {
       pc.jumpTo(dst);
     }
   }
+
+  @Override
+  protected String printOperand() {
+    return String.format("(dst: %s)", Registry.idxToName(operand));
+  }
 }

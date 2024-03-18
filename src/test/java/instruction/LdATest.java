@@ -1,5 +1,6 @@
 package instruction;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,9 +35,19 @@ public class LdATest {
     when(mockMemory.getValueAt(intermediateAddress)).thenReturn(finalValue);
 
     LdA ldaInstruction = new LdA(operand);
-    ldaInstruction._execute(mockMemory, mockRegistry, mockPC, null);
+    ldaInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the registry's setRegister method is called with the correct value
     verify(mockRegistry).setRegister(operand, finalValue);
+  }
+
+  @Test
+  public void testToString() {
+    LdA loadOP1 = new LdA(Registry.nameToIdx("OP1"));
+    LdA loadOP2 = new LdA(Registry.nameToIdx("OP2"));
+    LdA loadR2 = new LdA(Registry.nameToIdx("R2"));
+    assertEquals(InstructionFactory.INST_NAME_LDA + " (dst: OP1)", loadOP1.toString());
+    assertEquals(InstructionFactory.INST_NAME_LDA + " (dst: OP2)", loadOP2.toString());
+    assertEquals(InstructionFactory.INST_NAME_LDA + " (dst: R2)", loadR2.toString());
   }
 }

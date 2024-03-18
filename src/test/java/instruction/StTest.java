@@ -1,5 +1,6 @@
 package instruction;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,9 +35,19 @@ public class StTest {
     when(mockMemory.getValueAt(nextMemoryLocation)).thenReturn(memoryAddress);
 
     St stInstruction = new St(operand);
-    stInstruction._execute(mockMemory, mockRegistry, mockPC, null);
+    stInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify memory's setValueAt method is called with the correct destination address and value
     verify(mockMemory).setValueAt(memoryAddress, registerValue);
+  }
+
+  @Test
+  public void testToString() {
+    St storeOP1 = new St(Registry.nameToIdx("OP1"));
+    St storeOP2 = new St(Registry.nameToIdx("OP2"));
+    St storeR2 = new St(Registry.nameToIdx("R2"));
+    assertEquals(InstructionFactory.INST_NAME__ST + " (src: OP1)", storeOP1.toString());
+    assertEquals(InstructionFactory.INST_NAME__ST + " (src: OP2)", storeOP2.toString());
+    assertEquals(InstructionFactory.INST_NAME__ST + " (src: R2)", storeR2.toString());
   }
 }

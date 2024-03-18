@@ -15,4 +15,9 @@ public class Hlt extends Instruction {
   protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     pc.halt();
   }
+
+  @Override
+  protected String printOperand() {
+    return "";
+  }
 }

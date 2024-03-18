@@ -14,7 +14,7 @@ import model.Registry;
 public class PrL extends Instruction {
 
   public PrL(int operand) {
-    super(InstructionFactory.INST_NAME_PRT, operand, false);
+    super(InstructionFactory.INST_NAME_PRL, operand, false);
   }
 
   @Override
@@ -30,5 +30,10 @@ public class PrL extends Instruction {
     if (start == end) {
       pc.next();
     }
+  }
+
+  @Override
+  protected String printOperand() {
+    return "";
   }
 }

@@ -8,7 +8,7 @@ import model.Registry;
 public class Cpy extends Instruction {
 
   public Cpy(int operand) {
-    super(InstructionFactory.INST_NAME_MOV, operand);
+    super(InstructionFactory.INST_NAME_CPY, operand);
   }
 
   @Override
@@ -51,5 +51,10 @@ public class Cpy extends Instruction {
       return mem.getValueAt(src);
     }
     return src;
+  }
+
+  @Override
+  protected String printOperand() {
+    return String.format("(%s | %s)", parseAddrMode(operand >> 2), parseAddrMode(operand));
   }
 }

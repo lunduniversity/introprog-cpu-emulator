@@ -28,6 +28,9 @@ public class InstructionFactoryTest {
         factory.isInstruction(InstructionFactory.INST_SUB),
         "INST_SUB should be recognized as an instruction.");
     assertTrue(
+        factory.isInstruction(InstructionFactory.INST_CPY),
+        "INST_CPY should be recognized as an instruction.");
+    assertTrue(
         factory.isInstruction(InstructionFactory.INST_MOV),
         "INST_MOV should be recognized as an instruction.");
     assertTrue(
@@ -48,6 +51,12 @@ public class InstructionFactoryTest {
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_JNE),
         "INST_JNE should be recognized as an instruction.");
+    assertTrue(
+        factory.isInstruction(InstructionFactory.INST_PRT),
+        "INST_PRT should be recognized as an instruction.");
+    assertTrue(
+        factory.isInstruction(InstructionFactory.INST_PRL),
+        "INST_PRL should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_HLT),
         "INST_HLT should be recognized as an instruction.");
@@ -72,6 +81,10 @@ public class InstructionFactoryTest {
         Sub.class,
         factory.createInstruction(InstructionFactory.INST_SUB),
         "Should create an instance of Sub.");
+    assertInstanceOf(
+        Cpy.class,
+        factory.createInstruction(InstructionFactory.INST_CPY),
+        "Should create an instance of Cpy.");
     assertInstanceOf(
         Mov.class,
         factory.createInstruction(InstructionFactory.INST_MOV),
@@ -100,6 +113,14 @@ public class InstructionFactoryTest {
         Jne.class,
         factory.createInstruction(InstructionFactory.INST_JNE),
         "Should create an instance of Jne.");
+    assertInstanceOf(
+        Prt.class,
+        factory.createInstruction(InstructionFactory.INST_PRT),
+        "Should create an instance of Hlt.");
+    assertInstanceOf(
+        PrL.class,
+        factory.createInstruction(InstructionFactory.INST_PRL),
+        "Should create an instance of Hlt.");
     assertInstanceOf(
         Hlt.class,
         factory.createInstruction(InstructionFactory.INST_HLT),

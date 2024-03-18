@@ -4,6 +4,7 @@ public interface Registry extends ObservableStorage {
 
   static final String[] REGISTER_NAMES = {"OP1", "OP2", "RES", "R1", "R2", "R3", "PRT"};
   static final int NUM_REGISTERS = REGISTER_NAMES.length;
+  static final String INVALID_REGISTER = "\u2013";
 
   int getRegister(int index);
 
@@ -15,7 +16,7 @@ public interface Registry extends ObservableStorage {
 
   static String idxToName(int idx) {
     if (idx >= 0 && idx < REGISTER_NAMES.length) return REGISTER_NAMES[idx];
-    else return "\u2013";
+    else return INVALID_REGISTER;
   }
 
   static int nameToIdx(String name) {

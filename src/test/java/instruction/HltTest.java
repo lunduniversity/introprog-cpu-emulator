@@ -1,5 +1,6 @@
 package instruction;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,9 +18,15 @@ public class HltTest {
     Hlt hltInstruction = new Hlt(0);
 
     // Execute the instruction with the mocked ProgramCounter
-    hltInstruction._execute(null, null, mockPC, null);
+    hltInstruction.execute(null, null, mockPC, null);
 
     // Verify that pc.halt() was called exactly once
     verify(mockPC, times(1)).halt();
+  }
+
+  @Test
+  public void testToString() {
+    Hlt hltInstruction = new Hlt(0);
+    assertEquals(InstructionFactory.INST_NAME_HLT, hltInstruction.toString());
   }
 }

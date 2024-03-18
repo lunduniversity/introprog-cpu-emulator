@@ -17,4 +17,9 @@ public class Jmp extends Instruction {
     int dst = reg.getRegister(operand);
     pc.jumpTo(dst);
   }
+
+  @Override
+  protected String printOperand() {
+    return String.format("(dst: %s)", Registry.idxToName(operand));
+  }
 }

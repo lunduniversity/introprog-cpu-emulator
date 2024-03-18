@@ -1,6 +1,8 @@
 package instruction;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,10 +24,16 @@ public class PrtTest {
     when(mockRegistry.getRegister("PRT")).thenReturn(character);
 
     Prt printInstruction = new Prt(0);
-    printInstruction._execute(null, mockRegistry, mockPC, mockIO);
+    printInstruction.execute(null, mockRegistry, mockPC, mockIO);
 
     verify(mockRegistry).getRegister("PRT");
-    verify(mockPC).next();
+    verify(mockPC, times(2)).next();
     verify(mockIO).print(character);
+  }
+
+  @Test
+  public void testToString() {
+    Prt printInstruction = new Prt(0);
+    assertEquals(InstructionFactory.INST_NAME_PRT, printInstruction.toString());
   }
 }

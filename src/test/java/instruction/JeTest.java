@@ -1,5 +1,6 @@
 package instruction;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -26,7 +27,7 @@ public class JeTest {
     when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
 
     Je jeInstruction = new Je(operand);
-    jeInstruction._execute(null, mockRegistry, mockPC, null);
+    jeInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is called with the correct destination address
     verify(mockPC).jumpTo(destinationAddress);
@@ -47,9 +48,19 @@ public class JeTest {
     when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
 
     Je jeInstruction = new Je(operand);
-    jeInstruction._execute(null, mockRegistry, mockPC, null);
+    jeInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is never called since the conditions for jumping are not met
     verify(mockPC, never()).jumpTo(anyInt());
+  }
+
+  @Test
+  public void testToString() {
+    Je jumpOP1 = new Je(Registry.nameToIdx("OP1"));
+    Je jumpRES = new Je(Registry.nameToIdx("RES"));
+    Je jumpR3 = new Je(Registry.nameToIdx("R3"));
+    assertEquals(InstructionFactory.INST_NAME__JE + " (dst: OP1)", jumpOP1.toString());
+    assertEquals(InstructionFactory.INST_NAME__JE + " (dst: RES)", jumpRES.toString());
+    assertEquals(InstructionFactory.INST_NAME__JE + " (dst: R3)", jumpR3.toString());
   }
 }

@@ -19,4 +19,9 @@ public class St extends Instruction {
     int dst = mem.getValueAt(pc.next());
     mem.setValueAt(dst, value);
   }
+
+  @Override
+  protected String printOperand() {
+    return String.format("(src: %s)", Registry.idxToName(operand));
+  }
 }

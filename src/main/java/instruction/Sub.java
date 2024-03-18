@@ -18,4 +18,9 @@ public class Sub extends Instruction {
     int result = (int) (a - b);
     reg.setRegister("RES", result);
   }
+
+  @Override
+  protected String printOperand() {
+    return "";
+  }
 }

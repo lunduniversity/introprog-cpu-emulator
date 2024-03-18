@@ -34,9 +34,8 @@ public class Mov extends Instruction {
               .replace(" ", "0"));
     }
 
-    int src = mem.getValueAt(pc.next());
+    int value = getSrcValue(srcType, mem, reg, pc);
     int dst = mem.getValueAt(pc.next());
-    int value = getSrcValue(srcType, src, mem, reg);
 
     if (destType == 0b10) {
       mem.setValueAt(dst, value);
@@ -45,7 +44,9 @@ public class Mov extends Instruction {
     }
   }
 
-  private int getSrcValue(int srcType, int src, Memory mem, Registry reg) {
+  private int getSrcValue(int srcType, Memory mem, Registry reg, ProgramCounter pc) {
+    int srcIdx = pc.next();
+    int src = mem.getValueAt(srcIdx);
     if (srcType == 0b01) {
       int value = reg.getRegister(src);
       reg.setRegister(src, 0);
@@ -55,6 +56,12 @@ public class Mov extends Instruction {
       mem.setValueAt(src, 0);
       return value;
     }
+    mem.setValueAt(srcIdx, 0);
     return src;
+  }
+
+  @Override
+  protected String printOperand() {
+    return String.format("(%s | %s)", parseAddrMode(operand >> 2), parseAddrMode(operand));
   }
 }

@@ -15,4 +15,9 @@ public class Ld extends Instruction {
   protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     reg.setRegister(operand, mem.getValueAt(pc.next()));
   }
+
+  @Override
+  protected String printOperand() {
+    return String.format("(dst: %s)", Registry.idxToName(operand));
+  }
 }

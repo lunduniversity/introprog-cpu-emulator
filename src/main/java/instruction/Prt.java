@@ -18,4 +18,9 @@ public class Prt extends Instruction {
     io.print(value);
     pc.next();
   }
+
+  @Override
+  protected String printOperand() {
+    return "";
+  }
 }

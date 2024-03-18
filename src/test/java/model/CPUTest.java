@@ -72,4 +72,38 @@ public class CPUTest {
 
     assertThrows(IllegalStateException.class, () -> cpu.run());
   }
+
+  @Test
+  public void testRunDetectsInfiniteLoop() {
+    when(pc.isHalted())
+        .thenReturn(false, false, false, false, false, false, false, false, false, false);
+    when(pc.getCurrentIndex()).thenReturn(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    when(memory.getValueAt(any(int.class)))
+        .thenReturn(InstructionFactory.INST_ADD); // Example instruction
+    Instruction mockInstruction = mock(Instruction.class);
+    when(factory.createInstruction(InstructionFactory.INST_ADD)).thenReturn(mockInstruction);
+
+    assertThrows(IllegalStateException.class, () -> cpu.run());
+  }
+
+  @Test
+  public void testResetResetsProgramCounterAndRegistry() {
+    Registry reg = cpu.getRegistry();
+    for (int i = 0; i < Registry.NUM_REGISTERS; i++) {
+      reg.setRegister(i, i + 1);
+    }
+    cpu.reset();
+    verify(pc, times(1)).reset();
+    for (int i = 0; i < Registry.NUM_REGISTERS; i++) {
+      assert reg.getRegister(i) == 0;
+    }
+  }
+
+  @Test
+  public void testAddRegistryListener() {
+    StorageListener listener = mock(StorageListener.class);
+    cpu.addRegistryListener(listener);
+    cpu.getRegistry().setRegister(5, 12);
+    verify(listener, times(1)).onMemoryChanged(5, 12);
+  }
 }

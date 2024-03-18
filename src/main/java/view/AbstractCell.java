@@ -1,6 +1,6 @@
 package view;
 
-import instruction.InstructionPrettyPrinter;
+import instruction.InstructionFactory;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.FocusAdapter;
@@ -43,6 +43,7 @@ public abstract class AbstractCell extends JPanel {
   private CellListener listener;
 
   private int currentValue = 0;
+  private InstructionFactory factory = new InstructionFactory();
 
   /** Create the panel. */
   public AbstractCell(String label, CellListener listener, CellNav cellNav) {
@@ -185,7 +186,7 @@ public abstract class AbstractCell extends JPanel {
     // (0-31 are control characters, 32-126 are printable ascii characters, 127 is DEL)
     if (value >= 32 && value <= 126) lblAscii.setText(Character.toString((char) value));
     else lblAscii.setText("--");
-    lblInstruction.setText(InstructionPrettyPrinter.prettyPrint(value));
+    lblInstruction.setText(factory.createInstruction(value).toString());
   }
 
   private static String hex(int value) {

@@ -1,5 +1,6 @@
 package instruction;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -54,7 +55,7 @@ public class PrLTest {
     // Execute the instruction. Note: This prints one character at a time, so we need to call it
     // until pc.next() is called.
     for (int i = 0; i < message.length(); i++) {
-      printLoopInstr._execute(mockMemory, mockRegistry, mockPC, mockIO);
+      printLoopInstr.execute(mockMemory, mockRegistry, mockPC, mockIO);
     }
 
     for (int i = 0; i < message.length(); i++) {
@@ -68,5 +69,11 @@ public class PrLTest {
 
     // Verify that next() is called on the program counter after the last character is printed
     verify(mockPC, times(1)).next();
+  }
+
+  @Test
+  public void testToString() {
+    PrL printLoopInstr = new PrL(0);
+    assertEquals(InstructionFactory.INST_NAME_PRL, printLoopInstr.toString());
   }
 }
