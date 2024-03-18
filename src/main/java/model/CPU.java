@@ -36,6 +36,7 @@ public class CPU {
     }
     int prevIdx = -1;
     int stuckCounter = 0;
+    int totalStepCounter = 0;
     while (!pc.isHalted()) {
       if (pc.getCurrentIndex() == prevIdx) {
         stuckCounter++;
@@ -46,8 +47,13 @@ public class CPU {
         prevIdx = pc.getCurrentIndex();
         stuckCounter = 0;
       }
+      if (totalStepCounter > 1000) {
+        throw new IllegalStateException(
+            "Possible infinite loop detected. Aborted after 1000 steps.");
+      }
       int value = memory.getValueAt(pc.getCurrentIndex());
       factory.createInstruction(value).execute(memory, registry, pc, io);
+      totalStepCounter++;
     }
   }
 

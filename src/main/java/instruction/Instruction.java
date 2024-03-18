@@ -59,4 +59,8 @@ public abstract class Instruction {
         return INVALID_ADDR_TYPE;
     }
   }
+
+  protected String toBinaryString(int value, int length) {
+    return String.format("%" + length + "s", Integer.toBinaryString(value)).replace(' ', '0');
+  }
 }

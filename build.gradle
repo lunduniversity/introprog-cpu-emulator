@@ -77,3 +77,15 @@ tasks.withType(Test) {
         }
     }
 }
+
+// Create a FAT JAR including all dependencies
+jar {
+    manifest {
+        attributes 'Main-Class': 'view.Main'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    // Specify how to handle duplicate entries
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

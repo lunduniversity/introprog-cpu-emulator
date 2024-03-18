@@ -53,8 +53,8 @@ public class ComputerUI {
   private Register[] regCells;
   private Register pcCell;
   private int programCounterFocusIdx;
-  private JLabel lblPrintOutput;
-  private JLabel lblErrorMessage;
+  private JEditorPane lblPrintOutput;
+  private JEditorPane lblErrorMessage;
   private JScrollPane scrollPane;
 
   private final Memory memory;
@@ -361,14 +361,24 @@ public class ComputerUI {
       // Small space
       controlPanel.add(Box.createRigidArea(new Dimension(10, 10)), "cell 0 2");
 
-      // Print output textbox
+      // Print output textbox  UwdUF4M=:2:hA==:15:gw==
       {
         JLabel lblOutput = new JLabel("Output:");
-        controlPanel.add(lblOutput, "cell 0 3,right");
+        controlPanel.add(lblOutput, "cell 0 3, top, right");
 
-        lblPrintOutput = new JLabel();
-        lblPrintOutput.setOpaque(true);
-        controlPanel.add(lblPrintOutput, "cell 1 3 3 1, grow");
+        lblPrintOutput = new JEditorPane();
+        lblPrintOutput.setOpaque(false);
+        lblPrintOutput.setEditable(false);
+        lblPrintOutput.setMargin(new Insets(0, 0, 0, 0));
+        lblPrintOutput.setFont(lblOutput.getFont());
+        lblPrintOutput.setBorder(null);
+        JScrollPane outputScroll =
+            new JScrollPane(
+                lblPrintOutput,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        outputScroll.setMaximumSize(new Dimension(600, 150));
+        controlPanel.add(outputScroll, "cell 1 3 2 1, grow, top, left");
 
         io.addListener((value) -> handlePrint(value));
       }
@@ -376,11 +386,21 @@ public class ComputerUI {
       // Error message textbox
       {
         JLabel lblError = new JLabel("Error:");
-        controlPanel.add(lblError, "cell 0 4,right");
+        controlPanel.add(lblError, "cell 0 4, top, right");
 
-        lblErrorMessage = new JLabel("");
-        lblErrorMessage.setOpaque(true);
-        controlPanel.add(lblErrorMessage, "cell 1 4 3 1, grow");
+        lblErrorMessage = new JEditorPane();
+        lblErrorMessage.setOpaque(false);
+        lblErrorMessage.setEditable(false);
+        lblErrorMessage.setMargin(new Insets(0, 0, 0, 0));
+        lblErrorMessage.setFont(lblError.getFont());
+        lblErrorMessage.setBorder(null);
+        JScrollPane errorScroll =
+            new JScrollPane(
+                lblErrorMessage,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        errorScroll.setMaximumSize(new Dimension(600, 150));
+        controlPanel.add(errorScroll, "cell 1 4 2 1, grow, top, left");
       }
 
       // Small space
@@ -586,6 +606,7 @@ public class ComputerUI {
   private void handlePrint(int value) {
     // Treat value as ASCII character and appen to print label
     char c = (char) (value & 0xFF);
+    System.out.println("Printing: " + (char) value);
     lblPrintOutput.setText(lblPrintOutput.getText() + c);
   }
 

@@ -1,5 +1,10 @@
 package instruction;
 
+import io.IO;
+import model.Memory;
+import model.ProgramCounter;
+import model.Registry;
+
 public class InstructionFactory {
   public static final int INST_ADD = 0x10; // Addition
   public static final int INST_SUB = 0x20; // Subtraction
@@ -80,7 +85,29 @@ public class InstructionFactory {
       case INST_HLT:
         return new Hlt(operand);
       default:
-        throw new IllegalArgumentException(String.format("Unknown instruction: 0x%02X", code));
+        return new NullInstruction(opcode);
+        // throw new IllegalArgumentException(String.format("Unknown instruction: 0x%02X", code));
+    }
+  }
+
+  private static class NullInstruction extends Instruction {
+
+    private int opcode;
+
+    public NullInstruction(int opcode) {
+      super("--", 0);
+      this.opcode = opcode >> 4;
+    }
+
+    @Override
+    protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+      throw new UnsupportedOperationException(
+          String.format("Unknown instruction: %s", toBinaryString(opcode, 4)));
+    }
+
+    @Override
+    protected String printOperand() {
+      return "";
     }
   }
 }

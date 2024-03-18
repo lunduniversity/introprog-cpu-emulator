@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
+import model.ProgramCounter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -129,15 +131,16 @@ public class InstructionFactoryTest {
 
   @Test
   public void testCreateInstructionWithInvalidCode() {
+    // Factory should return a null-object for invalid codes.
+    // The null objects should be printable but have no functionality.
     int invalidCode = 0x0F; // Assuming 0x0F is not defined as an instruction
-    Exception exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> factory.createInstruction(invalidCode),
-            "Unknown instruction code should throw IllegalArgumentException.");
-    assertEquals(
-        "Unknown instruction: 0x0F",
-        exception.getMessage(),
-        "Exception message should match for unknown instruction codes.");
+    Instruction invalidInstruction = factory.createInstruction(invalidCode);
+    assertEquals("--", invalidInstruction.toString(), "Invalid instruction should be printable.");
+
+    // If executed, null-object should increment the PC, but throw an exception.
+    ProgramCounter mockPC = mock(ProgramCounter.class);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> invalidInstruction.execute(null, null, mockPC, null));
   }
 }

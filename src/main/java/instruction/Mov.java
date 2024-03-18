@@ -25,13 +25,11 @@ public class Mov extends Instruction {
     // check for errors first
     if (srcType != 0b00 && srcType != 0b01 && srcType != 0b10) {
       throw new IllegalArgumentException(
-          String.format("Invalid source type: %2s", Integer.toBinaryString(srcType))
-              .replace(" ", "0"));
+          String.format("Invalid source type: %s", toBinaryString(srcType, 2)));
     }
     if (destType != 0b10 && destType != 0b01) {
       throw new IllegalArgumentException(
-          String.format("Invalid destination type: %2s", Integer.toBinaryString(destType))
-              .replace(" ", "0"));
+          String.format("Invalid destination type: %s", toBinaryString(destType, 2)));
     }
 
     int value = getSrcValue(srcType, mem, reg, pc);

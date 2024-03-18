@@ -24,11 +24,12 @@ public class PrL extends Instruction {
 
     int character = mem.getValueAt(start);
     reg.setRegister("PRT", character);
-    reg.setRegister("OP1", start + 1);
     io.print(character);
 
     if (start == end) {
       pc.next();
+    } else {
+      reg.setRegister("OP1", start + 1);
     }
   }
 
