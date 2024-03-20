@@ -11,4 +11,8 @@ public interface Memory extends ObservableStorage {
   String exportAsBase64();
 
   void importFromBase64(String base64);
+
+  void moveCellsUp(int startIdx, int endIdx);
+
+  void moveCellsDown(int startIdx, int endIdx);
 }

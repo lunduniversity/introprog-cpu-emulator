@@ -62,6 +62,7 @@ public class ComputerUI {
   private final CPU cpu;
   private final Registry registry;
   private final ObservableIO io;
+  private final CellSelecter selecter;
 
   public ComputerUI(Memory memory, ProgramCounter pc, CPU cpu, ObservableIO io) {
     this.memory = memory;
@@ -69,6 +70,7 @@ public class ComputerUI {
     this.cpu = cpu;
     this.registry = cpu.getRegistry();
     this.io = io;
+    this.selecter = new CellSelecter();
 
     this.programCounterFocusIdx = pc.getCurrentIndex();
     initialize();
@@ -172,13 +174,33 @@ public class ComputerUI {
                 value -> memory.setValueAt(idx, value),
                 new CellNav() {
                   @Override
-                  public void prevCell(int xpos) {
-                    memCells[(idx - 1 + memory.size()) % memory.size()].focus(xpos);
+                  public void prevCell(int xpos, boolean shiftDown) {
+                    SwingUtilities.invokeLater(
+                        () -> {
+                          int newIdx = (idx - 1 + memory.size()) % memory.size();
+                          if (shiftDown) {
+                            selecter.addSelectedCell(newIdx);
+                          } else {
+                            selecter.forEachSelected(i -> memCells[i].deselect());
+                            selecter.setSelectedCell(newIdx);
+                          }
+                          memCells[newIdx].focus(xpos).select();
+                        });
                   }
 
                   @Override
-                  public void nextCell(int xpos) {
-                    memCells[(idx + 1) % memory.size()].focus(xpos);
+                  public void nextCell(int xpos, boolean shiftDown) {
+                    SwingUtilities.invokeLater(
+                        () -> {
+                          int newIdx = (idx + 1 + memory.size()) % memory.size();
+                          if (shiftDown) {
+                            selecter.addSelectedCell(newIdx);
+                          } else {
+                            selecter.forEachSelected(i -> memCells[i].deselect());
+                            selecter.setSelectedCell(newIdx);
+                          }
+                          memCells[newIdx].focus(xpos).select();
+                        });
                   }
                 });
         memoryCellsPanel.add(memCells[i]);
@@ -208,12 +230,12 @@ public class ComputerUI {
                 value -> registry.setRegister(idx, value),
                 new CellNav() {
                   @Override
-                  public void prevCell(int xpos) {
+                  public void prevCell(int xpos, boolean shiftDown) {
                     regCells[(idx - 1 + 6) % (6)].focus(xpos);
                   }
 
                   @Override
-                  public void nextCell(int xpos) {
+                  public void nextCell(int xpos, boolean shiftDown) {
                     regCells[(idx + 1) % (6)].focus(xpos);
                   }
                 });
@@ -234,10 +256,10 @@ public class ComputerUI {
               value -> pc.setCurrentIndex(value),
               new CellNav() {
                 @Override
-                public void prevCell(int xpos) {}
+                public void prevCell(int xpos, boolean shiftDown) {}
 
                 @Override
-                public void nextCell(int xpos) {}
+                public void nextCell(int xpos, boolean shiftDown) {}
               });
       registerPanel.add(pcCell, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS + 1));
 

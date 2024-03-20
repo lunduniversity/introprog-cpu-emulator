@@ -135,4 +135,30 @@ public class ByteStorage implements Memory {
       }
     }
   }
+
+  @Override
+  public void moveCellsUp(int startIdx, int endIdx) {
+    if (startIdx < 0 || startIdx >= store.length || endIdx < 0 || endIdx >= store.length) {
+      throw new IllegalArgumentException("Invalid index");
+    }
+    for (int i = startIdx; i < endIdx; i++) {
+      store[i] = store[i + 1];
+      notifyListeners(i, store[i]);
+    }
+    store[endIdx] = 0;
+    notifyListeners(endIdx, 0);
+  }
+
+  @Override
+  public void moveCellsDown(int startIdx, int endIdx) {
+    if (startIdx < 0 || startIdx >= store.length || endIdx < 0 || endIdx >= store.length) {
+      throw new IllegalArgumentException("Invalid index");
+    }
+    for (int i = endIdx; i > startIdx; i--) {
+      store[i] = store[i - 1];
+      notifyListeners(i, store[i]);
+    }
+    store[startIdx] = 0;
+    notifyListeners(startIdx, 0);
+  }
 }

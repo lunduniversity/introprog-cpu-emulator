@@ -24,11 +24,12 @@ public abstract class AbstractCell extends JPanel {
   private static final long serialVersionUID = 1L;
 
   private static final Border PC_FOCUS_BORDER = BorderFactory.createLineBorder(Color.MAGENTA, 2);
-
   private static final Border PC_NO_FOCUS_BORDER =
       BorderFactory.createEmptyBorder(2, 2, 2, 2); // UIManager.getBorder("TextField.border");
 
-  private static final Color HIGHLIGHT_COLOR = new Color(255, 255, 200);
+  private static final Color DEFAULT_BG_COLOR = UIManager.getColor("TextField.background");
+  private static final Color HIGHLIGHT_BG_COLOR = new Color(255, 255, 200);
+  private static final Color SELECT_BG_COLOR = new Color(215, 255, 220);
 
   private static HexFormat hexFormat = HexFormat.of().withUpperCase();
 
@@ -41,9 +42,10 @@ public abstract class AbstractCell extends JPanel {
   private JLabel lblInstruction;
 
   private CellListener listener;
+  private InstructionFactory factory = new InstructionFactory();
 
   private int currentValue = 0;
-  private InstructionFactory factory = new InstructionFactory();
+  private boolean isSelected = false;
 
   /** Create the panel. */
   public AbstractCell(String label, CellListener listener, CellNav cellNav) {
@@ -101,13 +103,13 @@ public abstract class AbstractCell extends JPanel {
                 bits[idx + 1].requestFocusInWindow();
               }
               if (e.getExtendedKeyCode() == KeyEvent.VK_UP) {
-                cellNav.prevCell(idx);
+                cellNav.prevCell(idx, e.isShiftDown());
               }
               if (e.getExtendedKeyCode() == KeyEvent.VK_DOWN) {
-                cellNav.nextCell(idx);
+                cellNav.nextCell(idx, e.isShiftDown());
               }
               if (e.getExtendedKeyCode() == KeyEvent.VK_ENTER) {
-                cellNav.nextCell(0);
+                cellNav.nextCell(0, false);
               }
             }
           });
@@ -207,9 +209,10 @@ public abstract class AbstractCell extends JPanel {
     return String.format("%02d", value);
   }
 
-  public void focus(int xpos) {
+  public AbstractCell focus(int xpos) {
     bits[xpos].requestFocusInWindow();
     bits[xpos].setCaretPosition(0);
+    return this;
   }
 
   public void setValue(int value) {
@@ -224,16 +227,38 @@ public abstract class AbstractCell extends JPanel {
     return currentValue;
   }
 
-  public void highlight() {
+  public AbstractCell highlight() {
     for (JTextField bit : bits) {
-      bit.setBackground(HIGHLIGHT_COLOR);
+      bit.setBackground(HIGHLIGHT_BG_COLOR);
     }
+    return this;
   }
 
-  public void unhighlight() {
+  public AbstractCell unhighlight() {
     for (JTextField bit : bits) {
-      bit.setBackground(UIManager.getColor("TextField.background"));
+      bit.setBackground(DEFAULT_BG_COLOR);
     }
+    return this;
+  }
+
+  public AbstractCell select() {
+    if (!isSelected) {
+      for (JTextField bit : bits) {
+        bit.setBackground(SELECT_BG_COLOR);
+      }
+      isSelected = true;
+    }
+    return this;
+  }
+
+  public AbstractCell deselect() {
+    if (isSelected) {
+      for (JTextField bit : bits) {
+        bit.setBackground(DEFAULT_BG_COLOR);
+      }
+      isSelected = false;
+    }
+    return this;
   }
 
   public void setProgramCounterFocus() {
