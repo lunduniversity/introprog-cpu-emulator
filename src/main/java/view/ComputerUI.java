@@ -1,5 +1,6 @@
 package view;
 
+import instruction.Instruction;
 import instruction.InstructionFactory;
 import io.ObservableIO;
 import java.awt.Color;
@@ -45,6 +46,10 @@ import view.SnapshotDialog.Mode;
 public class ComputerUI {
 
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(255, 255, 200);
+
+  private static final Border INSTR_FOCUS_BORDER = BorderFactory.createLineBorder(Color.MAGENTA, 2);
+
+  private static final Border INSTR_NO_FOCUS_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
 
   private static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -483,69 +488,80 @@ public class ComputerUI {
               InstructionFactory.INST_NAME_ADD,
               InstructionFactory.INST_ADD,
               "--",
-              "Add OP1 and OP2, put result in RES.");
+              "Add OP1 and OP2, put result in RES.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_SUB,
               InstructionFactory.INST_SUB,
               "--",
-              "Subtract OP2 from OP1, put result in RES.");
+              "Subtract OP2 from OP1, put result in RES.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_CPY,
               InstructionFactory.INST_CPY,
               "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
               "Reads the next two memory values (src and dst) and copies <u>src</u> to"
-                  + " <u>dst</u>.");
+                  + " <u>dst</u>.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_MOV,
               InstructionFactory.INST_MOV,
               "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
               "Reads the next two memory values (src and dst) and moves <u>src</u> to <u>dst</u>."
-                  + " Afterwards, <u>src</u> is set to 0.");
+                  + " Afterwards, <u>src</u> is set to 0.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME__LD,
               InstructionFactory.INST__LD,
               "Specifies destination register.",
-              "Reads next memory <b>value</b> and loads it into a register.");
+              "Reads next memory <b>value</b> and loads it into a register.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_LDA,
               InstructionFactory.INST_LDA,
               "Specifies destination register.",
-              "Reads next memory <b>address</b> and loads the addressed value into a register.");
+              "Reads next memory <b>address</b> and loads the addressed value into a register.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME__ST,
               InstructionFactory.INST__ST,
               "Specifies source regsiter.",
-              "Reads next memory <b>address</b> and stores register value at it.");
+              "Reads next memory <b>address</b> and stores register value at it.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_JMP,
               InstructionFactory.INST_JMP,
               "Specifies source register.",
-              "Jumps to address given by a register.");
+              "Jumps to address given by a register.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME__JE,
               InstructionFactory.INST__JE,
               "Specifies source register.",
-              "Jumps to address given by a register IF OP1 and OP2 are equal.");
+              "Jumps to address given by a register IF OP1 and OP2 are equal.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_JNE,
               InstructionFactory.INST_JNE,
               "Specifies source register.",
-              "Jumps to address given by a register IF OP1 and OP2 are NOT equal.");
+              "Jumps to address given by a register IF OP1 and OP2 are NOT equal.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_PRT,
               InstructionFactory.INST_PRT,
               "--",
-              "Reads value in PRT and sends to I/O output channel.");
+              "Reads value in PRT and sends to I/O output channel.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_PRL,
@@ -553,13 +569,15 @@ public class ComputerUI {
               "--",
               "Reads memory address from OP1, loads value at that address into PRT and sends it to"
                   + " I/O output channel, and increments OP1. Increments PC only if OP1 and OP2 are"
-                  + " equal.");
+                  + " equal.",
+              pc);
           appendToTable(
               table,
               InstructionFactory.INST_NAME_HLT,
               InstructionFactory.INST_HLT,
               "--",
-              "Halts PC, thus terminating program successfully.");
+              "Halts PC, thus terminating program successfully.",
+              pc);
           table.add(new JSeparator(), "growx, span 4 1, gapy 3");
         }
 
@@ -658,10 +676,20 @@ public class ComputerUI {
     return cellPanel;
   }
 
-  private void appendToTable(JPanel table, String instr, int opcode, String operand, String desc) {
+  private void appendToTable(
+      JPanel table, String instr, int opcode, String operand, String desc, ProgramCounter pc) {
     JLabel lblInstr = new JLabel(instr);
-    String bin = Integer.toBinaryString((opcode >> 4) & 0xF);
-    String codeStr = String.format("%4s", bin).replace(' ', '0');
+    lblInstr.setBorder(INSTR_NO_FOCUS_BORDER);
+    pc.addListener(
+        pcValue -> {
+          if (pcValue >= 0 && pcValue < memory.size()) {
+            lblInstr.setBorder(
+                (memory.getValueAt(pcValue) & 0xF0) == opcode
+                    ? INSTR_FOCUS_BORDER
+                    : INSTR_NO_FOCUS_BORDER);
+          }
+        });
+    String codeStr = Instruction.toBinaryString(opcode >> 4, 4);
     JLabel lblOpcode = new JLabel(codeStr);
 
     String html = "<html>%s</html>";
@@ -686,7 +714,7 @@ public class ComputerUI {
     lblDesc.setMargin(new Insets(0, 0, 0, 0));
 
     table.add(new JSeparator(), "growx, span 4 1, gapy 3");
-    table.add(lblInstr, "aligny top, gaptop 2, gapx 2");
+    table.add(lblInstr, "aligny top, gap 0");
     table.add(lblOpcode, "aligny top, gaptop 2, gapx 2");
     table.add(lblOperand, "growx, shrinky, aligny top, gapx 2");
     table.add(lblDesc, "growx, shrinky, aligny top, gapx 2");
