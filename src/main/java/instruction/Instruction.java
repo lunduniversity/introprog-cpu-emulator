@@ -61,6 +61,19 @@ public abstract class Instruction {
   }
 
   public static String toBinaryString(int value, int length) {
-    return String.format("%" + length + "s", Integer.toBinaryString(value)).replace(' ', '0');
+    return toBinaryString(value, length, -1);
+  }
+
+  public static String toBinaryString(int value, int length, int groupSize) {
+    String bin = String.format("%" + length + "s", Integer.toBinaryString(value)).replace(' ', '0');
+    if (groupSize > 1 && bin.length() > groupSize) {
+      // Insert spaces every groupSize characters
+      StringBuilder sb = new StringBuilder(bin);
+      for (int i = groupSize; i < sb.length(); i += groupSize + 1) {
+        sb.insert(i, ' ');
+      }
+      return sb.toString();
+    }
+    return bin;
   }
 }

@@ -22,10 +22,6 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -41,7 +37,6 @@ import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
 import net.miginfocom.swing.MigLayout;
-import view.SnapshotDialog.Mode;
 
 public class ComputerUI {
 
@@ -116,51 +111,7 @@ public class ComputerUI {
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     // frame.setResizable(false);
 
-    // Add menu bar
-    JMenuBar menuBar = new JMenuBar();
-    JMenu myMenu = new JMenu("Tools");
-    menuBar.add(myMenu);
-
-    // Add menu items
-    JMenuItem mnuExport = new JMenuItem("Export memory snapshot");
-    JMenuItem mnuImport = new JMenuItem("Import memory snapshot");
-    JMenuItem mnuReset = new JMenuItem("Reset all data");
-    myMenu.add(mnuExport);
-    myMenu.add(mnuImport);
-    myMenu.addSeparator();
-    myMenu.add(mnuReset);
-
-    // Add action listeners to the buttons  UBJRF8DQ:12:SEVMTE8h
-    mnuExport.addActionListener(
-        (e) -> {
-          String memorySnapdhot = memory.exportAsBase64();
-          if (memorySnapdhot.isEmpty()) {
-            memorySnapdhot = "(Memory is empty)";
-          }
-          SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
-          dialog.setText(memorySnapdhot);
-          dialog.setVisible(true);
-        });
-    mnuImport.addActionListener(
-        (e) -> {
-          SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
-          dialog.setVisible(true);
-          if (dialog.isConfirmed()) {
-            String memorySnapshot = dialog.getText();
-            try {
-              memory.importFromBase64(memorySnapshot);
-            } catch (IllegalArgumentException ex) {
-              JOptionPane.showMessageDialog(
-                  frame,
-                  "The given input has the wrong format, and cannot be imported.",
-                  "Invalid memory snapdhot",
-                  JOptionPane.WARNING_MESSAGE);
-            }
-          }
-        });
-    mnuReset.addActionListener((e) -> handleResetAllData());
-
-    frame.setJMenuBar(menuBar);
+    frame.setJMenuBar(new ComputerMenu(memory, this));
 
     frame.getContentPane().setLayout(new MigLayout("", "[][][][]", "[][][][][][]"));
 
@@ -612,13 +563,17 @@ public class ComputerUI {
     lblErrorMessage.setBackground(UIManager.getColor("Panel.background"));
   }
 
-  private void handleResetAllData() {
+  void handleResetAllData() {
     cpu.reset();
     memory.reset();
     memCells[0].focus(0);
 
     executor.schedule(
         () -> SwingUtilities.invokeLater(() -> resetCellColors()), 700, TimeUnit.MILLISECONDS);
+  }
+
+  JFrame getFrame() {
+    return frame;
   }
 
   private void handlePrint(int value) {

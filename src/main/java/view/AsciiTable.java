@@ -16,39 +16,53 @@ public class AsciiTable extends JFrame {
   private static final Font bold = new Font("Monospaced", Font.BOLD, 14);
 
   public AsciiTable() {
-    setTitle("ASCII Table Display");
-    setDefaultCloseOperation(
-        JFrame.DISPOSE_ON_CLOSE); // Close the window without terminating the app
-    setLayout(new MigLayout("wrap 1", "[grow,fill]", "[grow,fill]"));
+    setTitle("ASCII Table");
+    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-    JPanel asciiPanel = new JPanel(new MigLayout("", "[]10[]", "[]"));
+    JPanel contentPane = new JPanel();
+    contentPane.setLayout(new MigLayout("gap 10 0, insets 0", "[grow,shrink]", "[shrink][grow]"));
+    JScrollPane scrollPane = new JScrollPane(contentPane);
+    scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+    scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+    add(scrollPane);
 
-    asciiPanel.add(new JSeparator(SwingConstants.VERTICAL), "growx");
+    JLabel notice =
+        new JLabel(
+            "Note that characters 0-31 and 127 are control characters and thus not printable.",
+            SwingConstants.CENTER);
+    notice.setFont(notice.getFont().deriveFont(14f));
+    contentPane.add(notice, "wrap, gapleft 20, gaptop 10");
+
+    JPanel asciiPanel = new JPanel(new MigLayout("", "[]", "[]"));
+
+    asciiPanel.add(new JSeparator(SwingConstants.VERTICAL), "growy, gaptop 30");
     for (int col = 0; col < 4; col++) {
-      JPanel columnPanel = new JPanel(new MigLayout("wrap 1, gap 0", "[grow,fill]", "[grow,fill]"));
+      JPanel columnPanel =
+          new JPanel(
+              new MigLayout(
+                  "wrap 4, gap 10 3", "[sg symbol][sg hex][sg dec][sg bin]", "[grow,fill]"));
+
+      // Add column headers
+      columnPanel.add(lbl("Char", true), "al c");
+      columnPanel.add(lbl("Hex", true), "al r");
+      columnPanel.add(lbl("Dec", true), "al r");
+      columnPanel.add(lbl("Bin", true), "al r");
 
       for (int row = 0; row < 32; row++) {
         int asciiCode = col * 32 + row;
-
-        JPanel charPanel = new JPanel(new MigLayout("insets 0", "[20px][25px][25px][40px]"));
-        charPanel.add(lbl(String.valueOf((char) asciiCode), true), "align right");
-        charPanel.add(lbl(String.format("0x%02X", asciiCode)), "align right");
-        charPanel.add(lbl(String.valueOf(asciiCode)), "align right");
-        charPanel.add(lbl(Instruction.toBinaryString(asciiCode, 8)), "align right");
-
-        columnPanel.add(charPanel, "growx");
+        columnPanel.add(lbl(String.valueOf((char) asciiCode), true), "al c");
+        columnPanel.add(lbl(String.format("0x%02X", asciiCode)), "al r");
+        columnPanel.add(lbl(String.valueOf(asciiCode)), "al r");
+        columnPanel.add(lbl(Instruction.toBinaryString(asciiCode, 8, 4)), "al r");
       }
 
       asciiPanel.add(columnPanel, "grow");
-      asciiPanel.add(new JSeparator(SwingConstants.VERTICAL), "growx");
+      asciiPanel.add(new JSeparator(SwingConstants.VERTICAL), "growy, gaptop 30");
     }
-
-    JScrollPane scrollPane = new JScrollPane(asciiPanel);
-    add(scrollPane);
+    contentPane.add(asciiPanel, "grow");
 
     pack(); // Adjusts size to contents
     setLocationRelativeTo(null); // Center window
-    setResizable(false);
     setVisible(true);
   }
 
@@ -59,6 +73,7 @@ public class AsciiTable extends JFrame {
   private JLabel lbl(String text, boolean bold) {
     JLabel label = new JLabel(text);
     label.setFont(bold ? AsciiTable.bold : AsciiTable.plain);
+    label.setOpaque(true);
     return label;
   }
 
