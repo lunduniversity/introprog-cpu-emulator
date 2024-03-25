@@ -1,12 +1,7 @@
 package view;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
+import java.awt.event.ItemEvent;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -23,8 +18,8 @@ public class ComputerMenu extends JMenuBar {
   private final Memory memory;
   private final CellSelecter cellSelecter;
 
-  private final InputMap inputMap;
-  private final ActionMap actionMap;
+  // private final InputMap inputMap;
+  // private final ActionMap actionMap;
 
   public ComputerMenu(ComputerUI ui, Memory memory, CellSelecter cellSelecter) {
 
@@ -33,8 +28,8 @@ public class ComputerMenu extends JMenuBar {
     this.memory = memory;
     this.cellSelecter = cellSelecter;
 
-    this.inputMap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    this.actionMap = frame.getRootPane().getActionMap();
+    // this.inputMap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    // this.actionMap = frame.getRootPane().getActionMap();
 
     JMenu menuFile = new JMenu("File");
     JMenu menuEdit = new JMenu("Edit");
@@ -66,8 +61,8 @@ public class ComputerMenu extends JMenuBar {
     // Edit menu items
     JMenuItem itmUndo = new JMenuItem("Undo"); // ctrl + z
     JMenuItem itmRedo = new JMenuItem("Redo"); // ctrl + y
-    JMenuItem itmMoveUp = new JMenuItem("Move selection up"); // alt + up
-    JMenuItem itmMoveDown = new JMenuItem("Move selection down"); // alt + down
+    JMenuItem itmMoveUp = new JMenuItem("Move selected cells up"); // alt + up
+    JMenuItem itmMoveDown = new JMenuItem("Move selected cells down"); // alt + down
     JMenuItem itmCopy = new JMenuItem("Copy selection to clipboard"); // ctrl + c
     JMenuItem itmPaste = new JMenuItem("Paste from clipboard"); // ctrl + v
     JMenuItem itmClear = new JMenuItem("Clear selected cells"); // ctrl + delete
@@ -96,12 +91,17 @@ public class ComputerMenu extends JMenuBar {
     // View menu items
 
     // Help menu items
-    JMenuItem itmAscii = new JCheckBoxMenuItem("Show ASCII Table");
+    JMenuItem itmAsciiTable = new JCheckBoxMenuItem("Show ASCII Table");
     JMenuItem itmInstructions = new JCheckBoxMenuItem("Show Instructions");
-    menuHelp.add(itmAscii);
+    menuHelp.add(itmAsciiTable);
     menuHelp.add(itmInstructions);
 
     // Add action listeners to the buttons
+
+    // File menu items
+    itmOpen.addActionListener(e -> {});
+    itmSave.addActionListener(e -> {});
+    itmSaveAs.addActionListener(e -> {});
     itmExport.addActionListener(
         (e) -> {
           String memorySnapdhot = memory.exportAsBase64();
@@ -129,155 +129,201 @@ public class ComputerMenu extends JMenuBar {
             }
           }
         });
+
+    // Edit menu items
     itmReset.addActionListener((e) -> ui.handleResetAllData());
+    itmUndo.addActionListener(e -> {});
+    itmRedo.addActionListener(e -> {});
+    itmMoveUp.addActionListener(e -> cellSelecter.moveCellsUp());
+    itmMoveDown.addActionListener(e -> cellSelecter.moveCellsDown());
+    itmCopy.addActionListener(e -> cellSelecter.copySelection());
+    itmPaste.addActionListener(e -> cellSelecter.pasteSelection());
+    itmClear.addActionListener(e -> cellSelecter.clearSelection());
+    itmDelete.addActionListener(e -> cellSelecter.deleteSelection());
+
+    // Select menu items
+    itmSelectUp.addActionListener(e -> {});
+    itmSelectDown.addActionListener(e -> {});
+    itmClearSelection.addActionListener(e -> {});
+
+    // View menu items
+    // none for now
+
+    // Help menu items
+    itmAsciiTable.addItemListener(
+        itemEvent -> {
+          ui.toggleAsciiTable(itemEvent.getStateChange() == ItemEvent.SELECTED);
+        });
+    itmInstructions.addItemListener(
+        itemEvent -> ui.toggleInstructions(itemEvent.getStateChange() == ItemEvent.SELECTED));
 
     // Bind actions
-    bind("open", KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK, _open());
-    bind("save", KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK, _save());
-    bind("saveAs", KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK, _saveAs());
-    bind("export", KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK, _export());
-    bind("import", KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK, _import());
-    bind("reset", KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK, _reset());
-    bind("undo", KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK, _undo());
-    bind("redo", KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK, _redo());
-    bind("moveUp", KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK, _moveUp());
-    bind("moveDown", KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK, _moveDown());
-    bind("copy", KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK, _copy());
-    bind("paste", KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, _paste());
-    bind("clear", KeyEvent.VK_DELETE, KeyEvent.CTRL_DOWN_MASK, _clear());
-    bind(
-        "delete",
-        KeyEvent.VK_DELETE,
-        KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK,
-        _delete());
-    bind("selectUp", KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, _selectUp());
-    bind("selectDown", KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, _selectDown());
-    bind("clearSelection", KeyEvent.VK_ESCAPE, _clearSelection());
-    bind("asciiTable", KeyEvent.VK_F1, _asciiTable());
-    bind("instructins", KeyEvent.VK_F2, _instructins());
+    // itmOpen.setAccelerator(bind("open", "ctrl O", _open()));
+    // itmSave.setAccelerator(bind("save", "ctrl S", _save()));
+    // itmSaveAs.setAccelerator(bind("saveAs", "ctrl shift S", _saveAs()));
+    // itmExport.setAccelerator(bind("export", "ctrl E", _export()));
+    // itmImport.setAccelerator(bind("import", "ctrl I", _import()));
+    // itmReset.setAccelerator(bind("reset", "ctrl R", _reset()));
+    // itmUndo.setAccelerator(bind("undo", "ctrl Z", _undo()));
+    // itmRedo.setAccelerator(bind("redo", "ctrl Y", _redo()));
+    // itmMoveUp.setAccelerator(bind("moveUp", "alt UP", _moveUp()));
+    // itmMoveDown.setAccelerator(bind("moveDown", "alt DOWN", _moveDown()));
+    // itmCopy.setAccelerator(bind("copy", "ctrl C", _copy()));
+    // itmPaste.setAccelerator(bind("paste", "ctrl V", _paste()));
+    // itmClear.setAccelerator(bind("clear", "ctrl DELETE", _clear()));
+    // itmDelete.setAccelerator(bind("delete", "ctrl shift DELETE", _delete()));
+    // itmSelectUp.setAccelerator(bind("selectUp", "shift UP", _selectUp()));
+    // itmSelectDown.setAccelerator(bind("selectDown", "shift DOWN", _selectDown()));
+    // itmClearSelection.setAccelerator(bind("clearSelection", "ESCAPE", _clearSelection()));
+    // itmAsciiTable.setAccelerator(bind("asciiTable", "F1", _asciiTable()));
+    // itmInstructions.setAccelerator(bind("instructins", "F2", _instructions()));
+
+    // Bind shortcut keys
+    itmOpen.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
+    itmSave.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
+    itmSaveAs.setAccelerator(KeyStroke.getKeyStroke("ctrl shift S"));
+    itmExport.setAccelerator(KeyStroke.getKeyStroke("ctrl E"));
+    itmImport.setAccelerator(KeyStroke.getKeyStroke("ctrl I"));
+    itmReset.setAccelerator(KeyStroke.getKeyStroke("ctrl R"));
+    itmUndo.setAccelerator(KeyStroke.getKeyStroke("ctrl Z"));
+    itmRedo.setAccelerator(KeyStroke.getKeyStroke("ctrl Y"));
+    itmMoveUp.setAccelerator(KeyStroke.getKeyStroke("alt UP"));
+    itmMoveDown.setAccelerator(KeyStroke.getKeyStroke("alt DOWN"));
+    itmCopy.setAccelerator(KeyStroke.getKeyStroke("ctrl C"));
+    itmPaste.setAccelerator(KeyStroke.getKeyStroke("ctrl V"));
+    itmClear.setAccelerator(KeyStroke.getKeyStroke("ctrl DELETE"));
+    itmDelete.setAccelerator(KeyStroke.getKeyStroke("ctrl shift DELETE"));
+    itmSelectUp.setAccelerator(KeyStroke.getKeyStroke("shift UP"));
+    itmSelectDown.setAccelerator(KeyStroke.getKeyStroke("shift DOWN"));
+    itmClearSelection.setAccelerator(KeyStroke.getKeyStroke("ESCAPE"));
+    itmAsciiTable.setAccelerator(KeyStroke.getKeyStroke("F1"));
+    itmInstructions.setAccelerator(KeyStroke.getKeyStroke("F2"));
   }
 
-  private void bind(String actionName, int keyCode, MenuAction action) {
-    bind(actionName, keyCode, 0, action);
-  }
+  // private KeyStroke bind(String actionName, String keyStrokeString, MenuAction action) {
+  //   KeyStroke keyStroke = KeyStroke.getKeyStroke(keyStrokeString);
+  //   inputMap.put(keyStroke, actionName);
+  //   actionMap.put(
+  //       actionName,
+  //       new AbstractAction() {
+  //         @Override
+  //         public void actionPerformed(ActionEvent e) {
+  //           action.execute();
+  //         }
+  //       });
+  //   return keyStroke;
+  // }
 
-  private void bind(String actionName, int keyCode, int modifiers, MenuAction action) {
-    KeyStroke keyStroke = KeyStroke.getKeyStroke(keyCode, modifiers);
-    inputMap.put(keyStroke, actionName);
-    actionMap.put(
-        actionName,
-        new AbstractAction() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-            action.execute();
-          }
-        });
-  }
+  // interface MenuAction {
+  //   void execute();
+  // }
 
-  interface MenuAction {
-    void execute();
-  }
+  // private MenuAction _open() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _open() {
-    return () -> {};
-  }
+  // private MenuAction _save() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _save() {
-    return () -> {};
-  }
+  // private MenuAction _saveAs() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _saveAs() {
-    return () -> {};
-  }
+  // private MenuAction _export() {
+  //   return () -> {
+  //     String memorySnapdhot = memory.exportAsBase64();
+  //     if (memorySnapdhot.isEmpty()) {
+  //       memorySnapdhot = "(Memory is empty)";
+  //     }
+  //     SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
+  //     dialog.setText(memorySnapdhot);
+  //     dialog.setVisible(true);
+  //   };
+  // }
 
-  private MenuAction _export() {
-    return () -> {
-      String memorySnapdhot = memory.exportAsBase64();
-      if (memorySnapdhot.isEmpty()) {
-        memorySnapdhot = "(Memory is empty)";
-      }
-      SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
-      dialog.setText(memorySnapdhot);
-      dialog.setVisible(true);
-    };
-  }
+  // private MenuAction _import() {
+  //   return () -> {
+  //     SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
+  //     dialog.setVisible(true);
+  //     if (dialog.isConfirmed()) {
+  //       String memorySnapshot = dialog.getText();
+  //       try {
+  //         memory.importFromBase64(memorySnapshot);
+  //       } catch (IllegalArgumentException ex) {
+  //         JOptionPane.showMessageDialog(
+  //             frame,
+  //             "The given input has the wrong format, and cannot be imported.",
+  //             "Invalid memory snapdhot",
+  //             JOptionPane.WARNING_MESSAGE);
+  //       }
+  //     }
+  //   };
+  // }
 
-  private MenuAction _import() {
-    return () -> {
-      SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
-      dialog.setVisible(true);
-      if (dialog.isConfirmed()) {
-        String memorySnapshot = dialog.getText();
-        try {
-          memory.importFromBase64(memorySnapshot);
-        } catch (IllegalArgumentException ex) {
-          JOptionPane.showMessageDialog(
-              frame,
-              "The given input has the wrong format, and cannot be imported.",
-              "Invalid memory snapdhot",
-              JOptionPane.WARNING_MESSAGE);
-        }
-      }
-    };
-  }
+  // private MenuAction _reset() {
+  //   return () -> {
+  //     ui.handleResetAllData();
+  //   };
+  // }
 
-  private MenuAction _reset() {
-    return () -> {
-      ui.handleResetAllData();
-    };
-  }
+  // private MenuAction _undo() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _undo() {
-    return () -> {};
-  }
+  // private MenuAction _redo() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _redo() {
-    return () -> {};
-  }
+  // private MenuAction _moveUp() {
+  //   return () -> {
+  //     cellSelecter.moveCellsUp();
+  //   };
+  // }
 
-  private MenuAction _moveUp() {
-    return () -> {
-      cellSelecter.moveCellsUp(memory);
-    };
-  }
+  // private MenuAction _moveDown() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _moveDown() {
-    return () -> {};
-  }
+  // private MenuAction _copy() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _copy() {
-    return () -> {};
-  }
+  // private MenuAction _paste() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _paste() {
-    return () -> {};
-  }
+  // private MenuAction _clear() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _clear() {
-    return () -> {};
-  }
+  // private MenuAction _delete() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _delete() {
-    return () -> {};
-  }
+  // private MenuAction _selectUp() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _selectUp() {
-    return () -> {};
-  }
+  // private MenuAction _selectDown() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _selectDown() {
-    return () -> {};
-  }
+  // private MenuAction _clearSelection() {
+  //   return () -> {};
+  // }
 
-  private MenuAction _clearSelection() {
-    return () -> {};
-  }
+  // private MenuAction _asciiTable() {
+  //   System.out.println("Registering Ascii action");
+  //   return () -> {
+  //     System.out.println("Triggered Ascii action");
+  //     ui.toggleAsciiTable();
+  //   };
+  // }
 
-  private MenuAction _asciiTable() {
-    return () -> {};
-  }
-
-  private MenuAction _instructins() {
-    return () -> {};
-  }
+  // private MenuAction _instructions() {
+  //   return () -> {
+  //     ui.toggleInstructions();
+  //   };
+  // }
 }

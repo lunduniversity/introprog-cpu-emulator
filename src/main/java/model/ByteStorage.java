@@ -137,28 +137,37 @@ public class ByteStorage implements Memory {
   }
 
   @Override
-  public void moveCellsUp(int startIdx, int endIdx) {
-    if (startIdx < 0 || startIdx >= store.length || endIdx < 0 || endIdx >= store.length) {
-      throw new IllegalArgumentException("Invalid index");
+  public boolean moveCellsUp(final int startIdx, final int endIdx) {
+    // If startIdx is 0 do nothing
+    if (startIdx <= 0) {
+      return false;
     }
-    for (int i = startIdx; i < endIdx; i++) {
-      store[i] = store[i + 1];
-      notifyListeners(i, store[i]);
+    int tmp = store[startIdx - 1];
+    int end = Math.min(store.length, endIdx);
+    for (int i = startIdx; i < end; i++) {
+      store[i - 1] = store[i];
+      notifyListeners(i - 1, store[i - 1]);
     }
-    store[endIdx] = 0;
-    notifyListeners(endIdx, 0);
+    store[endIdx - 1] = tmp;
+    notifyListeners(endIdx - 1, tmp);
+
+    return true;
   }
 
   @Override
-  public void moveCellsDown(int startIdx, int endIdx) {
-    if (startIdx < 0 || startIdx >= store.length || endIdx < 0 || endIdx >= store.length) {
-      throw new IllegalArgumentException("Invalid index");
+  public boolean moveCellsDown(final int startIdx, final int endIdx) {
+    // If endIdx is the last index do nothing
+    if (endIdx >= store.length) {
+      return false;
     }
+    int tmp = store[endIdx + 1];
     for (int i = endIdx; i > startIdx; i--) {
       store[i] = store[i - 1];
       notifyListeners(i, store[i]);
     }
-    store[startIdx] = 0;
-    notifyListeners(startIdx, 0);
+    store[startIdx] = tmp;
+    notifyListeners(startIdx, tmp);
+
+    return true;
   }
 }

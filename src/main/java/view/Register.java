@@ -4,8 +4,7 @@ public class Register extends AbstractCell {
 
   private static final long serialVersionUID = 1L;
 
-  /** Create the panel. */
-  public Register(String name, CellListener listener, CellNav cellNav) {
-    super(name, listener, cellNav);
+  public Register(int index, String name, CellValueListener valueListener) {
+    super(index, name, valueListener, null);
   }
 }

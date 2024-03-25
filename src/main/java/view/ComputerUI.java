@@ -1,18 +1,22 @@
 package view;
 
-import instruction.Instruction;
-import instruction.InstructionFactory;
+import static util.LazySwing.action;
+import static util.LazySwing.checkEDT;
+import static util.LazySwing.inv;
+
 import io.ObservableIO;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.util.Random;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -28,34 +32,31 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
-import javax.swing.border.Border;
 import model.CPU;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
 import net.miginfocom.swing.MigLayout;
+import util.ObservableValue;
 
 public class ComputerUI {
 
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(255, 255, 200);
 
-  private static final Border INSTR_FOCUS_BORDER = BorderFactory.createLineBorder(Color.MAGENTA, 2);
-
-  private static final Border INSTR_NO_FOCUS_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
-
-  private static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+  static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   private JFrame frame;
   private Cell[] memCells;
   private Register[] regCells;
   private Register pcCell;
-  private int programCounterFocusIdx;
   private JEditorPane lblPrintOutput;
   private JEditorPane lblErrorMessage;
   private JScrollPane scrollPane;
+
+  private ObservableValue<Integer> programCounterFocusIdx;
+  private AtomicBoolean isExecuting = new AtomicBoolean(false);
 
   private final Memory memory;
   private final ProgramCounter pc;
@@ -64,18 +65,27 @@ public class ComputerUI {
   private final ObservableIO io;
   private final CellSelecter selecter;
 
+  private AsciiTable asciiTable;
+  private InstructionTable instructionTable;
+
+  private boolean isShiftPressed = false;
+  private int mouseSelectStart = -1;
+
   public ComputerUI(Memory memory, ProgramCounter pc, CPU cpu, ObservableIO io) {
     this.memory = memory;
     this.pc = pc;
     this.cpu = cpu;
     this.registry = cpu.getRegistry();
     this.io = io;
-    this.selecter = new CellSelecter();
 
-    this.programCounterFocusIdx = pc.getCurrentIndex();
+    final SelectionPainter painter =
+        (address, isSelected, caretPos) -> memCells[address].setSelected(isSelected, caretPos);
+    this.selecter = new CellSelecter(memory, painter);
+
+    this.programCounterFocusIdx = new ObservableValue<>(pc.getCurrentIndex());
     initialize();
 
-    memCells[programCounterFocusIdx].setProgramCounterFocus();
+    memCells[programCounterFocusIdx.get()].setProgramCounterFocus();
 
     frame.pack();
     frame.setMinimumSize(frame.getSize());
@@ -83,28 +93,16 @@ public class ComputerUI {
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
 
-    // _showBorders(frame);
+    memCells[0].requestFocus();
+
+    // Open the Ascii Table and Instructins Description frame by default.
+    // toggleAsciiTable(true);
+    // toggleInstructions(true);
+
+    // showBorders(frame);
   }
 
-  @SuppressWarnings("unused")
-  private void _showBorders(Component component) {
-    // Define a simple border
-    Border border = BorderFactory.createLineBorder(Color.BLACK, 1);
-    Random r = new Random();
-
-    // Set the border on JComponents
-    if (component instanceof JComponent) {
-      ((JComponent) component).setBorder(border);
-    }
-    component.setBackground(new Color(r.nextInt(255), r.nextInt(255), r.nextInt(255)));
-
-    // Recursively set the border on child components if the component is a container
-    if (component instanceof Container) {
-      for (Component child : ((Container) component).getComponents()) {
-        _showBorders(child);
-      }
-    }
-  }
+  // Example program: UBJRF8DQ:12:SEVMTE8h
 
   /** Initialize the contents of the frame. */
   private void initialize() {
@@ -112,10 +110,71 @@ public class ComputerUI {
     // frame.setBounds(100, 100, 800, 725);
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     // frame.setResizable(false);
+    frame.setJMenuBar(new ComputerMenu(this, memory, selecter));
+    frame.getContentPane().setLayout(new MigLayout("", "[]", "[]"));
+    frame.addWindowFocusListener(
+        new WindowFocusListener() {
 
-    frame.setJMenuBar(new ComputerMenu(memory, this));
+          @Override
+          public void windowGainedFocus(WindowEvent e) {}
 
-    frame.getContentPane().setLayout(new MigLayout("", "[][][][]", "[][][][][][]"));
+          @Override
+          public void windowLostFocus(WindowEvent e) {
+            isShiftPressed = false;
+          }
+        });
+
+    InputMap imap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    ActionMap amap = frame.getRootPane().getActionMap();
+    imap.put(KeyStroke.getKeyStroke("shift pressed SHIFT"), "shiftPressed");
+    imap.put(KeyStroke.getKeyStroke("released SHIFT"), "shiftReleased");
+    amap.put("shiftPressed", action(e -> isShiftPressed = true));
+    amap.put("shiftReleased", action(e -> isShiftPressed = false));
+
+    // Handle arrow keys to move caret
+    imap.put(KeyStroke.getKeyStroke("UP"), "caretUp");
+    imap.put(KeyStroke.getKeyStroke("DOWN"), "caretDown");
+    imap.put(KeyStroke.getKeyStroke("LEFT"), "caretLeft");
+    imap.put(KeyStroke.getKeyStroke("RIGHT"), "caretRight");
+    amap.put("caretUp", action(e -> selecter.moveCaretUp()));
+    amap.put("caretDown", action(e -> selecter.moveCaretDown()));
+    amap.put("caretLeft", action(e -> selecter.moveCaretLeft()));
+    amap.put("caretRight", action(e -> selecter.moveCaretRight()));
+
+    // Handle arrow keys to select multiple cells
+    imap.put(KeyStroke.getKeyStroke("shift UP"), "selectUp");
+    imap.put(KeyStroke.getKeyStroke("shift DOWN"), "selectDown");
+    imap.put(KeyStroke.getKeyStroke("shift LEFT"), "none");
+    imap.put(KeyStroke.getKeyStroke("shift RIGHT"), "none");
+    amap.put("selectUp", action(e -> selecter.expandSelectionUp()));
+    amap.put("selectDown", action(e -> selecter.expandSelectionDown()));
+
+    // Handle arrow keys to move selection
+    imap.put(KeyStroke.getKeyStroke("ctrl UP"), "moveSelectionUp");
+    imap.put(KeyStroke.getKeyStroke("ctrl DOWN"), "moveSelectionDown");
+    imap.put(KeyStroke.getKeyStroke("ctrl LEFT"), "none");
+    imap.put(KeyStroke.getKeyStroke("ctrl RIGHT"), "none");
+    amap.put("moveSelectionUp", action(e -> selecter.moveSelectionUp()));
+    amap.put("moveSelectionDown", action(e -> selecter.moveSelectionDown()));
+
+    // Handle setting bit values
+    imap.put(KeyStroke.getKeyStroke("ENTER"), "flipBit");
+    imap.put(KeyStroke.getKeyStroke("SPACE"), "flipBit");
+    imap.put(KeyStroke.getKeyStroke("0"), "setBit0");
+    imap.put(KeyStroke.getKeyStroke("1"), "setBit1");
+    amap.put(
+        "flipBit",
+        action(
+            e -> {
+              checkEDT();
+              memCells[selecter.getCaretRow()].flipBit(selecter.getCaretCol());
+            }));
+    amap.put(
+        "setBit0",
+        action(e -> memCells[selecter.getCaretRow()].setBit(selecter.getCaretCol(), false)));
+    amap.put(
+        "setBit1",
+        action(e -> memCells[selecter.getCaretRow()].setBit(selecter.getCaretCol(), true)));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -171,45 +230,17 @@ public class ComputerUI {
         memCells[i] =
             new Cell(
                 i,
-                value -> memory.setValueAt(idx, value),
-                new CellNav() {
-                  @Override
-                  public void prevCell(int xpos, boolean shiftDown) {
-                    SwingUtilities.invokeLater(
-                        () -> {
-                          int newIdx = (idx - 1 + memory.size()) % memory.size();
-                          if (shiftDown) {
-                            selecter.addSelectedCell(newIdx);
-                          } else {
-                            selecter.forEachSelected(i -> memCells[i].deselect());
-                            selecter.setSelectedCell(newIdx);
-                          }
-                          memCells[newIdx].focus(xpos).select();
-                        });
-                  }
-
-                  @Override
-                  public void nextCell(int xpos, boolean shiftDown) {
-                    SwingUtilities.invokeLater(
-                        () -> {
-                          int newIdx = (idx + 1 + memory.size()) % memory.size();
-                          if (shiftDown) {
-                            selecter.addSelectedCell(newIdx);
-                          } else {
-                            selecter.forEachSelected(i -> memCells[i].deselect());
-                            selecter.setSelectedCell(newIdx);
-                          }
-                          memCells[newIdx].focus(xpos).select();
-                        });
-                  }
-                });
+                value -> {
+                  checkEDT();
+                  memory.setValueAt(idx, value);
+                },
+                selecter);
         memoryCellsPanel.add(memCells[i]);
       }
 
       {
         memory.addListener(
-            (address, value) ->
-                SwingUtilities.invokeLater(() -> memCells[address].setValue(value)));
+            (address, value) -> inv(() -> memCells[address].setValue(value, isExecuting.get())));
       }
     }
 
@@ -225,20 +256,7 @@ public class ComputerUI {
       for (int i = 0; i < regCells.length; i++) {
         final int idx = i;
         regCells[i] =
-            new Register(
-                Registry.REGISTER_NAMES[i],
-                value -> registry.setRegister(idx, value),
-                new CellNav() {
-                  @Override
-                  public void prevCell(int xpos, boolean shiftDown) {
-                    regCells[(idx - 1 + 6) % (6)].focus(xpos);
-                  }
-
-                  @Override
-                  public void nextCell(int xpos, boolean shiftDown) {
-                    regCells[(idx + 1) % (6)].focus(xpos);
-                  }
-                });
+            new Register(i, Registry.REGISTER_NAMES[i], value -> registry.setRegister(idx, value));
         registerPanel.add(regCells[i], String.format("cell 0 %d", offset + idx));
         if (idx == 2) {
           offset++;
@@ -250,43 +268,35 @@ public class ComputerUI {
       Component rigidArea_6 = Box.createRigidArea(new Dimension(20, 10));
       registerPanel.add(rigidArea_6, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS));
 
-      pcCell =
-          new Register(
-              "PC",
-              value -> pc.setCurrentIndex(value),
-              new CellNav() {
-                @Override
-                public void prevCell(int xpos, boolean shiftDown) {}
-
-                @Override
-                public void nextCell(int xpos, boolean shiftDown) {}
-              });
+      pcCell = new Register(Registry.NUM_REGISTERS - 1, "PC", value -> pc.setCurrentIndex(value));
       registerPanel.add(pcCell, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS + 1));
 
       {
         cpu.addRegistryListener(
             (address, value) -> {
-              SwingUtilities.invokeLater(
+              inv(
                   () -> {
-                    regCells[address].setValue(value);
+                    regCells[address].setValue(value, isExecuting.get());
                     regCells[address].highlight();
                   });
             });
         pc.addListener(
             value -> {
-              SwingUtilities.invokeLater(
+              inv(
                   () -> {
-                    if (programCounterFocusIdx >= 0 && programCounterFocusIdx < memory.size()) {
-                      memCells[programCounterFocusIdx].clearProgramCounterFocus();
+                    int pcIdx = programCounterFocusIdx.get();
+                    if (pcIdx >= 0 && pcIdx < memory.size()) {
+                      memCells[pcIdx].clearProgramCounterFocus();
                     }
-                    pcCell.setValue(value);
+                    pcCell.setValue(value, isExecuting.get());
                     pcCell.highlight();
-                    programCounterFocusIdx = value;
+                    programCounterFocusIdx.set(value);
                     if (value >= 0 && value < memory.size()) {
-                      memCells[programCounterFocusIdx].setProgramCounterFocus();
+                      memCells[value].setProgramCounterFocus();
                     }
                   });
             });
+        memory.addListener((address, value) -> inv(() -> {}));
       }
     }
 
@@ -312,10 +322,13 @@ public class ComputerUI {
         btnStep.addActionListener(
             e -> {
               try {
+                isExecuting.set(true);
                 resetCellColors();
                 cpu.step();
               } catch (Exception ex) {
                 handleError(ex);
+              } finally {
+                isExecuting.set(false);
               }
             });
         controlPanel.add(btnStep, "cell 0 1");
@@ -327,10 +340,13 @@ public class ComputerUI {
         btnRun.addActionListener(
             e -> {
               try {
+                isExecuting.set(true);
                 resetCellColors();
                 cpu.run();
               } catch (Exception ex) {
                 handleError(ex);
+              } finally {
+                isExecuting.set(false);
               }
             });
         controlPanel.add(btnRun, "cell 1 1");
@@ -393,182 +409,16 @@ public class ComputerUI {
               lblErrorMessage.setText("");
               pc.setCurrentIndex(0);
               registry.reset();
-              SwingUtilities.invokeLater(() -> resetCellColors());
+              inv(() -> resetCellColors());
             });
         controlPanel.add(btnReset, "cell 0 6 2 1");
       }
     }
 
-    // Divider before right-side panel. Vertical line or border that fills all vertical space.
+    // Divider. Vertical line or border that fills all vertical space.
     {
       JSeparator rightDivider = new JSeparator(SwingConstants.VERTICAL);
       frame.getContentPane().add(rightDivider, "cell 2 3 1 3, growy");
-    }
-
-    // Right-side panel with instruction descriptions
-    {
-      JPanel instructionPanel = new JPanel();
-      frame.getContentPane().add(instructionPanel, "cell 3 3 1 3, top, shrink");
-      instructionPanel.setLayout(new MigLayout("", "[fill,grow]", "[shrink]"));
-
-      JLabel lblInstructionHeader = new JLabel("Instruction Descriptions");
-      lblInstructionHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
-      instructionPanel.add(lblInstructionHeader, "cell 0 0");
-
-      instructionPanel.add(Box.createRigidArea(new Dimension(20, 10)), "cell 0 1");
-
-      JTextArea instrDesc =
-          new JTextArea(
-              "All instructions are made up of 4 + 4 bits. The 4 highest (left-most) bits is"
-                  + " the opcode, which identifies the instruction. The 4 lowest (right-most) bits"
-                  + " is the operand, which is used as an argument to the instruction. The purpose"
-                  + " of the operand differs between instructions.");
-      instrDesc.setLineWrap(true);
-      instrDesc.setWrapStyleWord(true);
-      instrDesc.setEditable(false);
-      instrDesc.setOpaque(false);
-      instrDesc.setMinimumSize(new Dimension(400, 30));
-      instructionPanel.add(instrDesc, "cell 0 2");
-
-      JLabel addreessNote =
-          new JLabel(
-              "<html>Note: An underlined name, like <u>src</u>, means it's being used as an"
-                  + " <b>address</b>, rather than a<br><b>value</b> directly. If src has the value"
-                  + " 17, then <u>src</u> has the value of the memory slot at index 17.</html>");
-      addreessNote.setFont(instrDesc.getFont());
-      instructionPanel.add(addreessNote, "cell 0 3, gaptop 5, gapbottom 15");
-
-      // instructionPanel.add(Box.createRigidArea(new Dimension(20, 10)), "cell 0 3");
-
-      // Instruction table
-      {
-        JPanel table =
-            new JPanel(
-                new MigLayout("wrap 4, gap 5px 0, insets 0", "[][][grow 50][grow 50]", "[]"));
-        table.setBorder(null);
-        instructionPanel.add(table, "cell 0 4, gap 0");
-        // Headers
-        {
-          for (String hdr : new String[] {"Instr", "Opcode", "Operand (abcd)", "Description"}) {
-            table.add(new JLabel(hdr));
-          }
-        }
-
-        // Instructions
-        {
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_ADD,
-              InstructionFactory.INST_ADD,
-              "--",
-              "Add OP1 and OP2, put result in RES.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_SUB,
-              InstructionFactory.INST_SUB,
-              "--",
-              "Subtract OP2 from OP1, put result in RES.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_CPY,
-              InstructionFactory.INST_CPY,
-              "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
-              "Reads the next two memory values (src and dst) and copies <u>src</u> to"
-                  + " <u>dst</u>.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_MOV,
-              InstructionFactory.INST_MOV,
-              "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
-              "Reads the next two memory values (src and dst) and moves <u>src</u> to <u>dst</u>."
-                  + " Afterwards, <u>src</u> is set to 0.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME__LD,
-              InstructionFactory.INST__LD,
-              "Specifies destination register.",
-              "Reads next memory <b>value</b> and loads it into a register.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_LDA,
-              InstructionFactory.INST_LDA,
-              "Specifies destination register.",
-              "Reads next memory <b>address</b> and loads the addressed value into a register.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME__ST,
-              InstructionFactory.INST__ST,
-              "Specifies source regsiter.",
-              "Reads next memory <b>address</b> and stores register value at it.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_JMP,
-              InstructionFactory.INST_JMP,
-              "Specifies source register.",
-              "Jumps to address given by a register.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME__JE,
-              InstructionFactory.INST__JE,
-              "Specifies source register.",
-              "Jumps to address given by a register IF OP1 and OP2 are equal.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_JNE,
-              InstructionFactory.INST_JNE,
-              "Specifies source register.",
-              "Jumps to address given by a register IF OP1 and OP2 are NOT equal.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_PRT,
-              InstructionFactory.INST_PRT,
-              "--",
-              "Reads value in PRT and sends to I/O output channel.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_PRL,
-              InstructionFactory.INST_PRL,
-              "--",
-              "Reads memory address from OP1, loads value at that address into PRT and sends it to"
-                  + " I/O output channel, and increments OP1. Increments PC only if OP1 and OP2 are"
-                  + " equal.",
-              pc);
-          appendToTable(
-              table,
-              InstructionFactory.INST_NAME_HLT,
-              InstructionFactory.INST_HLT,
-              "--",
-              "Halts PC, thus terminating program successfully.",
-              pc);
-          table.add(new JSeparator(), "growx, span 4 1, gapy 3");
-        }
-
-        // Legend
-        {
-          JLabel lblLegend =
-              new JLabel(
-                  "<html>* An addressing <i>type</i> is two bits: 00=constant, 01=register,"
-                      + " 10=memory</html>");
-          instructionPanel.add(lblLegend, "cell 0 5");
-        }
-      }
-    }
-
-    // Divider after right-side panel. Vertical line or border that fills all vertical space.
-    {
-      JSeparator rightDivider = new JSeparator(SwingConstants.VERTICAL);
-      frame.getContentPane().add(rightDivider, "cell 4 3 1 3, growy");
     }
   }
 
@@ -590,8 +440,7 @@ public class ComputerUI {
     memory.reset();
     memCells[0].focus(0);
 
-    executor.schedule(
-        () -> SwingUtilities.invokeLater(() -> resetCellColors()), 700, TimeUnit.MILLISECONDS);
+    executor.schedule(() -> inv(() -> resetCellColors()), 700, TimeUnit.MILLISECONDS);
   }
 
   JFrame getFrame() {
@@ -653,47 +502,29 @@ public class ComputerUI {
     return cellPanel;
   }
 
-  private void appendToTable(
-      JPanel table, String instr, int opcode, String operand, String desc, ProgramCounter pc) {
-    JLabel lblInstr = new JLabel(instr);
-    lblInstr.setBorder(INSTR_NO_FOCUS_BORDER);
-    pc.addListener(
-        pcValue -> {
-          if (pcValue >= 0 && pcValue < memory.size()) {
-            lblInstr.setBorder(
-                (memory.getValueAt(pcValue) & 0xF0) == opcode
-                    ? INSTR_FOCUS_BORDER
-                    : INSTR_NO_FOCUS_BORDER);
-          }
-        });
-    String codeStr = Instruction.toBinaryString(opcode >> 4, 4);
-    JLabel lblOpcode = new JLabel(codeStr);
+  public void toggleAsciiTable(boolean display) {
+    if (display) {
+      if (asciiTable == null) {
+        asciiTable = new AsciiTable(frame);
+      }
+    } else {
+      if (asciiTable != null) {
+        asciiTable.dispose();
+        asciiTable = null;
+      }
+    }
+  }
 
-    String html = "<html>%s</html>";
-    JEditorPane lblOperand = new JEditorPane();
-    lblOperand.setContentType("text/html");
-    lblOperand.setText(String.format(html, operand));
-    lblOperand.setOpaque(false);
-    lblOperand.setEditable(false);
-    lblOperand.setHighlighter(null);
-    lblOperand.setMaximumSize(new Dimension(130, 400));
-    lblOperand.setPreferredSize(new Dimension(130, 20));
-    lblOperand.setMargin(new Insets(0, 0, 0, 0));
-
-    JEditorPane lblDesc = new JEditorPane();
-    lblDesc.setContentType("text/html");
-    lblDesc.setText(String.format(html, desc));
-    lblDesc.setOpaque(false);
-    lblDesc.setEditable(false);
-    lblDesc.setHighlighter(null);
-    lblDesc.setMaximumSize(new Dimension(300, 600));
-    lblDesc.setPreferredSize(new Dimension(300, 20));
-    lblDesc.setMargin(new Insets(0, 0, 0, 0));
-
-    table.add(new JSeparator(), "growx, span 4 1, gapy 3");
-    table.add(lblInstr, "aligny top, gap 0");
-    table.add(lblOpcode, "aligny top, gaptop 2, gapx 2");
-    table.add(lblOperand, "growx, shrinky, aligny top, gapx 2");
-    table.add(lblDesc, "growx, shrinky, aligny top, gapx 2");
+  public void toggleInstructions(boolean display) {
+    if (display) {
+      if (instructionTable == null) {
+        instructionTable = new InstructionTable(frame, memory, pc);
+      }
+    } else {
+      if (instructionTable != null) {
+        instructionTable.dispose();
+        instructionTable = null;
+      }
+    }
   }
 }

@@ -3,17 +3,14 @@ package view;
 import instruction.InstructionFactory;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.Font;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.HexFormat;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -29,33 +26,39 @@ public abstract class AbstractCell extends JPanel {
 
   private static final Color DEFAULT_BG_COLOR = UIManager.getColor("TextField.background");
   private static final Color HIGHLIGHT_BG_COLOR = new Color(255, 255, 200);
-  private static final Color SELECT_BG_COLOR = new Color(215, 255, 220);
+  private static final Color SELECT_BG_COLOR = new Color(200, 255, 200);
+  private static final Color CARET_BG_COLOR = new Color(50, 230, 210);
+
+  private static final Font MONOSPACED = new Font("Monospaced", Font.PLAIN, 14);
 
   private static HexFormat hexFormat = HexFormat.of().withUpperCase();
 
   private JLabel lblIndex;
   private JPanel bitPanel;
-  private JTextField[] bits;
+  private JLabel[] bits;
   private JLabel lblHex;
   private JLabel lblDec;
   private JLabel lblAscii;
   private JLabel lblInstruction;
 
-  private CellListener listener;
   private InstructionFactory factory = new InstructionFactory();
 
   private int currentValue = 0;
-  private boolean isSelected = false;
+  private int prevCaretPos = -1;
 
-  /** Create the panel. */
-  public AbstractCell(String label, CellListener listener, CellNav cellNav) {
+  private CellValueListener valueListener;
+
+  public AbstractCell(
+      final int index, String label, CellValueListener valueListener, CellSelecter cellSelecter) {
+
+    this.valueListener = valueListener;
+
     setBorder(null);
     setLayout(
         new MigLayout(
             "gap 5 5, insets 0",
             "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px][30px:30px:30px][][110px::,grow]",
             "[]"));
-    this.listener = listener;
 
     lblIndex = new JLabel(label);
     lblIndex.setBorder(null);
@@ -68,67 +71,55 @@ public abstract class AbstractCell extends JPanel {
     bitPanel.setBorder(PC_NO_FOCUS_BORDER);
     bitPanel.setBackground(UIManager.getColor("TextField.background"));
     add(bitPanel, "cell 1 0,grow");
-    bitPanel.setLayout(new BoxLayout(bitPanel, BoxLayout.X_AXIS));
+    bitPanel.setLayout(new MigLayout("flowx, gap 0 0, insets 0", "[sg bit]", ""));
 
     bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
-    bits = new JTextField[8];
+    bits = new JLabel[8];
     for (int i = 0; i < bits.length; i++) {
-      final int idx = i;
-      JTextField bit = new JTextField("0", 1);
+      final int bitIdx = i;
+      JLabel bit = new JLabel("0");
       bit.setBorder(null);
+      bit.setOpaque(true);
+      bit.setFont(MONOSPACED);
+      bit.setBackground(DEFAULT_BG_COLOR);
       bit.setPreferredSize(new Dimension(10, 20));
       bit.setHorizontalAlignment(SwingConstants.CENTER);
-      bit.addKeyListener(
-          new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-              if (e.getKeyChar() == '0' || e.getKeyChar() == '1') {
-                bit.setText(Character.toString(e.getKeyChar()));
-                userChangedValue();
-                if (idx < bits.length - 1) {
-                  bits[idx + 1].requestFocusInWindow();
+      if (cellSelecter != null) {
+        bit.addMouseListener(
+            new MouseListener() {
+
+              @Override
+              public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2
+                    || e.getButton() == MouseEvent.BUTTON3) {
+                  flipBit(bitIdx);
                 }
-              } else {
-                bit.setCaretPosition(0);
+                cellSelecter.setCaretPosition(index, bitIdx);
+                cellSelecter.cancelSelection();
               }
-              e.consume();
-            }
 
-            @Override
-            public void keyPressed(KeyEvent e) {
-              if (e.getExtendedKeyCode() == KeyEvent.VK_LEFT && idx > 0) {
-                bits[idx - 1].requestFocusInWindow();
+              @Override
+              public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                  cellSelecter.startSelection(index);
+                }
               }
-              if (e.getExtendedKeyCode() == KeyEvent.VK_RIGHT && idx < bits.length - 1) {
-                bits[idx + 1].requestFocusInWindow();
-              }
-              if (e.getExtendedKeyCode() == KeyEvent.VK_UP) {
-                cellNav.prevCell(idx, e.isShiftDown());
-              }
-              if (e.getExtendedKeyCode() == KeyEvent.VK_DOWN) {
-                cellNav.nextCell(idx, e.isShiftDown());
-              }
-              if (e.getExtendedKeyCode() == KeyEvent.VK_ENTER) {
-                cellNav.nextCell(0, false);
-              }
-            }
-          });
-      bit.addFocusListener(
-          new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-              bit.setCaretPosition(0);
-            }
 
-            @Override
-            public void focusLost(FocusEvent e) {
-              if (bit.getText().length() == 0) {
-                bit.setText("0");
-                updateValue();
+              @Override
+              public void mouseReleased(MouseEvent e) {
+                cellSelecter.endSelection();
               }
-            }
-          });
-      bitPanel.add(bit, String.format("cell %d 0,growx", i + 1));
+
+              @Override
+              public void mouseEntered(MouseEvent e) {
+                cellSelecter.updateSelection(index);
+              }
+
+              @Override
+              public void mouseExited(MouseEvent e) {}
+            });
+      }
+      bitPanel.add(bit, String.format("growx", i + 1));
       bits[i] = bit;
       if (i == bits.length / 2 - 1) {
         bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
@@ -172,7 +163,7 @@ public abstract class AbstractCell extends JPanel {
   // Inform the rest of the UI that the value has changed
   private void userChangedValue() {
     updateValue();
-    listener.onCellChanged(currentValue);
+    valueListener.onCellChanged(currentValue);
   }
 
   private void updateValue() {
@@ -210,55 +201,79 @@ public abstract class AbstractCell extends JPanel {
   }
 
   public AbstractCell focus(int xpos) {
-    bits[xpos].requestFocusInWindow();
-    bits[xpos].setCaretPosition(0);
+    // bits[xpos].requestFocusInWindow();
+    // bits[xpos].setCaretPosition(0);
     return this;
   }
 
-  public void setValue(int value) {
+  public void setValue(int value, boolean isExecuting) {
     for (int i = 0; i < 8; i++) {
       bits[7 - i].setText(Integer.toString(((value >> i) & 1)));
     }
     updateValue();
-    highlight();
+    if (isExecuting) highlight();
   }
 
   public int getValue() {
     return currentValue;
   }
 
+  // Highlighting is used to indicate that the cell is being executed
   public AbstractCell highlight() {
-    for (JTextField bit : bits) {
+    for (JLabel bit : bits) {
       bit.setBackground(HIGHLIGHT_BG_COLOR);
     }
     return this;
   }
 
   public AbstractCell unhighlight() {
-    for (JTextField bit : bits) {
+    for (JLabel bit : bits) {
       bit.setBackground(DEFAULT_BG_COLOR);
     }
     return this;
   }
 
+  public AbstractCell setSelected(boolean selected, int caretPos) {
+    if (selected) {
+      select();
+      if (prevCaretPos >= 0) bits[prevCaretPos].setBackground(DEFAULT_BG_COLOR);
+    } else {
+      deselect();
+      if (caretPos >= 0) bits[caretPos].setBackground(CARET_BG_COLOR);
+    }
+    return this;
+  }
+
   public AbstractCell select() {
-    if (!isSelected) {
-      for (JTextField bit : bits) {
-        bit.setBackground(SELECT_BG_COLOR);
-      }
-      isSelected = true;
+    for (JLabel bit : bits) {
+      bit.setBackground(SELECT_BG_COLOR);
     }
     return this;
   }
 
   public AbstractCell deselect() {
-    if (isSelected) {
-      for (JTextField bit : bits) {
-        bit.setBackground(DEFAULT_BG_COLOR);
-      }
-      isSelected = false;
+    for (JLabel bit : bits) {
+      bit.setBackground(DEFAULT_BG_COLOR);
     }
     return this;
+  }
+
+  public AbstractCell setBits(int start, int end, boolean value) {
+    for (int i = start; i < end; i++) {
+      bits[i].setText(value ? "1" : "0");
+    }
+    userChangedValue();
+    return this;
+  }
+
+  public void flipBit(int bitIdx) {
+    bits[bitIdx].setText(bits[bitIdx].getText().equals("1") ? "0" : "1");
+    userChangedValue();
+  }
+
+  public void setBit(int bitIdx, boolean value) {
+    bits[bitIdx].setText(value ? "1" : "0");
+    userChangedValue();
   }
 
   public void setProgramCounterFocus() {

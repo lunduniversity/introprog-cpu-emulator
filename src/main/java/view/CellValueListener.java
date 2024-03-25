@@ -1,5 +1,5 @@
 package view;
 
-public interface CellListener {
+public interface CellValueListener {
   void onCellChanged(int value);
 }
