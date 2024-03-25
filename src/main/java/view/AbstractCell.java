@@ -29,6 +29,10 @@ public abstract class AbstractCell extends JPanel {
   private static final Color SELECT_BG_COLOR = new Color(200, 255, 200);
   private static final Color CARET_BG_COLOR = new Color(50, 230, 210);
 
+  private static final Color INACTIVE_DEFAULT_BG_COLOR = new Color(240, 240, 240);
+  private static final Color INACTIVE_SELECT_BG_COLOR = new Color(220, 240, 220);
+  private static final Color INACTIVE_CARET_BG_COLOR = new Color(150, 180, 160);
+
   private static final Font MONOSPACED = new Font("Monospaced", Font.PLAIN, 14);
 
   private static HexFormat hexFormat = HexFormat.of().withUpperCase();
@@ -44,12 +48,14 @@ public abstract class AbstractCell extends JPanel {
   private InstructionFactory factory = new InstructionFactory();
 
   private int currentValue = 0;
-  private int prevCaretPos = -1;
 
   private CellValueListener valueListener;
 
   public AbstractCell(
-      final int index, String label, CellValueListener valueListener, CellSelecter cellSelecter) {
+      final int index,
+      String label,
+      CellValueListener valueListener,
+      AbstractSelecter cellSelecter) {
 
     this.valueListener = valueListener;
 
@@ -100,6 +106,7 @@ public abstract class AbstractCell extends JPanel {
 
               @Override
               public void mousePressed(MouseEvent e) {
+                cellSelecter.requestFocus();
                 if (e.getButton() == MouseEvent.BUTTON1) {
                   cellSelecter.startSelection(index);
                 }
@@ -233,29 +240,21 @@ public abstract class AbstractCell extends JPanel {
     return this;
   }
 
-  public AbstractCell setSelected(boolean selected, int caretPos) {
+  public AbstractCell setSelected(boolean selected, int caretPos, boolean active) {
     if (selected) {
-      select();
-      if (prevCaretPos >= 0) bits[prevCaretPos].setBackground(DEFAULT_BG_COLOR);
+      _bgColor(active ? SELECT_BG_COLOR : INACTIVE_SELECT_BG_COLOR);
     } else {
-      deselect();
-      if (caretPos >= 0) bits[caretPos].setBackground(CARET_BG_COLOR);
+      _bgColor(active ? DEFAULT_BG_COLOR : INACTIVE_DEFAULT_BG_COLOR);
+      if (caretPos >= 0)
+        bits[caretPos].setBackground(active ? CARET_BG_COLOR : INACTIVE_CARET_BG_COLOR);
     }
     return this;
   }
 
-  public AbstractCell select() {
+  private void _bgColor(Color color) {
     for (JLabel bit : bits) {
-      bit.setBackground(SELECT_BG_COLOR);
+      bit.setBackground(color);
     }
-    return this;
-  }
-
-  public AbstractCell deselect() {
-    for (JLabel bit : bits) {
-      bit.setBackground(DEFAULT_BG_COLOR);
-    }
-    return this;
   }
 
   public AbstractCell setBits(int start, int end, boolean value) {

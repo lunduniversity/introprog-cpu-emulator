@@ -35,17 +35,11 @@ public class CPU {
       throw new IllegalStateException("CPU is halted");
     }
     int prevIdx = -1;
-    int stuckCounter = 0;
     int totalStepCounter = 0;
+    int modCount = -1;
     while (!pc.isHalted()) {
-      if (pc.getCurrentIndex() == prevIdx) {
-        stuckCounter++;
-        if (stuckCounter > 100) {
-          throw new IllegalStateException("Infinite loop detected");
-        }
-      } else {
-        prevIdx = pc.getCurrentIndex();
-        stuckCounter = 0;
+      if (pc.getCurrentIndex() == prevIdx && modCount == io.modCount()) {
+        throw new IllegalStateException("Program is stuck. Aborted.");
       }
       if (totalStepCounter > 1000) {
         throw new IllegalStateException(
@@ -54,6 +48,7 @@ public class CPU {
       int value = memory.getValueAt(pc.getCurrentIndex());
       factory.createInstruction(value).execute(memory, registry, pc, io);
       totalStepCounter++;
+      modCount = io.modCount();
     }
   }
 

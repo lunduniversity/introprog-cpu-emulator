@@ -6,6 +6,7 @@ import model.ProgramCounter;
 import model.Registry;
 
 public class InstructionFactory {
+  public static final int INST_NOP = 000; // No-op
   public static final int INST_ADD = 0x10; // Addition
   public static final int INST_SUB = 0x20; // Subtraction
   public static final int INST_CPY = 0x30; // Copy value from one cell to another
@@ -23,6 +24,7 @@ public class InstructionFactory {
   // PRT
   // Add 2 columns: Instr, Char
 
+  public static final String INST_NAME_NOP = "NOP";
   public static final String INST_NAME_ADD = "ADD";
   public static final String INST_NAME_SUB = "SUB";
   public static final String INST_NAME_CPY = "CPY";
@@ -38,7 +40,8 @@ public class InstructionFactory {
   public static final String INST_NAME_HLT = "HLT";
 
   public boolean isInstruction(int code) {
-    return code == INST_ADD
+    return code == INST_NOP
+        || code == INST_ADD
         || code == INST_SUB
         || code == INST_CPY
         || code == INST_MOV
@@ -58,6 +61,8 @@ public class InstructionFactory {
     int opcode = code & 0xF0;
     int operand = code & 0x0F;
     switch (opcode) {
+      case INST_NOP:
+        return new Nop(operand);
       case INST_ADD:
         return new Add(operand);
       case INST_SUB:

@@ -5,13 +5,15 @@ import static util.LazySwing.checkEDT;
 import static util.LazySwing.inv;
 
 import io.ObservableIO;
+import java.awt.AWTKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
+import java.awt.KeyboardFocusManager;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +42,7 @@ import model.ProgramCounter;
 import model.Registry;
 import net.miginfocom.swing.MigLayout;
 import util.ObservableValue;
+import view.AbstractSelecter.FocusRequester;
 
 public class ComputerUI {
 
@@ -63,13 +66,13 @@ public class ComputerUI {
   private final CPU cpu;
   private final Registry registry;
   private final ObservableIO io;
-  private final CellSelecter selecter;
+  private final CellSelecter cellSelecter;
+  private final RegisterSelecter regSelecter;
 
   private AsciiTable asciiTable;
   private InstructionTable instructionTable;
 
-  private boolean isShiftPressed = false;
-  private int mouseSelectStart = -1;
+  private AbstractSelecter currentSelecter;
 
   public ComputerUI(Memory memory, ProgramCounter pc, CPU cpu, ObservableIO io) {
     this.memory = memory;
@@ -78,9 +81,25 @@ public class ComputerUI {
     this.registry = cpu.getRegistry();
     this.io = io;
 
-    final SelectionPainter painter =
-        (address, isSelected, caretPos) -> memCells[address].setSelected(isSelected, caretPos);
-    this.selecter = new CellSelecter(memory, painter);
+    final SelectionPainter cellPainter =
+        (address, isSelected, caretPos, active) ->
+            memCells[address].setSelected(isSelected, caretPos, active);
+    final SelectionPainter regPainter =
+        (address, isSelected, caretPos, active) ->
+            regCells[address].setSelected(isSelected, caretPos, active);
+    final FocusRequester focusRequester =
+        selecter -> {
+          if (currentSelecter != selecter) {
+            if (currentSelecter != null) {
+              currentSelecter.setInactive();
+            }
+            selecter.setActive();
+            currentSelecter = selecter;
+          }
+        };
+    this.cellSelecter = new CellSelecter(memory, cellPainter, focusRequester);
+    this.regSelecter = new RegisterSelecter(registry, regPainter, focusRequester);
+    cellSelecter.requestFocus();
 
     this.programCounterFocusIdx = new ObservableValue<>(pc.getCurrentIndex());
     initialize();
@@ -93,7 +112,7 @@ public class ComputerUI {
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
 
-    memCells[0].requestFocus();
+    // memCells[0].requestFocus();
 
     // Open the Ascii Table and Instructins Description frame by default.
     // toggleAsciiTable(true);
@@ -107,55 +126,76 @@ public class ComputerUI {
   /** Initialize the contents of the frame. */
   private void initialize() {
     frame = new JFrame();
-    // frame.setBounds(100, 100, 800, 725);
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    // frame.setResizable(false);
-    frame.setJMenuBar(new ComputerMenu(this, memory, selecter));
+    frame.setJMenuBar(new ComputerMenu(this, memory, cellSelecter));
     frame.getContentPane().setLayout(new MigLayout("", "[]", "[]"));
-    frame.addWindowFocusListener(
-        new WindowFocusListener() {
 
-          @Override
-          public void windowGainedFocus(WindowEvent e) {}
+    // Disabling TAB and Shift+TAB for focus traversal in this JPanel
+    Set<AWTKeyStroke> forwardKeys =
+        new HashSet<>(frame.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+    forwardKeys.remove(KeyStroke.getKeyStroke("TAB"));
+    frame.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, forwardKeys);
 
-          @Override
-          public void windowLostFocus(WindowEvent e) {
-            isShiftPressed = false;
-          }
-        });
+    Set<AWTKeyStroke> backwardKeys =
+        new HashSet<>(frame.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
+    backwardKeys.remove(KeyStroke.getKeyStroke("shift TAB"));
+    frame.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, backwardKeys);
 
+    // Configuring key bindings
     InputMap imap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     ActionMap amap = frame.getRootPane().getActionMap();
-    imap.put(KeyStroke.getKeyStroke("shift pressed SHIFT"), "shiftPressed");
-    imap.put(KeyStroke.getKeyStroke("released SHIFT"), "shiftReleased");
-    amap.put("shiftPressed", action(e -> isShiftPressed = true));
-    amap.put("shiftReleased", action(e -> isShiftPressed = false));
+    // imap.put(KeyStroke.getKeyStroke("shift pressed SHIFT"), "shiftPressed");
+    // imap.put(KeyStroke.getKeyStroke("released SHIFT"), "shiftReleased");
+    // amap.put("shiftPressed", action(e -> isShiftPressed = true));
+    // amap.put("shiftReleased", action(e -> isShiftPressed = false));
+
+    // Switch between memory and register selecter
+    imap.put(KeyStroke.getKeyStroke("TAB"), "switchSelecter");
+    amap.put(
+        "switchSelecter",
+        action(
+            e -> {
+              checkEDT();
+              if (currentSelecter == cellSelecter) {
+                regSelecter.requestFocus();
+              } else {
+                cellSelecter.requestFocus();
+              }
+            }));
 
     // Handle arrow keys to move caret
     imap.put(KeyStroke.getKeyStroke("UP"), "caretUp");
     imap.put(KeyStroke.getKeyStroke("DOWN"), "caretDown");
     imap.put(KeyStroke.getKeyStroke("LEFT"), "caretLeft");
     imap.put(KeyStroke.getKeyStroke("RIGHT"), "caretRight");
-    amap.put("caretUp", action(e -> selecter.moveCaretUp()));
-    amap.put("caretDown", action(e -> selecter.moveCaretDown()));
-    amap.put("caretLeft", action(e -> selecter.moveCaretLeft()));
-    amap.put("caretRight", action(e -> selecter.moveCaretRight()));
+    amap.put("caretUp", action(e -> currentSelecter.moveCaretUp()));
+    amap.put("caretDown", action(e -> currentSelecter.moveCaretDown()));
+    amap.put("caretLeft", action(e -> currentSelecter.moveCaretLeft()));
+    amap.put("caretRight", action(e -> currentSelecter.moveCaretRight()));
 
     // Handle arrow keys to select multiple cells
     imap.put(KeyStroke.getKeyStroke("shift UP"), "selectUp");
     imap.put(KeyStroke.getKeyStroke("shift DOWN"), "selectDown");
     imap.put(KeyStroke.getKeyStroke("shift LEFT"), "none");
     imap.put(KeyStroke.getKeyStroke("shift RIGHT"), "none");
-    amap.put("selectUp", action(e -> selecter.expandSelectionUp()));
-    amap.put("selectDown", action(e -> selecter.expandSelectionDown()));
+    amap.put("selectUp", action(e -> currentSelecter.expandSelectionUp()));
+    amap.put("selectDown", action(e -> currentSelecter.expandSelectionDown()));
 
     // Handle arrow keys to move selection
     imap.put(KeyStroke.getKeyStroke("ctrl UP"), "moveSelectionUp");
     imap.put(KeyStroke.getKeyStroke("ctrl DOWN"), "moveSelectionDown");
     imap.put(KeyStroke.getKeyStroke("ctrl LEFT"), "none");
     imap.put(KeyStroke.getKeyStroke("ctrl RIGHT"), "none");
-    amap.put("moveSelectionUp", action(e -> selecter.moveSelectionUp()));
-    amap.put("moveSelectionDown", action(e -> selecter.moveSelectionDown()));
+    amap.put("moveSelectionUp", action(e -> currentSelecter.moveSelectionUp()));
+    amap.put("moveSelectionDown", action(e -> currentSelecter.moveSelectionDown()));
+
+    // Handle arrow keys to move selected cells
+    imap.put(KeyStroke.getKeyStroke("alt UP"), "moveCellsUp");
+    imap.put(KeyStroke.getKeyStroke("alt DOWN"), "moveCellsDown");
+    imap.put(KeyStroke.getKeyStroke("alt LEFT"), "none");
+    imap.put(KeyStroke.getKeyStroke("alt RIGHT"), "none");
+    amap.put("moveCellsUp", action(e -> currentSelecter.moveCellsUp()));
+    amap.put("moveCellsDown", action(e -> currentSelecter.moveCellsDown()));
 
     // Handle setting bit values
     imap.put(KeyStroke.getKeyStroke("ENTER"), "flipBit");
@@ -167,17 +207,24 @@ public class ComputerUI {
         action(
             e -> {
               checkEDT();
-              memCells[selecter.getCaretRow()].flipBit(selecter.getCaretCol());
+              memCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
             }));
     amap.put(
         "setBit0",
-        action(e -> memCells[selecter.getCaretRow()].setBit(selecter.getCaretCol(), false)));
+        action(
+            e ->
+                memCells[currentSelecter.getCaretRow()].setBit(
+                    currentSelecter.getCaretCol(), false)));
     amap.put(
         "setBit1",
-        action(e -> memCells[selecter.getCaretRow()].setBit(selecter.getCaretCol(), true)));
+        action(
+            e ->
+                memCells[currentSelecter.getCaretRow()].setBit(
+                    currentSelecter.getCaretCol(), true)));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
+    lblComputerHeader.setFocusable(false);
     frame.getContentPane().add(lblComputerHeader, "cell 0 0 3 1");
 
     JTextArea lblDescription =
@@ -193,6 +240,7 @@ public class ComputerUI {
     lblDescription.setEditable(false);
     lblDescription.setBorder(null);
     lblDescription.setBackground(UIManager.getColor("Label.background"));
+    lblDescription.setFocusable(false);
     frame.getContentPane().add(lblDescription, "cell 0 1 3 1, grow");
 
     Component rigidArea = Box.createRigidArea(new Dimension(20, 10));
@@ -204,6 +252,7 @@ public class ComputerUI {
     // Memory cells
     {
       JPanel memoryCellsPanel = new JPanel();
+      memoryCellsPanel.setFocusable(true);
       scrollPane =
           new JScrollPane(
               memoryCellsPanel,
@@ -234,7 +283,7 @@ public class ComputerUI {
                   checkEDT();
                   memory.setValueAt(idx, value);
                 },
-                selecter);
+                cellSelecter);
         memoryCellsPanel.add(memCells[i]);
       }
 
@@ -247,6 +296,7 @@ public class ComputerUI {
     // Registers and program counter
     {
       JPanel registerPanel = createCellPanel("Registers");
+      registerPanel.setFocusable(true);
       frame.getContentPane().add(registerPanel, "cell 1 3, top");
 
       // Computer has 6 registers, OP1-OP3 and R1-R3.
@@ -256,9 +306,13 @@ public class ComputerUI {
       for (int i = 0; i < regCells.length; i++) {
         final int idx = i;
         regCells[i] =
-            new Register(i, Registry.REGISTER_NAMES[i], value -> registry.setRegister(idx, value));
+            new Register(
+                i,
+                Registry.REGISTER_NAMES[i],
+                value -> registry.setRegister(idx, value),
+                regSelecter);
         registerPanel.add(regCells[i], String.format("cell 0 %d", offset + idx));
-        if (idx == 2) {
+        if (idx == 2 || idx == 6) {
           offset++;
           Component rigidArea_5 = Box.createRigidArea(new Dimension(10, 10));
           registerPanel.add(rigidArea_5, String.format("cell 0 %d", offset + idx));
@@ -268,8 +322,10 @@ public class ComputerUI {
       Component rigidArea_6 = Box.createRigidArea(new Dimension(20, 10));
       registerPanel.add(rigidArea_6, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS));
 
-      pcCell = new Register(Registry.NUM_REGISTERS - 1, "PC", value -> pc.setCurrentIndex(value));
-      registerPanel.add(pcCell, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS + 1));
+      pcCell = regCells[Registry.NUM_REGISTERS - 1];
+      // new Register(
+      //     Registry.NUM_REGISTERS - 1, "PC", value -> pc.setCurrentIndex(value), regSelecter);
+      // registerPanel.add(pcCell, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS + 1));
 
       {
         cpu.addRegistryListener(
@@ -361,6 +417,7 @@ public class ComputerUI {
         controlPanel.add(lblOutput, "cell 0 3, top, right");
 
         lblPrintOutput = new JEditorPane();
+        lblPrintOutput.setFocusable(false);
         lblPrintOutput.setOpaque(false);
         lblPrintOutput.setEditable(false);
         lblPrintOutput.setMargin(new Insets(0, 0, 0, 0));
@@ -383,6 +440,7 @@ public class ComputerUI {
         controlPanel.add(lblError, "cell 0 4, top, right");
 
         lblErrorMessage = new JEditorPane();
+        lblErrorMessage.setFocusable(false);
         lblErrorMessage.setOpaque(false);
         lblErrorMessage.setEditable(false);
         lblErrorMessage.setMargin(new Insets(0, 0, 0, 0));

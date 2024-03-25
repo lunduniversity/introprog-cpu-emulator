@@ -8,11 +8,11 @@ public interface Memory extends ObservableStorage {
 
   int size();
 
-  String exportAsBase64();
-
-  void importFromBase64(String base64);
-
   boolean moveCellsUp(int startIdx, int endIdx);
 
   boolean moveCellsDown(int startIdx, int endIdx);
+
+  String exportAsBase64();
+
+  void importFromBase64(String base64);
 }

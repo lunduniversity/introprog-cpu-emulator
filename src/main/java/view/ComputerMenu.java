@@ -134,8 +134,8 @@ public class ComputerMenu extends JMenuBar {
     itmReset.addActionListener((e) -> ui.handleResetAllData());
     itmUndo.addActionListener(e -> {});
     itmRedo.addActionListener(e -> {});
-    itmMoveUp.addActionListener(e -> cellSelecter.moveCellsUp());
-    itmMoveDown.addActionListener(e -> cellSelecter.moveCellsDown());
+    // itmMoveUp.addActionListener(e -> cellSelecter.moveCellsUp());
+    // itmMoveDown.addActionListener(e -> cellSelecter.moveCellsDown());
     itmCopy.addActionListener(e -> cellSelecter.copySelection());
     itmPaste.addActionListener(e -> cellSelecter.pasteSelection());
     itmClear.addActionListener(e -> cellSelecter.clearSelection());

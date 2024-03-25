@@ -142,31 +142,46 @@ public class ByteStorage implements Memory {
     if (startIdx <= 0) {
       return false;
     }
+
+    // Temporary store for the element that will be overwritten
     int tmp = store[startIdx - 1];
-    int end = Math.min(store.length, endIdx);
-    for (int i = startIdx; i < end; i++) {
-      store[i - 1] = store[i];
-      notifyListeners(i - 1, store[i - 1]);
-    }
+
+    // Move section up by one
+    // Parameters are (src, srcPos, dest, destPos, length)
+    System.arraycopy(store, startIdx, store, startIdx - 1, endIdx - startIdx);
+
+    // Put the temp element at endIdx
     store[endIdx - 1] = tmp;
-    notifyListeners(endIdx - 1, tmp);
+
+    // Notify listeners for each moved cell
+    for (int i = startIdx - 1; i < endIdx; i++) {
+      notifyListeners(i, store[i]);
+    }
 
     return true;
   }
 
   @Override
   public boolean moveCellsDown(final int startIdx, final int endIdx) {
-    // If endIdx is the last index do nothing
-    if (endIdx >= store.length) {
+    // Adjust for exclusive endIdx: check bounds
+    if (endIdx >= store.length || startIdx < 0 || startIdx >= endIdx) {
       return false;
     }
-    int tmp = store[endIdx + 1];
-    for (int i = endIdx; i > startIdx; i--) {
-      store[i] = store[i - 1];
+
+    // Temporary store for the element that will be overwritten
+    int temp = store[endIdx];
+
+    // Move section down with System.arraycopy
+    // Parameters are (src, srcPos, dest, destPos, length)
+    System.arraycopy(store, startIdx, store, startIdx + 1, endIdx - startIdx);
+
+    // Put the temp element at startIdx
+    store[startIdx] = temp;
+
+    // Notify listeners for each moved cell, including the swapped temp
+    for (int i = startIdx; i <= endIdx; i++) {
       notifyListeners(i, store[i]);
     }
-    store[startIdx] = tmp;
-    notifyListeners(startIdx, tmp);
 
     return true;
   }

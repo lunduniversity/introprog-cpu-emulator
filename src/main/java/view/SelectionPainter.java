@@ -1,5 +1,5 @@
 package view;
 
 public interface SelectionPainter {
-  void paintSelection(int rowIdx, boolean isSelected, int caretPos);
+  void paintSelection(int rowIdx, boolean isSelected, int caretPos, boolean active);
 }

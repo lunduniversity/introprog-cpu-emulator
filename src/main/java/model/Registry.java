@@ -2,7 +2,7 @@ package model;
 
 public interface Registry extends ObservableStorage {
 
-  static final String[] REGISTER_NAMES = {"OP1", "OP2", "RES", "R1", "R2", "R3", "PRT"};
+  static final String[] REGISTER_NAMES = {"OP1", "OP2", "RES", "R1", "R2", "R3", "PRT", "PC"};
   static final int NUM_REGISTERS = REGISTER_NAMES.length;
   static final String INVALID_REGISTER = "\u2013";
 
@@ -13,6 +13,10 @@ public interface Registry extends ObservableStorage {
   void setRegister(int index, int value);
 
   void setRegister(String name, int value);
+
+  boolean moveCellsUp(int startIdx, int endIdx);
+
+  boolean moveCellsDown(int startIdx, int endIdx);
 
   static String idxToName(int idx) {
     if (idx >= 0 && idx < REGISTER_NAMES.length) return REGISTER_NAMES[idx];
@@ -35,6 +39,8 @@ public interface Registry extends ObservableStorage {
         return 5;
       case "PRT":
         return 6;
+      case "PC":
+        return 7;
       default:
         throw new IllegalArgumentException("Invalid register name: " + name);
     }
