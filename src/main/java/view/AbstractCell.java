@@ -245,13 +245,24 @@ public abstract class AbstractCell extends JPanel {
     return this;
   }
 
+  private boolean wasSelected = false;
+  private boolean wasCaret = false;
+
   public AbstractCell setSelected(boolean selected, int caretPos, boolean active) {
     if (selected) {
+      wasSelected = true;
       _bgColor(active ? SELECT_BG_COLOR : INACTIVE_SELECT_BG_COLOR);
     } else {
-      _bgColor(active ? DEFAULT_BG_COLOR : INACTIVE_DEFAULT_BG_COLOR);
-      if (caretPos >= 0)
+      // _bgColor(active ? DEFAULT_BG_COLOR : INACTIVE_DEFAULT_BG_COLOR);
+      if (wasSelected || wasCaret) {
+        wasSelected = false;
+        wasCaret = false;
+        _bgColor(DEFAULT_BG_COLOR);
+      }
+      if (caretPos >= 0) {
+        wasCaret = true;
         bits[caretPos].setBackground(active ? CARET_BG_COLOR : INACTIVE_CARET_BG_COLOR);
+      }
     }
     return this;
   }

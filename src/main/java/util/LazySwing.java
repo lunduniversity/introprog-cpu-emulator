@@ -14,7 +14,15 @@ import javax.swing.border.Border;
 public class LazySwing {
 
   public static void inv(Runnable runnable) {
-    javax.swing.SwingUtilities.invokeLater(runnable);
+    inv(runnable, true);
+  }
+
+  public static void inv(Runnable runnable, boolean forceNewInvocation) {
+    if (forceNewInvocation || !javax.swing.SwingUtilities.isEventDispatchThread()) {
+      javax.swing.SwingUtilities.invokeLater(runnable);
+    } else {
+      runnable.run();
+    }
   }
 
   public static void checkEDT() {
@@ -22,6 +30,10 @@ public class LazySwing {
       new IllegalStateException("This method must be called on the EDT").printStackTrace();
       ;
     }
+  }
+
+  public static boolean isEDT() {
+    return javax.swing.SwingUtilities.isEventDispatchThread();
   }
 
   public static AbstractAction action(ActionListener listener) {

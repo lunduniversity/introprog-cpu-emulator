@@ -96,6 +96,13 @@ public class InstructionTable extends JFrame {
       // Instructions
       appendToTable(
           table,
+          InstructionFactory.INST_NAME_NOP,
+          InstructionFactory.INST_NOP,
+          "--",
+          "No operation. Does nothing.",
+          pc);
+      appendToTable(
+          table,
           InstructionFactory.INST_NAME_ADD,
           InstructionFactory.INST_ADD,
           "--",
@@ -285,15 +292,5 @@ public class InstructionTable extends JFrame {
     table.add(lblOpcode, "aligny top, gaptop 2, gapx 2");
     table.add(sc1, "aligny top, gapx 2");
     table.add(sc2, "grow,aligny top, gapx 2");
-  }
-
-  public static void main(String[] args) {
-    // Ensuring GUI creation is done in the Event Dispatch Thread
-    javax.swing.SwingUtilities.invokeLater(
-        new Runnable() {
-          public void run() {
-            new InstructionTable(null, null, null);
-          }
-        });
   }
 }

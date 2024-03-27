@@ -1,6 +1,5 @@
 package view;
 
-import static util.LazySwing.checkEDT;
 import static util.LazySwing.inv;
 
 import java.util.concurrent.TimeUnit;
@@ -173,7 +172,6 @@ public abstract class AbstractSelecter {
   }
 
   public void startSelection(int idx) {
-    checkEDT();
     mouseStartIdx = idx;
     mouseEndIdx = idx;
     selecting = true;
@@ -195,7 +193,6 @@ public abstract class AbstractSelecter {
 
   public void updateSelection(int idx) {
     if (selecting) {
-      checkEDT();
       mouseEndIdx = idx;
       paintMouseSelection = true;
       _paint();
@@ -203,7 +200,6 @@ public abstract class AbstractSelecter {
   }
 
   public void endSelection() {
-    checkEDT();
     if (selecting) {
       selectStartRange = Math.min(mouseStartIdx, mouseEndIdx);
       selectEndRange = Math.max(mouseStartIdx, mouseEndIdx) + 1;
@@ -215,13 +211,11 @@ public abstract class AbstractSelecter {
   }
 
   public void cancelSelection() {
-    checkEDT();
     selecting = false;
     _paint();
   }
 
   public boolean isSelecting() {
-    checkEDT();
     return selecting;
   }
 
@@ -248,24 +242,22 @@ public abstract class AbstractSelecter {
   public abstract void moveCellsDown();
 
   protected void _paint() {
-    if (selecting) {
-      inv(
-          () -> {
-            int start = Math.min(mouseStartIdx, mouseEndIdx);
-            int end = Math.max(mouseStartIdx, mouseEndIdx);
-            for (int i = 0; i < maxRange; i++) {
-              boolean isSelected = i >= start && i <= end && paintMouseSelection;
-              painter.paintSelection(i, isSelected, -1, false);
+    Runnable r =
+        selecting
+            ? () -> { // If mouse selection is active
+              int start = Math.min(mouseStartIdx, mouseEndIdx);
+              int end = Math.max(mouseStartIdx, mouseEndIdx);
+              for (int i = 0; i < maxRange; i++) {
+                boolean isSelected = i >= start && i <= end && paintMouseSelection;
+                painter.paintSelection(i, isSelected, -1, false);
+              }
             }
-          });
-    } else {
-      inv(
-          () -> {
-            for (int i = 0; i < maxRange; i++) {
-              boolean isSelected = i >= selectStartRange && i < selectEndRange;
-              painter.paintSelection(i, isSelected, i == caretPosRow ? caretPosCol : -1, active);
-            }
-          });
-    }
+            : () -> {
+              for (int i = 0; i < maxRange; i++) {
+                boolean isSelected = i >= selectStartRange && i < selectEndRange;
+                painter.paintSelection(i, isSelected, i == caretPosRow ? caretPosCol : -1, active);
+              }
+            };
+    inv(r, false);
   }
 }

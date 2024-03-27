@@ -1,7 +1,6 @@
 package view;
 
 import static util.LazySwing.action;
-import static util.LazySwing.checkEDT;
 import static util.LazySwing.inv;
 
 import io.ObservableIO;
@@ -28,6 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -44,6 +44,7 @@ import net.miginfocom.swing.MigLayout;
 import util.ObservableValue;
 import view.AbstractSelecter.FocusRequester;
 import view.AbstractSelecter.StorageType;
+import view.SnapshotDialog.Mode;
 
 public class ComputerUI implements FocusRequester {
 
@@ -119,7 +120,7 @@ public class ComputerUI implements FocusRequester {
   private void initialize() {
     frame = new JFrame();
     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    frame.setJMenuBar(new ComputerMenu(this, memory, cellSelecter));
+    frame.setJMenuBar(new ComputerMenu(this));
     frame.getContentPane().setLayout(new MigLayout("", "[]", "[]"));
 
     // Disabling TAB and Shift+TAB for focus traversal in this JPanel
@@ -147,10 +148,9 @@ public class ComputerUI implements FocusRequester {
         "switchSelecter",
         action(
             e -> {
-              checkEDT();
               if (currentSelecter == cellSelecter) {
                 regSelecter.requestFocus();
-              } else {
+              } else if (currentSelecter == regSelecter) {
                 cellSelecter.requestFocus();
               }
             }));
@@ -165,29 +165,23 @@ public class ComputerUI implements FocusRequester {
     amap.put("caretLeft", action(e -> currentSelecter.moveCaretLeft()));
     amap.put("caretRight", action(e -> currentSelecter.moveCaretRight()));
 
-    // Handle arrow keys to select multiple cells
-    imap.put(KeyStroke.getKeyStroke("shift UP"), "selectUp");
-    imap.put(KeyStroke.getKeyStroke("shift DOWN"), "selectDown");
-    imap.put(KeyStroke.getKeyStroke("shift LEFT"), "none");
-    imap.put(KeyStroke.getKeyStroke("shift RIGHT"), "none");
-    amap.put("selectUp", action(e -> currentSelecter.expandSelectionUp()));
-    amap.put("selectDown", action(e -> currentSelecter.expandSelectionDown()));
+    // // Handle arrow keys to select multiple cells
+    // imap.put(KeyStroke.getKeyStroke("shift UP"), "selectUp");
+    // imap.put(KeyStroke.getKeyStroke("shift DOWN"), "selectDown");
+    // amap.put("selectUp", action(e -> currentSelecter.expandSelectionUp()));
+    // amap.put("selectDown", action(e -> currentSelecter.expandSelectionDown()));
 
-    // Handle arrow keys to move selection
-    imap.put(KeyStroke.getKeyStroke("ctrl UP"), "moveSelectionUp");
-    imap.put(KeyStroke.getKeyStroke("ctrl DOWN"), "moveSelectionDown");
-    imap.put(KeyStroke.getKeyStroke("ctrl LEFT"), "none");
-    imap.put(KeyStroke.getKeyStroke("ctrl RIGHT"), "none");
-    amap.put("moveSelectionUp", action(e -> currentSelecter.moveSelectionUp()));
-    amap.put("moveSelectionDown", action(e -> currentSelecter.moveSelectionDown()));
+    // // Handle arrow keys to move selection
+    // imap.put(KeyStroke.getKeyStroke("ctrl UP"), "moveSelectionUp");
+    // imap.put(KeyStroke.getKeyStroke("ctrl DOWN"), "moveSelectionDown");
+    // amap.put("moveSelectionUp", action(e -> currentSelecter.moveSelectionUp()));
+    // amap.put("moveSelectionDown", action(e -> currentSelecter.moveSelectionDown()));
 
-    // Handle arrow keys to move selected cells
-    imap.put(KeyStroke.getKeyStroke("alt UP"), "moveCellsUp");
-    imap.put(KeyStroke.getKeyStroke("alt DOWN"), "moveCellsDown");
-    imap.put(KeyStroke.getKeyStroke("alt LEFT"), "none");
-    imap.put(KeyStroke.getKeyStroke("alt RIGHT"), "none");
-    amap.put("moveCellsUp", action(e -> currentSelecter.moveCellsUp()));
-    amap.put("moveCellsDown", action(e -> currentSelecter.moveCellsDown()));
+    // // Handle arrow keys to move selected cells
+    // imap.put(KeyStroke.getKeyStroke("alt UP"), "moveCellsUp");
+    // imap.put(KeyStroke.getKeyStroke("alt DOWN"), "moveCellsDown");
+    // amap.put("moveCellsUp", action(e -> currentSelecter.moveCellsUp()));
+    // amap.put("moveCellsDown", action(e -> currentSelecter.moveCellsDown()));
 
     // Handle setting bit values
     imap.put(KeyStroke.getKeyStroke("ENTER"), "flipBit");
@@ -198,7 +192,6 @@ public class ComputerUI implements FocusRequester {
         "flipBit",
         action(
             e -> {
-              checkEDT();
               currentCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
             }));
     amap.put(
@@ -272,7 +265,6 @@ public class ComputerUI implements FocusRequester {
             new Cell(
                 i,
                 value -> {
-                  checkEDT();
                   memory.setValueAt(idx, value);
                 },
                 cellSelecter);
@@ -454,14 +446,7 @@ public class ComputerUI implements FocusRequester {
       {
         JButton btnReset = new JButton("Reset program");
         btnReset.setFocusable(false);
-        btnReset.addActionListener(
-            e -> {
-              lblPrintOutput.setText("");
-              lblErrorMessage.setText("");
-              pc.setCurrentIndex(0);
-              registry.reset();
-              inv(() -> resetCellColors());
-            });
+        btnReset.addActionListener(e -> handleResetState());
         controlPanel.add(btnReset, "cell 0 6 2 1");
       }
     }
@@ -484,6 +469,16 @@ public class ComputerUI implements FocusRequester {
     lblPrintOutput.setBackground(UIManager.getColor("Panel.background"));
     lblErrorMessage.setText("");
     lblErrorMessage.setBackground(UIManager.getColor("Panel.background"));
+  }
+
+  void handleResetState() {
+    {
+      lblPrintOutput.setText("");
+      lblErrorMessage.setText("");
+      pc.setCurrentIndex(0);
+      registry.reset();
+      inv(() -> resetCellColors());
+    }
   }
 
   void handleResetAllData() {
@@ -564,6 +559,7 @@ public class ComputerUI implements FocusRequester {
         asciiTable = null;
       }
     }
+    frame.requestFocus();
   }
 
   public void toggleInstructions(boolean display) {
@@ -577,6 +573,7 @@ public class ComputerUI implements FocusRequester {
         instructionTable = null;
       }
     }
+    frame.requestFocus();
   }
 
   @Override
@@ -591,6 +588,37 @@ public class ComputerUI implements FocusRequester {
       regSelecter.setActive();
       currentSelecter = regSelecter;
       currentCells = regCells;
+    }
+  }
+
+  AbstractSelecter getCurrentSelecter() {
+    return currentSelecter;
+  }
+
+  void exportAsBase64() {
+    String memorySnapdhot = memory.exportAsBase64();
+    if (memorySnapdhot.isEmpty()) {
+      memorySnapdhot = "(Memory is empty)";
+    }
+    SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
+    dialog.setText(memorySnapdhot);
+    dialog.setVisible(true);
+  }
+
+  void importFromBase64() {
+    SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
+    dialog.setVisible(true);
+    if (dialog.isConfirmed()) {
+      String memorySnapshot = dialog.getText();
+      try {
+        memory.importFromBase64(memorySnapshot);
+      } catch (IllegalArgumentException ex) {
+        JOptionPane.showMessageDialog(
+            frame,
+            "The given input has the wrong format, and cannot be imported.",
+            "Invalid memory snapdhot",
+            JOptionPane.WARNING_MESSAGE);
+      }
     }
   }
 }
