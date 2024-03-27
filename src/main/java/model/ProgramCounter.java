@@ -13,24 +13,27 @@ public class ProgramCounter {
   }
 
   public void setCurrentIndex(int currentIndex) {
+    int oldIdx = this.currentIndex;
     this.currentIndex = currentIndex;
-    notifyListeners();
+    notifyListeners(oldIdx, currentIndex);
   }
 
   public int next() {
     int next = currentIndex++;
-    notifyListeners();
+    notifyListeners(next, currentIndex);
     return next;
   }
 
   public void jumpTo(int index) {
+    int oldIdx = currentIndex;
     currentIndex = index;
-    notifyListeners();
+    notifyListeners(oldIdx, currentIndex);
   }
 
   public void halt() {
+    int oldIdx = currentIndex;
     currentIndex = -1;
-    notifyListeners();
+    notifyListeners(oldIdx, currentIndex);
   }
 
   public boolean isHalted() {
@@ -38,17 +41,18 @@ public class ProgramCounter {
   }
 
   public void reset() {
+    int oldIdx = currentIndex;
     currentIndex = 0;
-    notifyListeners();
+    notifyListeners(oldIdx, currentIndex);
   }
 
   public void addListener(ProgramCounterListener listener) {
     listeners.add(listener);
   }
 
-  private void notifyListeners() {
+  private void notifyListeners(int oldIdx, int newIdx) {
     for (ProgramCounterListener listener : listeners) {
-      listener.onProgramCounterChanged(currentIndex);
+      listener.onProgramCounterChanged(oldIdx, newIdx);
     }
   }
 }

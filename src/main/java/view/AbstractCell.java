@@ -218,7 +218,12 @@ public abstract class AbstractCell extends JPanel {
       bits[7 - i].setText(Integer.toString(((value >> i) & 1)));
     }
     updateValue();
-    if (isExecuting) highlight();
+    if (isExecuting) {
+      System.out.println("Highlighting");
+      highlight();
+    } else {
+      System.out.println("Not highlighting");
+    }
   }
 
   public int getValue() {

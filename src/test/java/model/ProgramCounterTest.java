@@ -87,12 +87,12 @@ public class ProgramCounterTest {
     pc.next();
     pc.reset();
 
-    inOrder1.verify(listener1).onProgramCounterChanged(10);
-    inOrder1.verify(listener1).onProgramCounterChanged(11);
-    inOrder1.verify(listener1).onProgramCounterChanged(0);
+    inOrder1.verify(listener1).onProgramCounterChanged(0, 10);
+    inOrder1.verify(listener1).onProgramCounterChanged(10, 11);
+    inOrder1.verify(listener1).onProgramCounterChanged(11, 0);
 
-    inOrder2.verify(listener2).onProgramCounterChanged(10);
-    inOrder2.verify(listener2).onProgramCounterChanged(11);
-    inOrder2.verify(listener2).onProgramCounterChanged(0);
+    inOrder2.verify(listener2).onProgramCounterChanged(0, 10);
+    inOrder2.verify(listener2).onProgramCounterChanged(10, 11);
+    inOrder2.verify(listener2).onProgramCounterChanged(11, 0);
   }
 }

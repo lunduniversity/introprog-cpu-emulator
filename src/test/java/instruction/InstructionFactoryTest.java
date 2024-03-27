@@ -24,6 +24,9 @@ public class InstructionFactoryTest {
   @Test
   public void testIsInstructionWithValidCodes() {
     assertTrue(
+        factory.isInstruction(InstructionFactory.INST_NOP),
+        "INST_NOP should be recognized as an instruction.");
+    assertTrue(
         factory.isInstruction(InstructionFactory.INST_ADD),
         "INST_ADD should be recognized as an instruction.");
     assertTrue(
@@ -66,7 +69,7 @@ public class InstructionFactoryTest {
 
   @Test
   public void testIsInstructionWithInvalidCode() {
-    int invalidCode = 0x0F; // Assuming 0x0F is not defined as an instruction
+    int invalidCode = 0xF0; // Assuming 0xF0 is not defined as an instruction
     assertFalse(
         factory.isInstruction(invalidCode),
         "Invalid code should not be recognized as an instruction.");
@@ -75,6 +78,10 @@ public class InstructionFactoryTest {
   @Test
   public void testCreateInstructionForAllValidCodes() {
     // Test each instruction creation
+    assertInstanceOf(
+        Nop.class,
+        factory.createInstruction(InstructionFactory.INST_NOP),
+        "Should create an instance of Nop.");
     assertInstanceOf(
         Add.class,
         factory.createInstruction(InstructionFactory.INST_ADD),
@@ -133,7 +140,7 @@ public class InstructionFactoryTest {
   public void testCreateInstructionWithInvalidCode() {
     // Factory should return a null-object for invalid codes.
     // The null objects should be printable but have no functionality.
-    int invalidCode = 0x0F; // Assuming 0x0F is not defined as an instruction
+    int invalidCode = 0xF0; // Assuming 0xF0 is not defined as an instruction
     Instruction invalidInstruction = factory.createInstruction(invalidCode);
     assertEquals("--", invalidInstruction.toString(), "Invalid instruction should be printable.");
 

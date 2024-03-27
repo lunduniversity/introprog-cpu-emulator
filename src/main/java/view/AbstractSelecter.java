@@ -25,9 +25,8 @@ public abstract class AbstractSelecter {
   protected boolean paintMouseSelection;
 
   protected final int maxRange;
-
-  protected SelectionPainter painter;
-  private FocusRequester focusRequester;
+  protected final SelectionPainter painter;
+  private final FocusRequester focusRequester;
 
   public AbstractSelecter(int maxRange, SelectionPainter painter, FocusRequester focusRequester) {
     this.maxRange = maxRange;
@@ -35,15 +34,22 @@ public abstract class AbstractSelecter {
     this.focusRequester = focusRequester;
   }
 
+  public enum StorageType {
+    MEMORY,
+    REGISTER
+  }
+
   public interface FocusRequester {
-    void requestFocus(AbstractSelecter selecter);
+    void requestFocus(StorageType type);
   }
 
   protected int[] copiedRange = new int[] {};
 
   public final void requestFocus() {
-    focusRequester.requestFocus(this);
+    focusRequester.requestFocus(_getStorageType());
   }
+
+  public abstract StorageType _getStorageType();
 
   public final void setInactive() {
     active = false;

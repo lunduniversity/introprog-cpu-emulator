@@ -12,6 +12,11 @@ public class RegisterSelecter extends AbstractSelecter {
     this.registry = registry;
   }
 
+  @Override
+  public StorageType _getStorageType() {
+    return StorageType.REGISTER;
+  }
+
   public void deleteSelection() {
     if (selectStartRange != -1) {
       // Move all cells after the selection up by the size of the selection

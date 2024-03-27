@@ -43,8 +43,9 @@ import model.Registry;
 import net.miginfocom.swing.MigLayout;
 import util.ObservableValue;
 import view.AbstractSelecter.FocusRequester;
+import view.AbstractSelecter.StorageType;
 
-public class ComputerUI {
+public class ComputerUI implements FocusRequester {
 
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(255, 255, 200);
 
@@ -73,6 +74,7 @@ public class ComputerUI {
   private InstructionTable instructionTable;
 
   private AbstractSelecter currentSelecter;
+  private AbstractCell[] currentCells;
 
   public ComputerUI(Memory memory, ProgramCounter pc, CPU cpu, ObservableIO io) {
     this.memory = memory;
@@ -87,22 +89,12 @@ public class ComputerUI {
     final SelectionPainter regPainter =
         (address, isSelected, caretPos, active) ->
             regCells[address].setSelected(isSelected, caretPos, active);
-    final FocusRequester focusRequester =
-        selecter -> {
-          if (currentSelecter != selecter) {
-            if (currentSelecter != null) {
-              currentSelecter.setInactive();
-            }
-            selecter.setActive();
-            currentSelecter = selecter;
-          }
-        };
-    this.cellSelecter = new CellSelecter(memory, cellPainter, focusRequester);
-    this.regSelecter = new RegisterSelecter(registry, regPainter, focusRequester);
-    cellSelecter.requestFocus();
+    this.cellSelecter = new CellSelecter(memory, cellPainter, this);
+    this.regSelecter = new RegisterSelecter(registry, regPainter, this);
 
     this.programCounterFocusIdx = new ObservableValue<>(pc.getCurrentIndex());
     initialize();
+    requestFocus(StorageType.MEMORY);
 
     memCells[programCounterFocusIdx.get()].setProgramCounterFocus();
 
@@ -207,19 +199,19 @@ public class ComputerUI {
         action(
             e -> {
               checkEDT();
-              memCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
+              currentCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
             }));
     amap.put(
         "setBit0",
         action(
             e ->
-                memCells[currentSelecter.getCaretRow()].setBit(
+                currentCells[currentSelecter.getCaretRow()].setBit(
                     currentSelecter.getCaretCol(), false)));
     amap.put(
         "setBit1",
         action(
             e ->
-                memCells[currentSelecter.getCaretRow()].setBit(
+                currentCells[currentSelecter.getCaretRow()].setBit(
                     currentSelecter.getCaretCol(), true)));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
@@ -299,11 +291,11 @@ public class ComputerUI {
       registerPanel.setFocusable(true);
       frame.getContentPane().add(registerPanel, "cell 1 3, top");
 
-      // Computer has 6 registers, OP1-OP3 and R1-R3.
+      // Computer has 8 registers, OP1-OP3 and R1-R3, plus PRT and PC.
       // R1-R3 are general purpose registers, OP1-OP3 are used for operations.
       regCells = new Register[Registry.NUM_REGISTERS];
       int offset = 3;
-      for (int i = 0; i < regCells.length; i++) {
+      for (int i = 0; i < regCells.length - 1; i++) {
         final int idx = i;
         regCells[i] =
             new Register(
@@ -312,7 +304,7 @@ public class ComputerUI {
                 value -> registry.setRegister(idx, value),
                 regSelecter);
         registerPanel.add(regCells[i], String.format("cell 0 %d", offset + idx));
-        if (idx == 2 || idx == 6) {
+        if (idx == 2) {
           offset++;
           Component rigidArea_5 = Box.createRigidArea(new Dimension(10, 10));
           registerPanel.add(rigidArea_5, String.format("cell 0 %d", offset + idx));
@@ -322,10 +314,11 @@ public class ComputerUI {
       Component rigidArea_6 = Box.createRigidArea(new Dimension(20, 10));
       registerPanel.add(rigidArea_6, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS));
 
-      pcCell = regCells[Registry.NUM_REGISTERS - 1];
-      // new Register(
-      //     Registry.NUM_REGISTERS - 1, "PC", value -> pc.setCurrentIndex(value), regSelecter);
-      // registerPanel.add(pcCell, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS + 1));
+      pcCell =
+          new Register(
+              Registry.NUM_REGISTERS - 1, "PC", value -> pc.setCurrentIndex(value), regSelecter);
+      registerPanel.add(pcCell, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS + 1));
+      regCells[Registry.NUM_REGISTERS - 1] = pcCell;
 
       {
         cpu.addRegistryListener(
@@ -333,22 +326,19 @@ public class ComputerUI {
               inv(
                   () -> {
                     regCells[address].setValue(value, isExecuting.get());
-                    regCells[address].highlight();
                   });
             });
         pc.addListener(
-            value -> {
+            (oldIdx, newIdx) -> {
               inv(
                   () -> {
-                    int pcIdx = programCounterFocusIdx.get();
-                    if (pcIdx >= 0 && pcIdx < memory.size()) {
-                      memCells[pcIdx].clearProgramCounterFocus();
+                    if (oldIdx >= 0 && oldIdx < memory.size()) {
+                      memCells[oldIdx].clearProgramCounterFocus();
                     }
-                    pcCell.setValue(value, isExecuting.get());
-                    pcCell.highlight();
-                    programCounterFocusIdx.set(value);
-                    if (value >= 0 && value < memory.size()) {
-                      memCells[value].setProgramCounterFocus();
+                    pcCell.setValue(newIdx, isExecuting.get());
+                    programCounterFocusIdx.set(newIdx);
+                    if (newIdx >= 0 && newIdx < memory.size()) {
+                      memCells[newIdx].setProgramCounterFocus();
                     }
                   });
             });
@@ -375,6 +365,7 @@ public class ComputerUI {
       // Step button
       {
         JButton btnStep = new JButton("Step");
+        btnStep.setFocusable(false);
         btnStep.addActionListener(
             e -> {
               try {
@@ -384,7 +375,7 @@ public class ComputerUI {
               } catch (Exception ex) {
                 handleError(ex);
               } finally {
-                isExecuting.set(false);
+                inv(() -> isExecuting.set(false));
               }
             });
         controlPanel.add(btnStep, "cell 0 1");
@@ -393,6 +384,7 @@ public class ComputerUI {
       // Run button
       {
         JButton btnRun = new JButton("Run");
+        btnRun.setFocusable(false);
         btnRun.addActionListener(
             e -> {
               try {
@@ -402,7 +394,7 @@ public class ComputerUI {
               } catch (Exception ex) {
                 handleError(ex);
               } finally {
-                isExecuting.set(false);
+                inv(() -> isExecuting.set(false));
               }
             });
         controlPanel.add(btnRun, "cell 1 1");
@@ -461,6 +453,7 @@ public class ComputerUI {
       // Reset button
       {
         JButton btnReset = new JButton("Reset program");
+        btnReset.setFocusable(false);
         btnReset.addActionListener(
             e -> {
               lblPrintOutput.setText("");
@@ -583,6 +576,21 @@ public class ComputerUI {
         instructionTable.dispose();
         instructionTable = null;
       }
+    }
+  }
+
+  @Override
+  public void requestFocus(StorageType type) {
+    if (type == StorageType.MEMORY) {
+      cellSelecter.setActive();
+      regSelecter.setInactive();
+      currentSelecter = cellSelecter;
+      currentCells = memCells;
+    } else {
+      cellSelecter.setInactive();
+      regSelecter.setActive();
+      currentSelecter = regSelecter;
+      currentCells = regCells;
     }
   }
 }

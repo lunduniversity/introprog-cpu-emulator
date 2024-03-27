@@ -225,7 +225,7 @@ public class InstructionTable extends JFrame {
     JLabel lblInstr = bold(instr);
     lblInstr.setBorder(INSTR_NO_FOCUS_BORDER);
     pc.addListener(
-        pcValue ->
+        (pcValue, newIdx) ->
             inv(
                 () -> {
                   if (pcValue >= 0 && pcValue < memory.size()) {

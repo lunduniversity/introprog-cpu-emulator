@@ -11,6 +11,11 @@ public class CellSelecter extends AbstractSelecter {
     this.memory = memory;
   }
 
+  @Override
+  public StorageType _getStorageType() {
+    return StorageType.MEMORY;
+  }
+
   // Below are methods that are action rather than selection related, they might be moved to a
   // different class
 

@@ -21,7 +21,7 @@ public class RegistryStaticTest {
   @Test
   void testInvalidIdxToNameReturnsInvalidRegisterConstant() {
     assertEquals(Registry.INVALID_REGISTER, Registry.idxToName(-1));
-    assertEquals(Registry.INVALID_REGISTER, Registry.idxToName(7));
+    assertEquals(Registry.INVALID_REGISTER, Registry.idxToName(8));
   }
 
   @Test
