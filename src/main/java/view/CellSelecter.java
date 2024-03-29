@@ -40,29 +40,7 @@ public class CellSelecter extends AbstractSelecter {
     return new int[] {selectStartRange, selectEndRange};
   }
 
-  public void copySelection() {
-    if (selectStartRange != -1) {
-      int size = selectEndRange - selectStartRange;
-      copiedRange = new int[size];
-      for (int i = 0; i < size; i++) {
-        copiedRange[i] = memory.getValueAt(selectStartRange + i);
-      }
-    }
-  }
-
-  public int[] getPasteData() {
-    return copiedRange;
-  }
-
-  public void pasteSelection() {
-    if (selectStartRange != -1) {
-      for (int i = 0; i < copiedRange.length; i++) {
-        memory.setValueAt(selectStartRange + i, copiedRange[i]);
-      }
-    }
-  }
-
-  public void moveCellsUp() {
+  protected void _moveCellsUpHelper() {
     if (selectStartRange != -1) {
       if (memory.moveCellsUp(selectStartRange, selectEndRange)) {
         selectStartRange--;
@@ -73,7 +51,7 @@ public class CellSelecter extends AbstractSelecter {
     _paint();
   }
 
-  public void moveCellsDown() {
+  protected void _moveCellsDownHelper() {
     if (selectStartRange != -1) {
       if (memory.moveCellsDown(selectStartRange, selectEndRange)) {
         selectStartRange++;
@@ -82,5 +60,27 @@ public class CellSelecter extends AbstractSelecter {
       }
     }
     _paint();
+  }
+
+  @Override
+  protected int[] getValuesInRange(int start, int end) {
+    int[] values = new int[end - start];
+    for (int i = start; i < end; i++) {
+      values[i - start] = memory.getValueAt(i);
+    }
+    return values;
+  }
+
+  @Override
+  protected void setValuesInRange(int start, int[] values) {
+    for (int i = 0; i < values.length; i++) {
+      // Check if the index is out of bounds
+      if (start + i >= memory.size()) {
+        int cutoff = start + values.length - memory.size();
+        throw new IndexOutOfBoundsException(
+            String.format("Data exceeds memory bounds, %d values were cut off.", cutoff));
+      }
+      memory.setValueAt(start + i, values[i]);
+    }
   }
 }

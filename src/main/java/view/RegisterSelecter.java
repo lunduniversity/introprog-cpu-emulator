@@ -38,26 +38,8 @@ public class RegisterSelecter extends AbstractSelecter {
     return new int[] {selectStartRange, selectEndRange};
   }
 
-  public void copySelection() {
-    if (selectStartRange != -1) {
-      int size = selectEndRange - selectStartRange;
-      copiedRange = new int[size];
-      for (int i = 0; i < size; i++) {
-        copiedRange[i] = registry.getRegister(selectStartRange + i);
-      }
-    }
-  }
-
   public int[] getPasteData() {
     return copiedRange;
-  }
-
-  public void pasteSelection() {
-    if (selectStartRange != -1) {
-      for (int i = 0; i < copiedRange.length; i++) {
-        registry.setRegister(selectStartRange + i, copiedRange[i]);
-      }
-    }
   }
 
   public void moveSelectionUp() {
@@ -78,7 +60,7 @@ public class RegisterSelecter extends AbstractSelecter {
     }
   }
 
-  public void moveCellsUp() {
+  protected void _moveCellsUpHelper() {
     if (selectStartRange != -1) {
       if (registry.moveCellsUp(selectStartRange, selectEndRange)) {
         selectStartRange--;
@@ -89,7 +71,7 @@ public class RegisterSelecter extends AbstractSelecter {
     _paint();
   }
 
-  public void moveCellsDown() {
+  protected void _moveCellsDownHelper() {
     if (selectStartRange != -1) {
       if (registry.moveCellsDown(selectStartRange, selectEndRange)) {
         selectStartRange++;
@@ -98,5 +80,27 @@ public class RegisterSelecter extends AbstractSelecter {
       }
     }
     _paint();
+  }
+
+  @Override
+  protected int[] getValuesInRange(int start, int end) {
+    int[] values = new int[end - start];
+    for (int i = start; i < end; i++) {
+      values[i - start] = registry.getRegister(i);
+    }
+    return values;
+  }
+
+  @Override
+  protected void setValuesInRange(int start, int[] values) {
+    for (int i = 0; i < values.length; i++) {
+      // Check if the index is out of bounds
+      if (start + i >= Registry.NUM_REGISTERS) {
+        int cutoff = start + values.length - Registry.NUM_REGISTERS;
+        throw new IndexOutOfBoundsException(
+            String.format("Data exceeds registry bounds, %d values were cut off.", cutoff));
+      }
+      registry.setRegister(start + i, values[i]);
+    }
   }
 }

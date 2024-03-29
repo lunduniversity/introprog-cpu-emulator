@@ -29,7 +29,6 @@ public abstract class AbstractCell extends JPanel {
   private static final Color SELECT_BG_COLOR = new Color(200, 255, 200);
   private static final Color CARET_BG_COLOR = new Color(50, 230, 210);
 
-  private static final Color INACTIVE_DEFAULT_BG_COLOR = new Color(240, 240, 240);
   private static final Color INACTIVE_SELECT_BG_COLOR = new Color(220, 240, 220);
   private static final Color INACTIVE_CARET_BG_COLOR = new Color(150, 180, 160);
 
@@ -38,6 +37,7 @@ public abstract class AbstractCell extends JPanel {
   private static HexFormat hexFormat = HexFormat.of().withUpperCase();
 
   private JLabel lblIndex;
+  private JLabel lblAddress;
   private JPanel bitPanel;
   private JLabel[] bits;
   private JLabel lblHex;
@@ -53,6 +53,7 @@ public abstract class AbstractCell extends JPanel {
 
   public AbstractCell(
       final int index,
+      String address,
       String label,
       CellValueListener valueListener,
       AbstractSelecter cellSelecter) {
@@ -62,21 +63,31 @@ public abstract class AbstractCell extends JPanel {
     setBorder(null);
     setLayout(
         new MigLayout(
-            "gap 5 5, insets 0",
-            "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px][30px:30px:30px][][110px::,grow]",
+            "gap 5, insets 0, flowx, wrap " + (label != null ? "8" : "7"),
+            (label != null ? "[30px:30px:30px]" : "")
+                + "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px][30px:30px:30px][][110px::,grow]",
             "[]"));
 
-    lblIndex = new JLabel(label);
-    lblIndex.setBorder(null);
-    lblIndex.setHorizontalTextPosition(SwingConstants.RIGHT);
-    lblIndex.setPreferredSize(new Dimension(30, 20));
-    lblIndex.setHorizontalAlignment(SwingConstants.RIGHT);
-    add(lblIndex, "cell 0 0,alignx right");
+    lblAddress = new JLabel(address);
+    lblAddress.setBorder(null);
+    lblAddress.setHorizontalTextPosition(SwingConstants.RIGHT);
+    lblAddress.setPreferredSize(new Dimension(30, 20));
+    lblAddress.setHorizontalAlignment(SwingConstants.RIGHT);
+    add(lblAddress, "alignx right");
+
+    if (label != null) {
+      lblIndex = new JLabel(label);
+      lblIndex.setBorder(null);
+      lblIndex.setHorizontalTextPosition(SwingConstants.RIGHT);
+      lblIndex.setPreferredSize(new Dimension(30, 20));
+      lblIndex.setHorizontalAlignment(SwingConstants.RIGHT);
+      add(lblIndex, "alignx right");
+    }
 
     bitPanel = new JPanel();
     bitPanel.setBorder(PC_NO_FOCUS_BORDER);
     bitPanel.setBackground(UIManager.getColor("TextField.background"));
-    add(bitPanel, "cell 1 0,grow");
+    add(bitPanel, "grow");
     bitPanel.setLayout(new MigLayout("flowx, gap 0 0, insets 0", "[sg bit]", ""));
 
     bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
@@ -139,30 +150,30 @@ public abstract class AbstractCell extends JPanel {
     lblHex.setHorizontalTextPosition(SwingConstants.RIGHT);
     lblHex.setHorizontalAlignment(SwingConstants.RIGHT);
     lblHex.setPreferredSize(new Dimension(30, 20));
-    add(lblHex, "cell 2 0,alignx right");
+    add(lblHex, "alignx right");
 
     lblDec = new JLabel(pad(0));
     lblDec.setBorder(null);
     lblDec.setHorizontalTextPosition(SwingConstants.RIGHT);
     lblDec.setHorizontalAlignment(SwingConstants.RIGHT);
     lblDec.setPreferredSize(new Dimension(30, 20));
-    add(lblDec, "cell 3 0,alignx right");
+    add(lblDec, "alignx right");
 
     lblAscii = new JLabel("");
     lblAscii.setBorder(null);
     lblAscii.setHorizontalTextPosition(SwingConstants.RIGHT);
     lblAscii.setHorizontalAlignment(SwingConstants.RIGHT);
     lblAscii.setPreferredSize(new Dimension(30, 20));
-    add(lblAscii, "cell 4 0,alignx right");
+    add(lblAscii, "alignx right");
 
-    add(Box.createRigidArea(new Dimension(2, 5)), "cell 5 0");
+    add(Box.createRigidArea(new Dimension(2, 5)));
 
     lblInstruction = new JLabel();
     lblInstruction.setBorder(null);
     lblInstruction.setHorizontalTextPosition(SwingConstants.LEFT);
     lblInstruction.setHorizontalAlignment(SwingConstants.LEFT);
     lblInstruction.setMinimumSize(new Dimension(60, 20));
-    add(lblInstruction, "cell 6 0,alignx left grow");
+    add(lblInstruction, "alignx left grow");
 
     updateValue();
   }
@@ -219,10 +230,7 @@ public abstract class AbstractCell extends JPanel {
     }
     updateValue();
     if (isExecuting) {
-      System.out.println("Highlighting");
       highlight();
-    } else {
-      System.out.println("Not highlighting");
     }
   }
 
@@ -232,16 +240,12 @@ public abstract class AbstractCell extends JPanel {
 
   // Highlighting is used to indicate that the cell is being executed
   public AbstractCell highlight() {
-    for (JLabel bit : bits) {
-      bit.setBackground(HIGHLIGHT_BG_COLOR);
-    }
+    _bgColor(HIGHLIGHT_BG_COLOR);
     return this;
   }
 
   public AbstractCell unhighlight() {
-    for (JLabel bit : bits) {
-      bit.setBackground(DEFAULT_BG_COLOR);
-    }
+    _bgColor(DEFAULT_BG_COLOR);
     return this;
   }
 

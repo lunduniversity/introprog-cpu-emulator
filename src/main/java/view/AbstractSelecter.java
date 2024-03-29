@@ -2,9 +2,18 @@ package view;
 
 import static util.LazySwing.inv;
 
+import instruction.Instruction;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JOptionPane;
 
 public abstract class AbstractSelecter {
+
+  private static final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
   // Whether the component has focus
   protected boolean active = false;
@@ -237,9 +246,64 @@ public abstract class AbstractSelecter {
     }
   }
 
-  public abstract void moveCellsUp();
+  public final void moveCellsUp() {
+    if (selectStartRange == -1) {
+      expandSelectionUp();
+    }
+    _moveCellsUpHelper();
+  }
 
-  public abstract void moveCellsDown();
+  public final void moveCellsDown() {
+    if (selectStartRange == -1) {
+      expandSelectionDown();
+    }
+    _moveCellsDownHelper();
+  }
+
+  protected abstract void _moveCellsUpHelper();
+
+  protected abstract void _moveCellsDownHelper();
+
+  public final void copySelection() {
+    if (selectStartRange == -1) {
+      expandSelectionUp(); // Up or down doesn't matter, just select current row
+    }
+    int[] selectedValues = getValuesInRange(selectStartRange, selectEndRange);
+    StringBuilder sb = new StringBuilder();
+    for (int v : selectedValues) {
+      sb.append(Instruction.toBinaryString(v, 8, 4)).append("\n");
+    }
+    StringSelection selection = new StringSelection(sb.toString());
+    clipboard.setContents(selection, null);
+  }
+
+  protected abstract int[] getValuesInRange(int start, int end);
+
+  public final void pasteSelection() {
+    Transferable contents = clipboard.getContents(null);
+    if (contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+      try {
+        String data = (String) contents.getTransferData(DataFlavor.stringFlavor);
+        String[] lines = data.replaceAll(" ", "").split("\n");
+        int[] values = new int[lines.length];
+        for (int i = 0; i < lines.length; i++) {
+          values[i] = Integer.parseInt(lines[i].trim(), 2);
+        }
+        setValuesInRange(caretPosRow, values);
+      } catch (IndexOutOfBoundsException e) {
+        JOptionPane.showMessageDialog(
+            null, e.getMessage(), "Paste Error", JOptionPane.ERROR_MESSAGE);
+      } catch (Exception e) {
+        JOptionPane.showMessageDialog(
+            null,
+            "Can only paste binary data, e.g.:\n0101 1010\n1010 0101\n...",
+            "Paste Error",
+            JOptionPane.ERROR_MESSAGE);
+      }
+    }
+  }
+
+  protected abstract void setValuesInRange(int start, int[] values);
 
   protected void _paint() {
     Runnable r =

@@ -7,7 +7,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 public class SnapshotDialog extends JDialog {
@@ -89,37 +88,5 @@ public class SnapshotDialog extends JDialog {
 
   public void setText(String text) {
     textArea.setText(text);
-  }
-
-  // Example usage
-  public static void main(String[] args) {
-    JFrame frame = new JFrame();
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.setVisible(true);
-
-    SwingUtilities.invokeLater(
-        () -> {
-          SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
-          dialog.setVisible(true);
-
-          if (dialog.isConfirmed()) {
-            System.out.println("Confirmed with text: " + dialog.getText());
-          } else {
-            System.out.println("Cancelled");
-          }
-        });
-
-    SwingUtilities.invokeLater(
-        () -> {
-          SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
-          dialog.setText("This is a test snapshot");
-          dialog.setVisible(true);
-
-          if (dialog.isConfirmed()) {
-            System.out.println("Confirmed with text: " + dialog.getText());
-          } else {
-            System.out.println("Cancelled");
-          }
-        });
   }
 }

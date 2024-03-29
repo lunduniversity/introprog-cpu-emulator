@@ -104,10 +104,8 @@ public class ComputerMenu extends JMenuBar {
         e -> JOptionPane.showMessageDialog(frame, "Redo not implemented yet"));
     itmMoveUp.addActionListener(e -> ui.getCurrentSelecter().moveCellsUp());
     itmMoveDown.addActionListener(e -> ui.getCurrentSelecter().moveCellsDown());
-    itmCopy.addActionListener(
-        e -> JOptionPane.showMessageDialog(frame, "Copy not implemented yet"));
-    itmPaste.addActionListener(
-        e -> JOptionPane.showMessageDialog(frame, "Paste not implemented yet"));
+    itmCopy.addActionListener(e -> ui.getCurrentSelecter().copySelection());
+    itmPaste.addActionListener(e -> ui.getCurrentSelecter().pasteSelection());
     itmClear.addActionListener(e -> ui.getCurrentSelecter().clearSelection());
     itmDelete.addActionListener(
         e -> JOptionPane.showMessageDialog(frame, "Delete not implemented yet"));
