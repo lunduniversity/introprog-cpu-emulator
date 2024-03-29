@@ -25,7 +25,7 @@ public class StTest {
     int nextMemoryLocation = 1; // The next memory location according to the program counter
 
     // Simulate fetching the value from the register specified by the operand
-    when(mockRegistry.getRegister(operand)).thenReturn(registerValue);
+    when(mockRegistry.getValueAt(operand)).thenReturn(registerValue);
 
     // Simulate the program counter pointing to the next memory address that contains the
     // destination address

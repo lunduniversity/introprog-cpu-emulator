@@ -272,7 +272,14 @@ public class ComputerUI implements FocusRequester {
 
       {
         memory.addListener(
-            (address, value) -> inv(() -> memCells[address].setValue(value, isExecuting.get())));
+            (startIdx, values) ->
+                inv(
+                    () -> {
+                      boolean executing = isExecuting.get();
+                      for (int i = 0; i < values.length; i++) {
+                        memCells[startIdx + i].setValue(values[i], executing);
+                      }
+                    }));
       }
     }
 
@@ -297,7 +304,7 @@ public class ComputerUI implements FocusRequester {
             new Register(
                 i,
                 Registry.REGISTER_NAMES[i],
-                value -> registry.setRegister(idx, value),
+                value -> registry.setValueAt(idx, value),
                 regSelecter);
         regCellsPanel.add(regCells[i], String.format("cell 0 %d", offset + idx));
         if (idx == 2) {
@@ -318,10 +325,13 @@ public class ComputerUI implements FocusRequester {
 
       {
         cpu.addRegistryListener(
-            (address, value) -> {
+            (startIdx, values) -> {
               inv(
                   () -> {
-                    regCells[address].setValue(value, isExecuting.get());
+                    boolean executing = isExecuting.get();
+                    for (int i = 0; i < values.length; i++) {
+                      regCells[startIdx + i].setValue(values[i], executing);
+                    }
                   });
             });
         pc.addListener(
@@ -338,7 +348,7 @@ public class ComputerUI implements FocusRequester {
                     }
                   });
             });
-        memory.addListener((address, value) -> inv(() -> {}));
+        // memory.addListener((address, value) -> inv(() -> {}));
       }
     }
 
@@ -633,5 +643,16 @@ public class ComputerUI implements FocusRequester {
             JOptionPane.WARNING_MESSAGE);
       }
     }
+  }
+
+  String[] getMemorySnapshot() {
+    return memory.exportAsBinary();
+  }
+
+  void setMemorySnapshot(String[] snapshot) {
+    if (snapshot == null) {
+      return;
+    }
+    memory.importFromBinary(snapshot);
   }
 }

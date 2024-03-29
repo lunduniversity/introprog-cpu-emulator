@@ -15,7 +15,7 @@ public class St extends Instruction {
   protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Register src is specified by the operand.
     // Read the destination address from the next memory location.
-    int value = reg.getRegister(operand);
+    int value = reg.getValueAt(operand);
     int dst = mem.getValueAt(pc.next());
     mem.setValueAt(dst, value);
   }

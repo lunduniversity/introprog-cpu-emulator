@@ -20,7 +20,7 @@ public class JmpTest {
     int destinationAddress = 100; // Example destination address
 
     // Setup the expected behavior to fetch the destination address
-    when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
+    when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
     Jmp jmpInstruction = new Jmp(operand);
     jmpInstruction.execute(null, mockRegistry, mockPC, null);

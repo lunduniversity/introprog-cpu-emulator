@@ -90,12 +90,12 @@ public class CPUTest {
   public void testResetResetsProgramCounterAndRegistry() {
     Registry reg = cpu.getRegistry();
     for (int i = 0; i < Registry.NUM_REGISTERS; i++) {
-      reg.setRegister(i, i + 1);
+      reg.setValueAt(i, i + 1);
     }
     cpu.reset();
     verify(pc, times(1)).reset();
     for (int i = 0; i < Registry.NUM_REGISTERS; i++) {
-      assert reg.getRegister(i) == 0;
+      assert reg.getValueAt(i) == 0;
     }
   }
 
@@ -103,7 +103,7 @@ public class CPUTest {
   public void testAddRegistryListener() {
     StorageListener listener = mock(StorageListener.class);
     cpu.addRegistryListener(listener);
-    cpu.getRegistry().setRegister(5, 12);
-    verify(listener, times(1)).onMemoryChanged(5, 12);
+    cpu.getRegistry().setValueAt(5, 12);
+    verify(listener, times(1)).onStorageChanged(5, null);
   }
 }

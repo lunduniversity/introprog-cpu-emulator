@@ -72,15 +72,12 @@ public class CellSelecter extends AbstractSelecter {
   }
 
   @Override
-  protected void setValuesInRange(int start, int[] values) {
-    for (int i = 0; i < values.length; i++) {
-      // Check if the index is out of bounds
-      if (start + i >= memory.size()) {
-        int cutoff = start + values.length - memory.size();
-        throw new IndexOutOfBoundsException(
-            String.format("Data exceeds memory bounds, %d values were cut off.", cutoff));
-      }
-      memory.setValueAt(start + i, values[i]);
-    }
+  protected int setValuesInRange(int start, int[] values) {
+    return memory.setRange(start, values);
+  }
+
+  @Override
+  protected void _deleteRange(int startIdx, int endIdx) {
+    memory.deleteCells(startIdx, endIdx);
   }
 }

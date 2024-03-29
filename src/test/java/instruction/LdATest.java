@@ -38,7 +38,7 @@ public class LdATest {
     ldaInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the registry's setRegister method is called with the correct value
-    verify(mockRegistry).setRegister(operand, finalValue);
+    verify(mockRegistry).setValueAt(operand, finalValue);
   }
 
   @Test

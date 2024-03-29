@@ -2,5 +2,5 @@ package model;
 
 public interface StorageListener {
 
-  void onMemoryChanged(int address, int value);
+  void onStorageChanged(int startIdx, int[] values);
 }

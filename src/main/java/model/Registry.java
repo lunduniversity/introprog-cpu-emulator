@@ -6,17 +6,9 @@ public interface Registry extends ObservableStorage {
   static final int NUM_REGISTERS = REGISTER_NAMES.length;
   static final String INVALID_REGISTER = "\u2013";
 
-  int getRegister(int index);
-
   int getRegister(String name);
 
-  void setRegister(int index, int value);
-
   void setRegister(String name, int value);
-
-  boolean moveCellsUp(int startIdx, int endIdx);
-
-  boolean moveCellsDown(int startIdx, int endIdx);
 
   static String idxToName(int idx) {
     if (idx >= 0 && idx < REGISTER_NAMES.length) return REGISTER_NAMES[idx];

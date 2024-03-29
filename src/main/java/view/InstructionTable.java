@@ -243,12 +243,16 @@ public class InstructionTable extends JFrame {
                   }
                 }));
     memory.addListener(
-        (address, value) ->
+        (startIdx, values) ->
             inv(
                 () -> {
-                  if (address == pc.getCurrentIndex()) {
+                  // If the current PC is in the modified range
+                  if (startIdx >= pc.getCurrentIndex()
+                      && pc.getCurrentIndex() <= startIdx + values.length) {
                     lblInstr.setBorder(
-                        (value & 0xF0) == opcode ? INSTR_FOCUS_BORDER : INSTR_NO_FOCUS_BORDER);
+                        (values[pc.getCurrentIndex() - startIdx] & 0xF0) == opcode
+                            ? INSTR_FOCUS_BORDER
+                            : INSTR_NO_FOCUS_BORDER);
                   }
                 }));
     String codeStr = Instruction.toBinaryString(opcode >> 4, 4);

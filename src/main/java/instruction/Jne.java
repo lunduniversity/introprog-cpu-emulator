@@ -20,7 +20,7 @@ public class Jne extends Instruction {
     int b = reg.getRegister("OP2");
 
     if (a != b) {
-      int dst = reg.getRegister(operand);
+      int dst = reg.getValueAt(operand);
       pc.jumpTo(dst);
     }
   }

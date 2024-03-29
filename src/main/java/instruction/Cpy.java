@@ -38,13 +38,13 @@ public class Cpy extends Instruction {
     if (destType == 0b10) {
       mem.setValueAt(dst, value);
     } else {
-      reg.setRegister(dst, value);
+      reg.setValueAt(dst, value);
     }
   }
 
   private int getSrcValue(int srcType, int src, Memory mem, Registry reg) {
     if (srcType == 0b01) {
-      return reg.getRegister(src);
+      return reg.getValueAt(src);
     } else if (srcType == 0b10) {
       return mem.getValueAt(src);
     }

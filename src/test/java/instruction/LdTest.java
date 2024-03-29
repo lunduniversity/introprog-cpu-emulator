@@ -32,7 +32,7 @@ public class LdTest {
     ldInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the registry's setRegister method is called with the correct arguments
-    verify(mockRegistry).setRegister(operand, memoryValue);
+    verify(mockRegistry).setValueAt(operand, memoryValue);
   }
 
   @Test

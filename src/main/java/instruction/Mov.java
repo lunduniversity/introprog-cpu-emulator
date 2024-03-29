@@ -38,7 +38,7 @@ public class Mov extends Instruction {
     if (destType == 0b10) {
       mem.setValueAt(dst, value);
     } else {
-      reg.setRegister(dst, value);
+      reg.setValueAt(dst, value);
     }
   }
 
@@ -46,8 +46,8 @@ public class Mov extends Instruction {
     int srcIdx = pc.next();
     int src = mem.getValueAt(srcIdx);
     if (srcType == 0b01) {
-      int value = reg.getRegister(src);
-      reg.setRegister(src, 0);
+      int value = reg.getValueAt(src);
+      reg.setValueAt(src, 0);
       return value;
     } else if (srcType == 0b10) {
       int value = mem.getValueAt(src);

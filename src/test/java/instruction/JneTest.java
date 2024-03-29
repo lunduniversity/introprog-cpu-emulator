@@ -24,7 +24,7 @@ public class JneTest {
     // Setup conditions where OP1 does not equal OP2
     when(mockRegistry.getRegister("OP1")).thenReturn(5);
     when(mockRegistry.getRegister("OP2")).thenReturn(10);
-    when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
+    when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
     Jne jneInstruction = new Jne(operand);
     jneInstruction.execute(null, mockRegistry, mockPC, null);
@@ -45,7 +45,7 @@ public class JneTest {
     when(mockRegistry.getRegister("OP1")).thenReturn(5);
     when(mockRegistry.getRegister("OP2")).thenReturn(5);
     // The getRegister call for the operand might still happen, but should not result in a jump
-    when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
+    when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
     Jne jneInstruction = new Jne(operand);
     jneInstruction.execute(null, mockRegistry, mockPC, null);

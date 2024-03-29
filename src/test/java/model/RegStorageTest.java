@@ -18,9 +18,9 @@ public class RegStorageTest {
   void testSetAndGetRegister() {
     int address = 5;
     int value = 12;
-    registry.setRegister(address, value);
+    registry.setValueAt(address, value);
 
-    int storedValue = registry.getRegister(address);
+    int storedValue = registry.getValueAt(address);
     assertEquals(value, storedValue, "The value retrieved should match the value set.");
   }
 

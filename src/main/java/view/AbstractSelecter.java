@@ -8,6 +8,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
 
@@ -289,21 +291,31 @@ public abstract class AbstractSelecter {
         for (int i = 0; i < lines.length; i++) {
           values[i] = Integer.parseInt(lines[i].trim(), 2);
         }
-        setValuesInRange(caretPosRow, values);
-      } catch (IndexOutOfBoundsException e) {
-        JOptionPane.showMessageDialog(
-            null, e.getMessage(), "Paste Error", JOptionPane.ERROR_MESSAGE);
-      } catch (Exception e) {
+        int excess = setValuesInRange(caretPosRow, values);
+        if (excess > 0) {
+          JOptionPane.showMessageDialog(
+              null,
+              String.format("Pasted data exceeds the available space. Cut off %d values.", excess),
+              "Paste Error",
+              JOptionPane.INFORMATION_MESSAGE);
+        }
+      } catch (UnsupportedFlavorException e) {
         JOptionPane.showMessageDialog(
             null,
             "Can only paste binary data, e.g.:\n0101 1010\n1010 0101\n...",
+            "Paste Error",
+            JOptionPane.WARNING_MESSAGE);
+      } catch (IOException e) {
+        JOptionPane.showMessageDialog(
+            null,
+            "An error occurred while pasting data.",
             "Paste Error",
             JOptionPane.ERROR_MESSAGE);
       }
     }
   }
 
-  protected abstract void setValuesInRange(int start, int[] values);
+  protected abstract int setValuesInRange(int start, int[] values);
 
   protected void _paint() {
     Runnable r =
@@ -324,4 +336,25 @@ public abstract class AbstractSelecter {
             };
     inv(r, false);
   }
+
+  public void clearSelectedCells() {
+    if (selectStartRange != -1) {
+      int[] zeros = new int[selectEndRange - selectStartRange];
+      setValuesInRange(selectStartRange, zeros);
+    } else {
+      setValuesInRange(caretPosRow, new int[] {0});
+    }
+  }
+
+  public void deleteSelectedCells() {
+    if (selectStartRange != -1) {
+      _deleteRange(selectStartRange, selectEndRange);
+    } else {
+      _deleteRange(caretPosRow, 1);
+    }
+    selectStartRange = selectEndRange = -1;
+    _paint();
+  }
+
+  protected abstract void _deleteRange(int startIdx, int endIdx);
 }

@@ -9,6 +9,8 @@ import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.border.Border;
 
 public class LazySwing {
@@ -30,6 +32,24 @@ public class LazySwing {
       new IllegalStateException("This method must be called on the EDT").printStackTrace();
       ;
     }
+  }
+
+  public interface ThrowingRunnable<T> {
+    T run() throws Exception;
+  }
+
+  public static <T> T runSafely(ThrowingRunnable<T> runnable) {
+    return runSafely(null, runnable);
+  }
+
+  public static <T> T runSafely(JFrame parent, ThrowingRunnable<T> runnable) {
+    try {
+      return runnable.run();
+    } catch (Exception e) {
+      // Show a warning message using JOptionPane
+      JOptionPane.showMessageDialog(parent, e.getMessage(), "Error", JOptionPane.WARNING_MESSAGE);
+    }
+    return null;
   }
 
   public static boolean isEDT() {

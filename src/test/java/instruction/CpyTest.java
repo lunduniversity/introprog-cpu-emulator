@@ -38,14 +38,14 @@ public class CpyTest {
     when(mockMemory.getValueAt(1)).thenReturn(srcRegister);
     when(mockMemory.getValueAt(2)).thenReturn(destRegister);
     // Simulate reading value from the source register
-    when(mockRegistry.getRegister(srcRegister)).thenReturn(value);
+    when(mockRegistry.getValueAt(srcRegister)).thenReturn(value);
 
     Cpy cpyInstruction = new Cpy(operand);
     cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied to the destination register
-    verify(mockRegistry).getRegister(srcRegister);
-    verify(mockRegistry).setRegister(destRegister, value);
+    verify(mockRegistry).getValueAt(srcRegister);
+    verify(mockRegistry).setValueAt(destRegister, value);
   }
 
   @Test
@@ -66,7 +66,7 @@ public class CpyTest {
     cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied from memory to the register
-    verify(mockRegistry).setRegister(destRegister, value);
+    verify(mockRegistry).setValueAt(destRegister, value);
   }
 
   @Test
@@ -85,7 +85,7 @@ public class CpyTest {
     cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied from memory to the register
-    verify(mockRegistry).setRegister(destRegister, value);
+    verify(mockRegistry).setValueAt(destRegister, value);
   }
 
   @Test
@@ -101,7 +101,7 @@ public class CpyTest {
     when(mockMemory.getValueAt(1)).thenReturn(srcRegister);
     when(mockMemory.getValueAt(2)).thenReturn(memoryAddress);
     // Simulate reading value from the source register
-    when(mockRegistry.getRegister(srcRegister)).thenReturn(value);
+    when(mockRegistry.getValueAt(srcRegister)).thenReturn(value);
 
     Cpy cpyInstruction = new Cpy(operand);
     cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);

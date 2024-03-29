@@ -22,9 +22,8 @@ public class RegisterSelecter extends AbstractSelecter {
       // Move all cells after the selection up by the size of the selection
       int size = selectEndRange - selectStartRange;
       for (int i = 0; i < size; i++) {
-        int nextValue =
-            selectEndRange + i < maxRange ? registry.getRegister(selectEndRange + i) : 0;
-        registry.setRegister(selectStartRange + i, nextValue);
+        int nextValue = selectEndRange + i < maxRange ? registry.getValueAt(selectEndRange + i) : 0;
+        registry.setValueAt(selectStartRange + i, nextValue);
       }
       selectEndRange = selectStartRange + 1;
     }
@@ -84,23 +83,21 @@ public class RegisterSelecter extends AbstractSelecter {
 
   @Override
   protected int[] getValuesInRange(int start, int end) {
+    registry.getRange(start, end);
     int[] values = new int[end - start];
     for (int i = start; i < end; i++) {
-      values[i - start] = registry.getRegister(i);
+      values[i - start] = registry.getValueAt(i);
     }
     return values;
   }
 
   @Override
-  protected void setValuesInRange(int start, int[] values) {
-    for (int i = 0; i < values.length; i++) {
-      // Check if the index is out of bounds
-      if (start + i >= Registry.NUM_REGISTERS) {
-        int cutoff = start + values.length - Registry.NUM_REGISTERS;
-        throw new IndexOutOfBoundsException(
-            String.format("Data exceeds registry bounds, %d values were cut off.", cutoff));
-      }
-      registry.setRegister(start + i, values[i]);
-    }
+  protected int setValuesInRange(int start, int[] values) {
+    return registry.setRange(start, values);
+  }
+
+  @Override
+  protected void _deleteRange(int startIdx, int endIdx) {
+    // Do nothing. Deletion for registers should not be allowed.
   }
 }

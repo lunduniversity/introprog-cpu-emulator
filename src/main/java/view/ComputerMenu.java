@@ -1,5 +1,7 @@
 package view;
 
+import static util.LazySwing.runSafely;
+
 import java.awt.event.ItemEvent;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -8,21 +10,27 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
+import util.FileHandler;
 
 public class ComputerMenu extends JMenuBar {
+
+  private final FileHandler fileHandler;
 
   public ComputerMenu(ComputerUI ui) {
 
     JFrame frame = ui.getFrame();
+    fileHandler = new FileHandler(frame);
 
     JMenu menuFile = new JMenu("File");
     JMenu menuEdit = new JMenu("Edit");
     JMenu menuSelect = new JMenu("Select");
+    JMenu menuRun = new JMenu("Run");
     JMenu menuView = new JMenu("View");
     JMenu menuHelp = new JMenu("Help");
     add(menuFile);
     add(menuEdit);
     add(menuSelect);
+    add(menuRun);
     add(menuView);
     add(menuHelp);
 
@@ -30,11 +38,13 @@ public class ComputerMenu extends JMenuBar {
     JMenuItem itmOpen = new JMenuItem("Open/Load");
     JMenuItem itmSave = new JMenuItem("Save");
     JMenuItem itmSaveAs = new JMenuItem("Save As ...");
+    JMenuItem itmClose = new JMenuItem("Close opened file");
     JMenuItem itmExport = new JMenuItem("Export base64");
     JMenuItem itmImport = new JMenuItem("Import base64");
     menuFile.add(itmOpen);
     menuFile.add(itmSave);
     menuFile.add(itmSaveAs);
+    menuFile.add(itmClose);
     menuFile.addSeparator();
     menuFile.add(itmExport);
     menuFile.add(itmImport);
@@ -79,6 +89,10 @@ public class ComputerMenu extends JMenuBar {
     menuSelect.addSeparator();
     menuSelect.add(itmClearSelection);
 
+    // Run menu items (include "step" and "run" options)
+    JMenuItem itmStep = new JMenuItem("Step"); // ctrl + shift + s
+    JMenuItem itmRun = new JMenuItem("Run"); // ctrl + shift + r
+
     // View menu items
 
     // Help menu items
@@ -90,14 +104,24 @@ public class ComputerMenu extends JMenuBar {
     // Add action listeners to the buttons
 
     // File menu items
-    itmOpen.addActionListener(e -> {});
-    itmSave.addActionListener(e -> {});
-    itmSaveAs.addActionListener(e -> {});
-    itmExport.addActionListener((e) -> ui.exportAsBase64());
-    itmImport.addActionListener((e) -> ui.importFromBase64());
+    itmOpen.addActionListener(e -> ui.setMemorySnapshot(runSafely(fileHandler::openFile)));
+    itmSave.addActionListener(e -> runSafely(() -> fileHandler.saveFile(ui.getMemorySnapshot())));
+    itmSaveAs.addActionListener(
+        e -> runSafely(() -> fileHandler.saveFileAs(ui.getMemorySnapshot())));
+    itmClose.addActionListener(e -> runSafely(fileHandler::closeOpenedFile));
+    itmExport.addActionListener(e -> ui.exportAsBase64());
+    itmImport.addActionListener(e -> ui.importFromBase64());
+
+    itmClose.setEnabled(false);
+    fileHandler.addPropertyChangeListener(
+        evt -> {
+          if (evt.getPropertyName().equals("openedFile")) {
+            itmClose.setEnabled(evt.getNewValue() != null);
+          }
+        });
 
     // Edit menu items
-    itmResetState.addActionListener((e) -> ui.handleResetState());
+    itmResetState.addActionListener(e -> ui.handleResetState());
     itmUndo.addActionListener(
         e -> JOptionPane.showMessageDialog(frame, "Undo not implemented yet"));
     itmRedo.addActionListener(
@@ -106,9 +130,8 @@ public class ComputerMenu extends JMenuBar {
     itmMoveDown.addActionListener(e -> ui.getCurrentSelecter().moveCellsDown());
     itmCopy.addActionListener(e -> ui.getCurrentSelecter().copySelection());
     itmPaste.addActionListener(e -> ui.getCurrentSelecter().pasteSelection());
-    itmClear.addActionListener(e -> ui.getCurrentSelecter().clearSelection());
-    itmDelete.addActionListener(
-        e -> JOptionPane.showMessageDialog(frame, "Delete not implemented yet"));
+    itmClear.addActionListener(e -> ui.getCurrentSelecter().clearSelectedCells());
+    itmDelete.addActionListener(e -> ui.getCurrentSelecter().deleteSelectedCells());
     itmResetData.addActionListener((e) -> ui.handleResetAllData());
 
     // Select menu items
@@ -133,6 +156,7 @@ public class ComputerMenu extends JMenuBar {
     itmOpen.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
     itmSave.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
     itmSaveAs.setAccelerator(KeyStroke.getKeyStroke("ctrl shift S"));
+    itmClose.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
     itmExport.setAccelerator(KeyStroke.getKeyStroke("ctrl E"));
     itmImport.setAccelerator(KeyStroke.getKeyStroke("ctrl I"));
     itmUndo.setAccelerator(KeyStroke.getKeyStroke("ctrl Z"));

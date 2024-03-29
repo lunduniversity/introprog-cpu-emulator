@@ -60,7 +60,7 @@ public class ByteStorageTest {
     store.addListener(mockListener);
     store.setValueAt(address, value);
 
-    verify(mockListener, times(1)).onMemoryChanged(eq(address), eq((int) 100));
+    verify(mockListener, times(1)).onStorageChanged(eq(address), null);
   }
 
   @Test
@@ -74,8 +74,8 @@ public class ByteStorageTest {
     int value = 50;
     store.setValueAt(address, value);
 
-    verify(listener1, times(1)).onMemoryChanged(eq(address), eq(value));
-    verify(listener2, times(1)).onMemoryChanged(eq(address), eq(value));
+    verify(listener1, times(1)).onStorageChanged(eq(address), null);
+    verify(listener2, times(1)).onStorageChanged(eq(address), null);
   }
 
   @Test
@@ -88,9 +88,9 @@ public class ByteStorageTest {
     store.setValueAt(2, 150);
     store.reset();
 
-    verify(listener).onMemoryChanged(eq(0), eq(0));
-    verify(listener).onMemoryChanged(eq(1), eq(0));
-    verify(listener).onMemoryChanged(eq(2), eq(0));
+    verify(listener).onStorageChanged(eq(0), null);
+    verify(listener).onStorageChanged(eq(1), null);
+    verify(listener).onStorageChanged(eq(2), null);
 
     assertEquals(0, store.getValueAt(0));
     assertEquals(0, store.getValueAt(1));

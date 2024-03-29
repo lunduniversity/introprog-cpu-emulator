@@ -24,7 +24,7 @@ public class JeTest {
     // Setup conditions where OP1 equals OP2
     when(mockRegistry.getRegister("OP1")).thenReturn(5);
     when(mockRegistry.getRegister("OP2")).thenReturn(5);
-    when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
+    when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
     Je jeInstruction = new Je(operand);
     jeInstruction.execute(null, mockRegistry, mockPC, null);
@@ -45,7 +45,7 @@ public class JeTest {
     when(mockRegistry.getRegister("OP1")).thenReturn(5);
     when(mockRegistry.getRegister("OP2")).thenReturn(10);
     // Even though this call happens, it should not lead to a jump since OP1 != OP2
-    when(mockRegistry.getRegister(operand)).thenReturn(destinationAddress);
+    when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
     Je jeInstruction = new Je(operand);
     jeInstruction.execute(null, mockRegistry, mockPC, null);

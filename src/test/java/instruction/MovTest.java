@@ -38,17 +38,17 @@ public class MovTest {
     when(mockMemory.getValueAt(1)).thenReturn(srcRegister);
     when(mockMemory.getValueAt(2)).thenReturn(destRegister);
     // Simulate reading value from the source register
-    when(mockRegistry.getRegister(srcRegister)).thenReturn(value);
+    when(mockRegistry.getValueAt(srcRegister)).thenReturn(value);
 
     Mov movInstruction = new Mov(operand);
     movInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied to the destination register
-    verify(mockRegistry).getRegister(srcRegister);
-    verify(mockRegistry).setRegister(destRegister, value);
+    verify(mockRegistry).getValueAt(srcRegister);
+    verify(mockRegistry).setValueAt(destRegister, value);
 
     // Verify that the source is 0 after being moved
-    verify(mockRegistry).setRegister(srcRegister, 0);
+    verify(mockRegistry).setValueAt(srcRegister, 0);
   }
 
   @Test
@@ -69,7 +69,7 @@ public class MovTest {
     movInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied from memory to the register
-    verify(mockRegistry).setRegister(destRegister, value);
+    verify(mockRegistry).setValueAt(destRegister, value);
 
     // Verify that the source is 0 after being moved
     verify(mockMemory).setValueAt(memoryAddress, 0);
@@ -91,7 +91,7 @@ public class MovTest {
     movInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the value is copied from memory to the register
-    verify(mockRegistry).setRegister(destRegister, value);
+    verify(mockRegistry).setValueAt(destRegister, value);
 
     // Verify that the source is 0 agter being moved
     verify(mockMemory).setValueAt(1, 0);
@@ -110,7 +110,7 @@ public class MovTest {
     when(mockMemory.getValueAt(1)).thenReturn(srcRegister);
     when(mockMemory.getValueAt(2)).thenReturn(memoryAddress);
     // Simulate reading value from the source register
-    when(mockRegistry.getRegister(srcRegister)).thenReturn(value);
+    when(mockRegistry.getValueAt(srcRegister)).thenReturn(value);
 
     Mov movInstruction = new Mov(operand);
     movInstruction.execute(mockMemory, mockRegistry, mockPC, null);
@@ -119,7 +119,7 @@ public class MovTest {
     verify(mockMemory).setValueAt(memoryAddress, value);
 
     // Verify that the source is 0 agter being moved
-    verify(mockRegistry).setRegister(srcRegister, 0);
+    verify(mockRegistry).setValueAt(srcRegister, 0);
   }
 
   @Test

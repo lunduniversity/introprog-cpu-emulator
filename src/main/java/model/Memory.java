@@ -2,15 +2,11 @@ package model;
 
 public interface Memory extends ObservableStorage {
 
-  void setValueAt(int address, int value);
-
-  int getValueAt(int address);
-
   int size();
 
-  boolean moveCellsUp(int startIdx, int endIdx);
+  String[] exportAsBinary();
 
-  boolean moveCellsDown(int startIdx, int endIdx);
+  void importFromBinary(String[] data);
 
   String exportAsBase64();
 
