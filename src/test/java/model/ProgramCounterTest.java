@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,10 +14,12 @@ import org.mockito.InOrder;
 public class ProgramCounterTest {
 
   private ProgramCounter pc;
+  private Registry registry;
 
   @BeforeEach
   void setUp() {
-    pc = new ProgramCounter();
+    registry = mock(Registry.class);
+    pc = new ProgramCounter(registry);
   }
 
   @Test
@@ -27,39 +31,41 @@ public class ProgramCounterTest {
   void testSetAndGetCurrentIndex() {
     int testIndex = 10;
     pc.setCurrentIndex(testIndex);
-    assertEquals(
-        testIndex, pc.getCurrentIndex(), "Setting and getting index should work correctly.");
+    verify(registry).setRegister("PC", testIndex);
   }
 
   @Test
-  void testNext() {
-    int initialIndex = pc.getCurrentIndex();
+  void testNextReadPC() {
+    pc.getCurrentIndex();
+    verify(registry).getRegister("PC");
+  }
+
+  @Test
+  void testNextIncrementsPC() {
+    when(registry.getRegister("PC")).thenReturn(0);
     int nextIndex = pc.next();
-    assertEquals(
-        (int) (initialIndex),
-        nextIndex,
-        "Next should return the current index before incrementing it.");
-    assertEquals(
-        (int) (initialIndex + 1), pc.getCurrentIndex(), "Current index should be incremented.");
+    assertEquals(0, nextIndex, "Next should return the current index before incrementing it.");
+    verify(registry).setRegister("PC", 1);
   }
 
   @Test
   void testJumpTo() {
     int newIndex = 20;
     pc.jumpTo(newIndex);
-    assertEquals(newIndex, pc.getCurrentIndex(), "Jumping to a new index should work correctly.");
+    verify(registry).setRegister("PC", newIndex);
   }
 
   @Test
-  void testHalt() {
+  void testHaltSetPCToNegativeOne() {
+    when(registry.getRegister("PC")).thenReturn(-1);
     pc.halt();
-    assertTrue(pc.isHalted(), "After halt, isHalted should return true.");
+    verify(registry).setRegister("PC", -1);
   }
 
   @Test
-  void testHaltAndCheckIndex() {
+  void testIsHaltedReadsPC() {
     pc.halt();
-    assertEquals(-1, pc.getCurrentIndex(), "After halt, the index should be -1.");
+    verify(registry).getRegister("PC");
   }
 
   @Test
@@ -76,16 +82,23 @@ public class ProgramCounterTest {
 
   @Test
   void testAddListener() {
+    when(registry.getRegister("PC")).thenReturn(0, 10, 11);
+
     ProgramCounterListener listener1 = mock(ProgramCounterListener.class);
     ProgramCounterListener listener2 = mock(ProgramCounterListener.class);
     InOrder inOrder1 = inOrder(listener1);
     InOrder inOrder2 = inOrder(listener2);
+
     pc.addListener(listener1);
     pc.addListener(listener2);
 
     pc.setCurrentIndex(10);
     pc.next();
     pc.reset();
+
+    verify(registry).setRegister("PC", 10);
+    verify(registry).setRegister("PC", 11);
+    verify(registry).setRegister("PC", 0);
 
     inOrder1.verify(listener1).onProgramCounterChanged(0, 10);
     inOrder1.verify(listener1).onProgramCounterChanged(10, 11);

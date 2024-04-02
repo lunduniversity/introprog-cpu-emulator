@@ -5,45 +5,51 @@ import java.util.Set;
 
 public class ProgramCounter {
 
-  private int currentIndex;
-  private Set<ProgramCounterListener> listeners = new HashSet<>();
+  private final Registry registry;
+  private final Set<ProgramCounterListener> listeners;
+
+  ProgramCounter(Registry registry) {
+    this.registry = registry;
+    listeners = new HashSet<>();
+  }
 
   public int getCurrentIndex() {
-    return currentIndex;
+    return registry.getRegister("PC");
   }
 
   public void setCurrentIndex(int currentIndex) {
-    int oldIdx = this.currentIndex;
-    this.currentIndex = currentIndex;
+    int oldIdx = registry.getRegister("PC");
+    registry.setRegister("PC", currentIndex);
     notifyListeners(oldIdx, currentIndex);
   }
 
   public int next() {
-    int next = currentIndex++;
-    notifyListeners(next, currentIndex);
+    int next = registry.getRegister("PC");
+    registry.setRegister("PC", next + 1);
+    notifyListeners(next, next + 1);
     return next;
   }
 
   public void jumpTo(int index) {
-    int oldIdx = currentIndex;
-    currentIndex = index;
-    notifyListeners(oldIdx, currentIndex);
+    int oldIdx = registry.getRegister("PC");
+    registry.setRegister("PC", index);
+    notifyListeners(oldIdx, index);
   }
 
   public void halt() {
-    int oldIdx = currentIndex;
-    currentIndex = -1;
-    notifyListeners(oldIdx, currentIndex);
+    int oldIdx = registry.getRegister("PC");
+    registry.setRegister("PC", -1);
+    notifyListeners(oldIdx, -1);
   }
 
   public boolean isHalted() {
-    return currentIndex == -1;
+    return registry.getRegister("PC") == -1;
   }
 
   public void reset() {
-    int oldIdx = currentIndex;
-    currentIndex = 0;
-    notifyListeners(oldIdx, currentIndex);
+    int oldIdx = registry.getRegister("PC");
+    registry.setRegister("PC", 0);
+    notifyListeners(oldIdx, 0);
   }
 
   public void addListener(ProgramCounterListener listener) {

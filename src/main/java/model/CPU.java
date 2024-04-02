@@ -14,12 +14,12 @@ public class CPU {
 
   private RegStorage registry;
 
-  public CPU(Memory memory, ProgramCounter pc, InstructionFactory factory, IO io) {
+  public CPU(Memory memory, InstructionFactory factory, IO io) {
     this.memory = memory;
-    this.pc = pc;
     this.factory = factory;
     this.io = io;
     this.registry = new RegStorage();
+    this.pc = new ProgramCounter(this.registry);
   }
 
   public void step() {
@@ -63,5 +63,9 @@ public class CPU {
 
   public Registry getRegistry() {
     return registry;
+  }
+
+  public ProgramCounter getProgramCounter() {
+    return pc;
   }
 }

@@ -14,23 +14,20 @@ import util.FileHandler;
 
 public class ComputerMenu extends JMenuBar {
 
-  private final FileHandler fileHandler;
-
-  public ComputerMenu(ComputerUI ui) {
+  public ComputerMenu(ComputerUI ui, FileHandler fileHandler) {
 
     JFrame frame = ui.getFrame();
-    fileHandler = new FileHandler(frame);
 
     JMenu menuFile = new JMenu("File");
     JMenu menuEdit = new JMenu("Edit");
     JMenu menuSelect = new JMenu("Select");
-    JMenu menuRun = new JMenu("Run");
+    JMenu menuExecute = new JMenu("Execute");
     JMenu menuView = new JMenu("View");
     JMenu menuHelp = new JMenu("Help");
     add(menuFile);
     add(menuEdit);
     add(menuSelect);
-    add(menuRun);
+    add(menuExecute);
     add(menuView);
     add(menuHelp);
 
@@ -41,6 +38,7 @@ public class ComputerMenu extends JMenuBar {
     JMenuItem itmClose = new JMenuItem("Close opened file");
     JMenuItem itmExport = new JMenuItem("Export base64");
     JMenuItem itmImport = new JMenuItem("Import base64");
+    JMenuItem itmExit = new JMenuItem("Exit");
     menuFile.add(itmOpen);
     menuFile.add(itmSave);
     menuFile.add(itmSaveAs);
@@ -48,8 +46,11 @@ public class ComputerMenu extends JMenuBar {
     menuFile.addSeparator();
     menuFile.add(itmExport);
     menuFile.add(itmImport);
+    menuFile.addSeparator();
+    menuFile.add(itmExit);
 
     // Edit menu items
+    JMenuItem itmFlipBit = new JMenuItem("Flip selected bit"); // ENTER
     JMenuItem itmUndo = new JMenuItem("Undo"); // ctrl + z
     JMenuItem itmRedo = new JMenuItem("Redo"); // ctrl + y
     JMenuItem itmResetState = new JMenuItem("Reset program"); // ctrl + r
@@ -60,6 +61,7 @@ public class ComputerMenu extends JMenuBar {
     JMenuItem itmClear = new JMenuItem("Clear selected cells"); // ctrl + delete
     JMenuItem itmDelete = new JMenuItem("Delete selected cells"); // ctrl + shift + delete
     JMenuItem itmResetData = new JMenuItem("Delete all cells (use carefully!)"); // ctrl + shift + m
+    menuEdit.add(itmFlipBit);
     menuEdit.add(itmUndo);
     menuEdit.add(itmRedo);
     menuEdit.add(itmResetState);
@@ -90,8 +92,10 @@ public class ComputerMenu extends JMenuBar {
     menuSelect.add(itmClearSelection);
 
     // Run menu items (include "step" and "run" options)
-    JMenuItem itmStep = new JMenuItem("Step"); // ctrl + shift + s
-    JMenuItem itmRun = new JMenuItem("Run"); // ctrl + shift + r
+    JMenuItem itmStep = new JMenuItem("Step"); // space
+    JMenuItem itmRun = new JMenuItem("Run"); // ctrl + space
+    menuExecute.add(itmStep);
+    menuExecute.add(itmRun);
 
     // View menu items
 
@@ -108,9 +112,14 @@ public class ComputerMenu extends JMenuBar {
     itmSave.addActionListener(e -> runSafely(() -> fileHandler.saveFile(ui.getMemorySnapshot())));
     itmSaveAs.addActionListener(
         e -> runSafely(() -> fileHandler.saveFileAs(ui.getMemorySnapshot())));
-    itmClose.addActionListener(e -> runSafely(fileHandler::closeOpenedFile));
+    itmClose.addActionListener(
+        e -> {
+          ui.handleResetAllData();
+          runSafely(fileHandler::closeOpenedFile);
+        });
     itmExport.addActionListener(e -> ui.exportAsBase64());
     itmImport.addActionListener(e -> ui.importFromBase64());
+    itmExit.addActionListener(e -> ui.handleExit());
 
     itmClose.setEnabled(false);
     fileHandler.addPropertyChangeListener(
@@ -121,11 +130,12 @@ public class ComputerMenu extends JMenuBar {
         });
 
     // Edit menu items
-    itmResetState.addActionListener(e -> ui.handleResetState());
+    itmFlipBit.addActionListener(e -> ui.flipBit());
     itmUndo.addActionListener(
         e -> JOptionPane.showMessageDialog(frame, "Undo not implemented yet"));
     itmRedo.addActionListener(
         e -> JOptionPane.showMessageDialog(frame, "Redo not implemented yet"));
+    itmResetState.addActionListener(e -> ui.handleResetState());
     itmMoveUp.addActionListener(e -> ui.getCurrentSelecter().moveCellsUp());
     itmMoveDown.addActionListener(e -> ui.getCurrentSelecter().moveCellsDown());
     itmCopy.addActionListener(e -> ui.getCurrentSelecter().copySelection());
@@ -140,6 +150,10 @@ public class ComputerMenu extends JMenuBar {
     itmMoveSelectionUp.addActionListener(e -> ui.getCurrentSelecter().moveSelectionUp());
     itmMoveSelectionDown.addActionListener(e -> ui.getCurrentSelecter().moveSelectionDown());
     itmClearSelection.addActionListener(e -> ui.getCurrentSelecter().clearSelection());
+
+    // Run menu items
+    itmStep.addActionListener(e -> ui.handleStep());
+    itmRun.addActionListener(e -> ui.handleRun());
 
     // View menu items
     // none for now
@@ -159,6 +173,8 @@ public class ComputerMenu extends JMenuBar {
     itmClose.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
     itmExport.setAccelerator(KeyStroke.getKeyStroke("ctrl E"));
     itmImport.setAccelerator(KeyStroke.getKeyStroke("ctrl I"));
+    itmExit.setAccelerator(KeyStroke.getKeyStroke("ctrl Q"));
+    itmFlipBit.setAccelerator(KeyStroke.getKeyStroke("ENTER"));
     itmUndo.setAccelerator(KeyStroke.getKeyStroke("ctrl Z"));
     itmRedo.setAccelerator(KeyStroke.getKeyStroke("ctrl Y"));
     itmResetState.setAccelerator(KeyStroke.getKeyStroke("ctrl R"));
@@ -174,6 +190,8 @@ public class ComputerMenu extends JMenuBar {
     itmMoveSelectionUp.setAccelerator(KeyStroke.getKeyStroke("ctrl UP"));
     itmMoveSelectionDown.setAccelerator(KeyStroke.getKeyStroke("ctrl DOWN"));
     itmClearSelection.setAccelerator(KeyStroke.getKeyStroke("ESCAPE"));
+    itmStep.setAccelerator(KeyStroke.getKeyStroke("SPACE"));
+    itmRun.setAccelerator(KeyStroke.getKeyStroke("ctrl SPACE"));
     itmAsciiTable.setAccelerator(KeyStroke.getKeyStroke("F1"));
     itmInstructions.setAccelerator(KeyStroke.getKeyStroke("F2"));
   }

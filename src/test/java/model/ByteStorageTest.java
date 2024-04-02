@@ -53,18 +53,6 @@ public class ByteStorageTest {
 
   @Test
   void testNotifyListenersOnValueSet() {
-    StorageListener mockListener = mock(StorageListener.class);
-    int address = 3;
-    int value = 100;
-
-    store.addListener(mockListener);
-    store.setValueAt(address, value);
-
-    verify(mockListener, times(1)).onStorageChanged(eq(address), null);
-  }
-
-  @Test
-  void testAddListener() {
     StorageListener listener1 = mock(StorageListener.class);
     StorageListener listener2 = mock(StorageListener.class);
     store.addListener(listener1);
@@ -74,8 +62,8 @@ public class ByteStorageTest {
     int value = 50;
     store.setValueAt(address, value);
 
-    verify(listener1, times(1)).onStorageChanged(eq(address), null);
-    verify(listener2, times(1)).onStorageChanged(eq(address), null);
+    verify(listener1, times(1)).onStorageChanged(eq(address), eq(new int[] {value}));
+    verify(listener2, times(1)).onStorageChanged(eq(address), eq(new int[] {value}));
   }
 
   @Test
@@ -88,9 +76,10 @@ public class ByteStorageTest {
     store.setValueAt(2, 150);
     store.reset();
 
-    verify(listener).onStorageChanged(eq(0), null);
-    verify(listener).onStorageChanged(eq(1), null);
-    verify(listener).onStorageChanged(eq(2), null);
+    verify(listener).onStorageChanged(eq(0), eq(new int[] {100}));
+    verify(listener).onStorageChanged(eq(1), eq(new int[] {125}));
+    verify(listener).onStorageChanged(eq(2), eq(new int[] {150}));
+    verify(listener).onStorageChanged(eq(0), eq(new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}));
 
     assertEquals(0, store.getValueAt(0));
     assertEquals(0, store.getValueAt(1));

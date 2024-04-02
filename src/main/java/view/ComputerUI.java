@@ -2,6 +2,7 @@ package view;
 
 import static util.LazySwing.action;
 import static util.LazySwing.inv;
+import static util.LazySwing.runSafely;
 
 import io.ObservableIO;
 import java.awt.AWTKeyStroke;
@@ -11,6 +12,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -40,6 +43,7 @@ import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
 import net.miginfocom.swing.MigLayout;
+import util.FileHandler;
 import util.ObservableValue;
 import view.AbstractSelecter.FocusRequester;
 import view.AbstractSelecter.StorageType;
@@ -76,10 +80,13 @@ public class ComputerUI implements FocusRequester {
   private AbstractSelecter currentSelecter;
   private AbstractCell[] currentCells;
 
-  public ComputerUI(Memory memory, ProgramCounter pc, CPU cpu, ObservableIO io) {
+  private FileHandler fileHandler;
+  private ComputerMenu menu;
+
+  public ComputerUI(Memory memory, CPU cpu, ObservableIO io) {
     this.memory = memory;
-    this.pc = pc;
     this.cpu = cpu;
+    this.pc = cpu.getProgramCounter();
     this.registry = cpu.getRegistry();
     this.io = io;
 
@@ -104,23 +111,34 @@ public class ComputerUI implements FocusRequester {
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
 
-    // memCells[0].requestFocus();
-
     // Open the Ascii Table and Instructins Description frame by default.
     // toggleAsciiTable(true);
     // toggleInstructions(true);
 
     // showBorders(frame);
-  }
 
-  // Example program: UBJRF8DQ:12:SEVMTE8h
+    // Example program: UBJRF8DQ:12:SEVMTE8h
+  }
 
   /** Initialize the contents of the frame. */
   private void initialize() {
     frame = new JFrame();
-    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    frame.setJMenuBar(new ComputerMenu(this));
+    frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+    frame.addWindowListener(
+        new WindowAdapter() {
+          public void windowClosing(WindowEvent e) {
+            handleExit();
+          }
+        });
+    frame.setTitle("SeaPeaEwe");
     frame.getContentPane().setLayout(new MigLayout("", "[]", "[]"));
+
+    fileHandler =
+        new FileHandler(
+            frame,
+            title -> inv(() -> frame.setTitle("SeaPeaEwe" + title != null ? " - " + title : "")));
+    menu = new ComputerMenu(this, fileHandler);
+    frame.setJMenuBar(menu);
 
     // Disabling TAB and Shift+TAB for focus traversal in this JPanel
     Set<AWTKeyStroke> forwardKeys =
@@ -136,10 +154,6 @@ public class ComputerUI implements FocusRequester {
     // Configuring key bindings
     InputMap imap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     ActionMap amap = frame.getRootPane().getActionMap();
-    // imap.put(KeyStroke.getKeyStroke("shift pressed SHIFT"), "shiftPressed");
-    // imap.put(KeyStroke.getKeyStroke("released SHIFT"), "shiftReleased");
-    // amap.put("shiftPressed", action(e -> isShiftPressed = true));
-    // amap.put("shiftReleased", action(e -> isShiftPressed = false));
 
     // Switch between memory and register selecter
     imap.put(KeyStroke.getKeyStroke("TAB"), "switchSelecter");
@@ -164,47 +178,11 @@ public class ComputerUI implements FocusRequester {
     amap.put("caretLeft", action(e -> currentSelecter.moveCaretLeft()));
     amap.put("caretRight", action(e -> currentSelecter.moveCaretRight()));
 
-    // // Handle arrow keys to select multiple cells
-    // imap.put(KeyStroke.getKeyStroke("shift UP"), "selectUp");
-    // imap.put(KeyStroke.getKeyStroke("shift DOWN"), "selectDown");
-    // amap.put("selectUp", action(e -> currentSelecter.expandSelectionUp()));
-    // amap.put("selectDown", action(e -> currentSelecter.expandSelectionDown()));
-
-    // // Handle arrow keys to move selection
-    // imap.put(KeyStroke.getKeyStroke("ctrl UP"), "moveSelectionUp");
-    // imap.put(KeyStroke.getKeyStroke("ctrl DOWN"), "moveSelectionDown");
-    // amap.put("moveSelectionUp", action(e -> currentSelecter.moveSelectionUp()));
-    // amap.put("moveSelectionDown", action(e -> currentSelecter.moveSelectionDown()));
-
-    // // Handle arrow keys to move selected cells
-    // imap.put(KeyStroke.getKeyStroke("alt UP"), "moveCellsUp");
-    // imap.put(KeyStroke.getKeyStroke("alt DOWN"), "moveCellsDown");
-    // amap.put("moveCellsUp", action(e -> currentSelecter.moveCellsUp()));
-    // amap.put("moveCellsDown", action(e -> currentSelecter.moveCellsDown()));
-
-    // Handle setting bit values
-    imap.put(KeyStroke.getKeyStroke("ENTER"), "flipBit");
-    imap.put(KeyStroke.getKeyStroke("SPACE"), "flipBit");
+    // Handle setting bit values (flipping bits are handled in the ComuterMenu class)
     imap.put(KeyStroke.getKeyStroke("0"), "setBit0");
     imap.put(KeyStroke.getKeyStroke("1"), "setBit1");
-    amap.put(
-        "flipBit",
-        action(
-            e -> {
-              currentCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
-            }));
-    amap.put(
-        "setBit0",
-        action(
-            e ->
-                currentCells[currentSelecter.getCaretRow()].setBit(
-                    currentSelecter.getCaretCol(), false)));
-    amap.put(
-        "setBit1",
-        action(
-            e ->
-                currentCells[currentSelecter.getCaretRow()].setBit(
-                    currentSelecter.getCaretCol(), true)));
+    amap.put("setBit0", action(e -> setBit(false)));
+    amap.put("setBit1", action(e -> setBit(true)));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -374,15 +352,7 @@ public class ComputerUI implements FocusRequester {
         btnStep.setFocusable(false);
         btnStep.addActionListener(
             e -> {
-              try {
-                isExecuting.set(true);
-                resetCellColors();
-                cpu.step();
-              } catch (Exception ex) {
-                handleError(ex);
-              } finally {
-                inv(() -> isExecuting.set(false));
-              }
+              handleStep();
             });
         controlPanel.add(btnStep, "cell 0 1");
       }
@@ -393,15 +363,7 @@ public class ComputerUI implements FocusRequester {
         btnRun.setFocusable(false);
         btnRun.addActionListener(
             e -> {
-              try {
-                isExecuting.set(true);
-                resetCellColors();
-                cpu.run();
-              } catch (Exception ex) {
-                handleError(ex);
-              } finally {
-                inv(() -> isExecuting.set(false));
-              }
+              handleRun();
             });
         controlPanel.add(btnRun, "cell 1 1");
       }
@@ -472,16 +434,91 @@ public class ComputerUI implements FocusRequester {
     }
   }
 
-  private void resetCellColors() {
-    for (Cell c : memCells) {
-      c.unhighlight();
+  @Override
+  public void requestFocus(StorageType type) {
+    if (type == StorageType.MEMORY) {
+      cellSelecter.setActive();
+      regSelecter.setInactive();
+      currentSelecter = cellSelecter;
+      currentCells = memCells;
+    } else {
+      cellSelecter.setInactive();
+      regSelecter.setActive();
+      currentSelecter = regSelecter;
+      currentCells = regCells;
     }
-    for (Register r : regCells) {
-      r.unhighlight();
+  }
+
+  // Package protected methods, used internally or by other view classes
+
+  JFrame getFrame() {
+    return frame;
+  }
+
+  AbstractSelecter getCurrentSelecter() {
+    return currentSelecter;
+  }
+
+  void toggleAsciiTable(boolean display) {
+    if (display) {
+      if (asciiTable == null) {
+        asciiTable = new AsciiTable(frame);
+      }
+    } else {
+      if (asciiTable != null) {
+        asciiTable.dispose();
+        asciiTable = null;
+      }
     }
-    lblPrintOutput.setBackground(UIManager.getColor("Panel.background"));
-    lblErrorMessage.setText("");
-    lblErrorMessage.setBackground(UIManager.getColor("Panel.background"));
+    frame.requestFocus();
+  }
+
+  void toggleInstructions(boolean display) {
+    if (display) {
+      if (instructionTable == null) {
+        instructionTable = new InstructionTable(frame, memory, pc);
+      }
+    } else {
+      if (instructionTable != null) {
+        instructionTable.dispose();
+        instructionTable = null;
+      }
+    }
+    frame.requestFocus();
+  }
+
+  void flipBit() {
+    currentCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
+    fileHandler.setIsModified(true);
+  }
+
+  void setBit(boolean value) {
+    currentCells[currentSelecter.getCaretRow()].setBit(currentSelecter.getCaretCol(), value);
+    fileHandler.setIsModified(true);
+  }
+
+  void handleStep() {
+    try {
+      isExecuting.set(true);
+      resetCellColors();
+      cpu.step();
+    } catch (Exception ex) {
+      handleError(ex);
+    } finally {
+      inv(() -> isExecuting.set(false));
+    }
+  }
+
+  void handleRun() {
+    try {
+      isExecuting.set(true);
+      resetCellColors();
+      cpu.run();
+    } catch (Exception ex) {
+      handleError(ex);
+    } finally {
+      inv(() -> isExecuting.set(false));
+    }
   }
 
   void handleResetState() {
@@ -502,8 +539,95 @@ public class ComputerUI implements FocusRequester {
     executor.schedule(() -> inv(() -> resetCellColors()), 700, TimeUnit.MILLISECONDS);
   }
 
-  JFrame getFrame() {
-    return frame;
+  void handleExit() {
+    System.out.println("Exiting");
+    if (fileHandler.isModified()) {
+      System.out.println("File is modified");
+      if (fileHandler.isFileOpened()) {
+        System.out.println("File is opened");
+        int result =
+            JOptionPane.showConfirmDialog(
+                frame,
+                "You have unsaved changes. Do you want to save them before closing?",
+                "Save changes",
+                JOptionPane.YES_NO_CANCEL_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+          runSafely(frame, () -> fileHandler.saveFile(getMemorySnapshot()));
+        } else if (result == JOptionPane.NO_OPTION) {
+          System.exit(0);
+        }
+        // If the user chooses to cancel, do nothing.
+      } else {
+        System.out.println("File is not opened");
+        int result =
+            JOptionPane.showConfirmDialog(
+                frame,
+                "Do you want to save your program before closing?",
+                "Save changes",
+                JOptionPane.YES_NO_CANCEL_OPTION);
+        if (result == JOptionPane.YES_OPTION) {
+          runSafely(frame, () -> fileHandler.saveFile(getMemorySnapshot()));
+        } else if (result == JOptionPane.NO_OPTION) {
+          System.exit(0);
+        }
+        // If the user chooses to cancel, do nothing.
+      }
+    } else {
+      System.out.println("File is not modified");
+      System.exit(0);
+    }
+  }
+
+  void exportAsBase64() {
+    String memorySnapdhot = memory.exportAsBase64();
+    if (memorySnapdhot.isEmpty()) {
+      memorySnapdhot = "(Memory is empty)";
+    }
+    SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
+    dialog.setText(memorySnapdhot);
+    dialog.setVisible(true);
+  }
+
+  void importFromBase64() {
+    SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
+    dialog.setVisible(true);
+    if (dialog.isConfirmed()) {
+      String memorySnapshot = dialog.getText();
+      try {
+        memory.importFromBase64(memorySnapshot);
+      } catch (IllegalArgumentException ex) {
+        JOptionPane.showMessageDialog(
+            frame,
+            "The given input has the wrong format, and cannot be imported.",
+            "Invalid memory snapdhot",
+            JOptionPane.WARNING_MESSAGE);
+      }
+    }
+  }
+
+  String[] getMemorySnapshot() {
+    return memory.exportAsBinary();
+  }
+
+  void setMemorySnapshot(String[] snapshot) {
+    if (snapshot == null) {
+      return;
+    }
+    memory.importFromBinary(snapshot);
+  }
+
+  // Private methods, used internally
+
+  private void resetCellColors() {
+    for (Cell c : memCells) {
+      c.unhighlight();
+    }
+    for (Register r : regCells) {
+      r.unhighlight();
+    }
+    lblPrintOutput.setBackground(UIManager.getColor("Panel.background"));
+    lblErrorMessage.setText("");
+    lblErrorMessage.setBackground(UIManager.getColor("Panel.background"));
   }
 
   private void handlePrint(int value) {
@@ -569,90 +693,5 @@ public class ComputerUI implements FocusRequester {
     cellPanel.add(lblInstruction, String.format("cell %d 2,alignx left", offset + 5));
 
     return cellPanel;
-  }
-
-  public void toggleAsciiTable(boolean display) {
-    if (display) {
-      if (asciiTable == null) {
-        asciiTable = new AsciiTable(frame);
-      }
-    } else {
-      if (asciiTable != null) {
-        asciiTable.dispose();
-        asciiTable = null;
-      }
-    }
-    frame.requestFocus();
-  }
-
-  public void toggleInstructions(boolean display) {
-    if (display) {
-      if (instructionTable == null) {
-        instructionTable = new InstructionTable(frame, memory, pc);
-      }
-    } else {
-      if (instructionTable != null) {
-        instructionTable.dispose();
-        instructionTable = null;
-      }
-    }
-    frame.requestFocus();
-  }
-
-  @Override
-  public void requestFocus(StorageType type) {
-    if (type == StorageType.MEMORY) {
-      cellSelecter.setActive();
-      regSelecter.setInactive();
-      currentSelecter = cellSelecter;
-      currentCells = memCells;
-    } else {
-      cellSelecter.setInactive();
-      regSelecter.setActive();
-      currentSelecter = regSelecter;
-      currentCells = regCells;
-    }
-  }
-
-  AbstractSelecter getCurrentSelecter() {
-    return currentSelecter;
-  }
-
-  void exportAsBase64() {
-    String memorySnapdhot = memory.exportAsBase64();
-    if (memorySnapdhot.isEmpty()) {
-      memorySnapdhot = "(Memory is empty)";
-    }
-    SnapshotDialog dialog = new SnapshotDialog(frame, Mode.EXPORT);
-    dialog.setText(memorySnapdhot);
-    dialog.setVisible(true);
-  }
-
-  void importFromBase64() {
-    SnapshotDialog dialog = new SnapshotDialog(frame, Mode.IMPORT);
-    dialog.setVisible(true);
-    if (dialog.isConfirmed()) {
-      String memorySnapshot = dialog.getText();
-      try {
-        memory.importFromBase64(memorySnapshot);
-      } catch (IllegalArgumentException ex) {
-        JOptionPane.showMessageDialog(
-            frame,
-            "The given input has the wrong format, and cannot be imported.",
-            "Invalid memory snapdhot",
-            JOptionPane.WARNING_MESSAGE);
-      }
-    }
-  }
-
-  String[] getMemorySnapshot() {
-    return memory.exportAsBinary();
-  }
-
-  void setMemorySnapshot(String[] snapshot) {
-    if (snapshot == null) {
-      return;
-    }
-    memory.importFromBinary(snapshot);
   }
 }

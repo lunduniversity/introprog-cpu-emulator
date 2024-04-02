@@ -5,7 +5,6 @@ import io.IOModule;
 import javax.swing.SwingUtilities;
 import model.ByteStorage;
 import model.CPU;
-import model.ProgramCounter;
 import util.ThreadConfinementChecker;
 
 public class Main {
@@ -18,10 +17,9 @@ public class Main {
 
     // Create the model
     ByteStorage memory = new ByteStorage(NUM_MEMORY_CELLS);
-    ProgramCounter pc = new ProgramCounter();
     IOModule io = new IOModule();
-    CPU cpu = new CPU(memory, pc, new InstructionFactory(), io);
+    CPU cpu = new CPU(memory, new InstructionFactory(), io);
 
-    SwingUtilities.invokeLater(() -> new ComputerUI(memory, pc, cpu, io));
+    SwingUtilities.invokeLater(() -> new ComputerUI(memory, cpu, io));
   }
 }

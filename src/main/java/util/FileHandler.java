@@ -15,17 +15,25 @@ public class FileHandler {
   // Reuse the same file chooser, so that the last directory is remembered
   private final JFileChooser FC;
   private final JFrame parent;
+  private final TitleSetter titleSetter;
   private final PropertyChangeSupport pcs;
 
   private File openedFile;
+  private boolean isModified;
 
-  public FileHandler(JFrame parent) {
+  public interface TitleSetter {
+    void setTitle(String title);
+  }
+
+  public FileHandler(JFrame parent, TitleSetter titleSetter) {
     FC = new JFileChooser();
     FC.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
     this.parent = parent;
+    this.titleSetter = titleSetter;
     pcs = new PropertyChangeSupport(this);
 
     openedFile = null;
+    isModified = false;
   }
 
   public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -39,22 +47,25 @@ public class FileHandler {
   private void _setOpenedFile(File openedFile) {
     File oldFile = this.openedFile;
     this.openedFile = openedFile;
+    this.isModified = false;
     pcs.firePropertyChange("openedFile", oldFile, openedFile);
   }
 
-  public boolean hasOpenedFile() {
-    return openedFile != null;
-  }
-
-  public File getOpenedFile() {
-    if (openedFile == null) {
-      throw new IllegalStateException("No file is currently opened");
+  private void _updateTitle() {
+    if (openedFile != null) {
+      if (isModified) {
+        titleSetter.setTitle(openedFile.getName() + " (unsaved changes)");
+      } else {
+        titleSetter.setTitle(openedFile.getName() + " (up to date)");
+      }
+    } else {
+      titleSetter.setTitle("");
     }
-    return openedFile;
   }
 
   public Object closeOpenedFile() {
     _setOpenedFile(null);
+    _updateTitle();
     return null;
   }
 
@@ -84,6 +95,7 @@ public class FileHandler {
           }
         }
         _setOpenedFile(selectedFile);
+        _updateTitle();
         return lines;
       }
     }
@@ -115,6 +127,7 @@ public class FileHandler {
         }
       }
       _setOpenedFile(selectedFile);
+      _updateTitle();
     }
     return null;
   }
@@ -136,7 +149,24 @@ public class FileHandler {
           writer.println(line);
         }
       }
+      _updateTitle();
     }
     return null;
+  }
+
+  public boolean isFileOpened() {
+    return openedFile != null;
+  }
+
+  public boolean isModified() {
+    return isModified;
+  }
+
+  public void setIsModified(boolean b) {
+    if (isModified != b) {
+      System.out.println("Setting isModified to " + b);
+      isModified = b;
+      _updateTitle();
+    }
   }
 }
