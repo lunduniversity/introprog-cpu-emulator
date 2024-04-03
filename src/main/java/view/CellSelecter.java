@@ -40,26 +40,12 @@ public class CellSelecter extends AbstractSelecter {
     return new int[] {selectStartRange, selectEndRange};
   }
 
-  protected void _moveCellsUpHelper() {
-    if (selectStartRange != -1) {
-      if (memory.moveCellsUp(selectStartRange, selectEndRange)) {
-        selectStartRange--;
-        selectEndRange--;
-        caretPosRow--;
-      }
-    }
-    _paint();
+  protected boolean _moveCellsUpHelper() {
+    return memory.moveCellsUp(selectStartRange, selectEndRange);
   }
 
-  protected void _moveCellsDownHelper() {
-    if (selectStartRange != -1) {
-      if (memory.moveCellsDown(selectStartRange, selectEndRange)) {
-        selectStartRange++;
-        selectEndRange++;
-        caretPosRow++;
-      }
-    }
-    _paint();
+  protected boolean _moveCellsDownHelper() {
+    return memory.moveCellsDown(selectStartRange, selectEndRange);
   }
 
   @Override

@@ -139,7 +139,7 @@ public class ByteStorage implements Memory {
 
     Encoder encoder = Base64.getEncoder();
     List<String> base64List =
-        chunks.stream().map(chunk -> encoder.encodeToString(chunk)).collect(Collectors.toList());
+        chunks.stream().map(encoder::encodeToString).collect(Collectors.toList());
 
     StringBuilder base64 = new StringBuilder();
     Iterator<Integer> spaceIt = countEmptBytes.iterator();

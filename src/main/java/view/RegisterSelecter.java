@@ -41,44 +41,12 @@ public class RegisterSelecter extends AbstractSelecter {
     return copiedRange;
   }
 
-  public void moveSelectionUp() {
-    if (selectStartRange > 0) {
-      selectStartRange--;
-      selectEndRange--;
-      caretPosRow--;
-      _paint();
-    }
+  protected boolean _moveCellsUpHelper() {
+    return registry.moveCellsUp(selectStartRange, selectEndRange);
   }
 
-  public void moveSelectionDown() {
-    if (selectStartRange != -1 && selectEndRange < maxRange) {
-      selectStartRange++;
-      selectEndRange++;
-      caretPosRow++;
-      _paint();
-    }
-  }
-
-  protected void _moveCellsUpHelper() {
-    if (selectStartRange != -1) {
-      if (registry.moveCellsUp(selectStartRange, selectEndRange)) {
-        selectStartRange--;
-        selectEndRange--;
-        caretPosRow--;
-      }
-    }
-    _paint();
-  }
-
-  protected void _moveCellsDownHelper() {
-    if (selectStartRange != -1) {
-      if (registry.moveCellsDown(selectStartRange, selectEndRange)) {
-        selectStartRange++;
-        selectEndRange++;
-        caretPosRow++;
-      }
-    }
-    _paint();
+  protected boolean _moveCellsDownHelper() {
+    return registry.moveCellsDown(selectStartRange, selectEndRange);
   }
 
   @Override

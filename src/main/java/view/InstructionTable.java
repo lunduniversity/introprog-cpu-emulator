@@ -16,6 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import model.Memory;
 import model.ProgramCounter;
@@ -30,8 +32,8 @@ public class InstructionTable extends JFrame {
   private static final Font bold = new Font("Monospaced", Font.BOLD, 14);
   private static final Font hdr = new Font("Tahoma", Font.BOLD, 14);
 
-  private final Memory memory;
-  private final ProgramCounter pc;
+  private final transient Memory memory;
+  private final transient ProgramCounter pc;
 
   public InstructionTable(JFrame parent, Memory memory, ProgramCounter pc) {
 
@@ -53,7 +55,7 @@ public class InstructionTable extends JFrame {
 
   private void initGUI() {
     setTitle("Instruction Descriptions");
-    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     getContentPane()
         .setLayout(new MigLayout("wrap 1,gapy 20", "[grow,shrink,fill]", "[grow,shrink,fill]"));
 
@@ -89,8 +91,8 @@ public class InstructionTable extends JFrame {
       contentPane.add(table, "grow");
 
       // Headers
-      for (String hdr : new String[] {"Instr", "Opcode", "Operand (abcd)", "Description"}) {
-        table.add(hdr(hdr));
+      for (String header : new String[] {"Instr", "Opcode", "Operand (abcd)", "Description"}) {
+        table.add(hdr(header));
       }
 
       // Instructions
@@ -272,8 +274,8 @@ public class InstructionTable extends JFrame {
     JScrollPane sc1 =
         new JScrollPane(
             lblOperand,
-            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     sc1.setBorder(null);
 
     JEditorPane lblDesc = new JEditorPane();
@@ -288,7 +290,9 @@ public class InstructionTable extends JFrame {
     lblDesc.setMargin(new Insets(0, 0, 0, 0));
     JScrollPane sc2 =
         new JScrollPane(
-            lblDesc, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            lblDesc,
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     sc2.setBorder(null);
 
     table.add(new JSeparator(), "growx, span 4 1, gapy 3");

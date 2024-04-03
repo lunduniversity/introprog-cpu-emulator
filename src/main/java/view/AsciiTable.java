@@ -9,6 +9,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 public class AsciiTable extends JFrame {
@@ -18,7 +20,7 @@ public class AsciiTable extends JFrame {
 
   public AsciiTable(JFrame parent) {
     setTitle("ASCII Table");
-    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
     JPanel contentPane = new JPanel();
     contentPane.setLayout(
@@ -37,7 +39,9 @@ public class AsciiTable extends JFrame {
     notice.setFont(new JLabel().getFont().deriveFont(14f));
     JScrollPane sc =
         new JScrollPane(
-            notice, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            notice,
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     sc.setBorder(null);
     contentPane.add(sc, "grow,gap 5 5");
 
@@ -74,8 +78,8 @@ public class AsciiTable extends JFrame {
     JScrollPane scrollPane =
         new JScrollPane(
             columnPanel,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     scrollPane.getVerticalScrollBar().setUnitIncrement(16);
     scrollPane.setBorder(null);
     contentPane.add(scrollPane, "grow");

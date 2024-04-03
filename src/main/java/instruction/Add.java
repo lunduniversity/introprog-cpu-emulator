@@ -15,7 +15,7 @@ public class Add extends Instruction {
   protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     int a = reg.getRegister("OP1");
     int b = reg.getRegister("OP2");
-    int result = (int) (a + b);
+    int result = a + b;
     reg.setRegister("RES", result);
   }
 

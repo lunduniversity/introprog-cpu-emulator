@@ -45,13 +45,13 @@ public abstract class AbstractCell extends JPanel {
   private JLabel lblAscii;
   private JLabel lblInstruction;
 
-  private InstructionFactory factory = new InstructionFactory();
+  private transient InstructionFactory factory = new InstructionFactory();
 
   private int currentValue = 0;
 
-  private CellValueListener valueListener;
+  private transient CellValueListener valueListener;
 
-  public AbstractCell(
+  protected AbstractCell(
       final int index,
       String address,
       String label,
@@ -134,10 +134,12 @@ public abstract class AbstractCell extends JPanel {
               }
 
               @Override
-              public void mouseExited(MouseEvent e) {}
+              public void mouseExited(MouseEvent e) {
+                // Do nothing
+              }
             });
       }
-      bitPanel.add(bit, String.format("growx", i + 1));
+      bitPanel.add(bit, "growx");
       bits[i] = bit;
       if (i == bits.length / 2 - 1) {
         bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
@@ -216,12 +218,6 @@ public abstract class AbstractCell extends JPanel {
 
   static String pad(int value) {
     return String.format("%02d", value);
-  }
-
-  public AbstractCell focus(int xpos) {
-    // bits[xpos].requestFocusInWindow();
-    // bits[xpos].setCaretPosition(0);
-    return this;
   }
 
   public void setValue(int value, boolean isExecuting) {

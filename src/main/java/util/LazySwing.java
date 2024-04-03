@@ -30,7 +30,6 @@ public class LazySwing {
   public static void checkEDT() {
     if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
       new IllegalStateException("This method must be called on the EDT").printStackTrace();
-      ;
     }
   }
 

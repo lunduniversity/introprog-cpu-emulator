@@ -13,7 +13,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class FileHandler {
 
   // Reuse the same file chooser, so that the last directory is remembered
-  private final JFileChooser FC;
+  private final JFileChooser fileChooser;
   private final JFrame parent;
   private final TitleSetter titleSetter;
   private final PropertyChangeSupport pcs;
@@ -26,8 +26,8 @@ public class FileHandler {
   }
 
   public FileHandler(JFrame parent, TitleSetter titleSetter) {
-    FC = new JFileChooser();
-    FC.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
+    fileChooser = new JFileChooser();
+    fileChooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
     this.parent = parent;
     this.titleSetter = titleSetter;
     pcs = new PropertyChangeSupport(this);
@@ -79,13 +79,13 @@ public class FileHandler {
    * @throws IOException if an I/O error occurs
    */
   public String[] openFile() throws IllegalArgumentException, IOException {
-    FC.setDialogTitle("Open File");
-    FC.setDialogType(JFileChooser.OPEN_DIALOG);
-    int result = FC.showOpenDialog(parent);
+    fileChooser.setDialogTitle("Open File");
+    fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
+    int result = fileChooser.showOpenDialog(parent);
     if (result == JFileChooser.APPROVE_OPTION) {
-      File selectedFile = FC.getSelectedFile();
+      File selectedFile = fileChooser.getSelectedFile();
       try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
-        String[] lines = reader.lines().map(s -> s.replaceAll(" ", "")).toArray(String[]::new);
+        String[] lines = reader.lines().map(s -> s.replace(" ", "")).toArray(String[]::new);
         // verify that each line contains only 0s and 1s, and is 8 characters long
         for (int i = 0; i < lines.length; i++) {
           String line = lines[i];
@@ -99,7 +99,7 @@ public class FileHandler {
         return lines;
       }
     }
-    return null;
+    return new String[0];
   }
 
   /**
@@ -112,11 +112,11 @@ public class FileHandler {
    * @return null
    */
   public Object saveFileAs(String[] lines) throws IOException {
-    FC.setDialogTitle("Save As");
-    FC.setDialogType(JFileChooser.SAVE_DIALOG);
-    int result = FC.showSaveDialog(parent);
+    fileChooser.setDialogTitle("Save As");
+    fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+    int result = fileChooser.showSaveDialog(parent);
     if (result == JFileChooser.APPROVE_OPTION) {
-      File selectedFile = FC.getSelectedFile();
+      File selectedFile = fileChooser.getSelectedFile();
       // ensure that the file has a .txt extension
       if (!selectedFile.getName().toLowerCase().endsWith(".txt")) {
         selectedFile = new File(selectedFile.getAbsolutePath() + ".txt");
@@ -164,7 +164,6 @@ public class FileHandler {
 
   public void setIsModified(boolean b) {
     if (isModified != b) {
-      System.out.println("Setting isModified to " + b);
       isModified = b;
       _updateTitle();
     }

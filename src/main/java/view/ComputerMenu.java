@@ -142,7 +142,7 @@ public class ComputerMenu extends JMenuBar {
     itmPaste.addActionListener(e -> ui.getCurrentSelecter().pasteSelection());
     itmClear.addActionListener(e -> ui.getCurrentSelecter().clearSelectedCells());
     itmDelete.addActionListener(e -> ui.getCurrentSelecter().deleteSelectedCells());
-    itmResetData.addActionListener((e) -> ui.handleResetAllData());
+    itmResetData.addActionListener(e -> ui.handleResetAllData());
 
     // Select menu items
     itmSelectUp.addActionListener(e -> ui.getCurrentSelecter().expandSelectionUp());
@@ -160,9 +160,7 @@ public class ComputerMenu extends JMenuBar {
 
     // Help menu items
     itmAsciiTable.addItemListener(
-        itemEvent -> {
-          ui.toggleAsciiTable(itemEvent.getStateChange() == ItemEvent.SELECTED);
-        });
+        itemEvent -> ui.toggleAsciiTable(itemEvent.getStateChange() == ItemEvent.SELECTED));
     itmInstructions.addItemListener(
         itemEvent -> ui.toggleInstructions(itemEvent.getStateChange() == ItemEvent.SELECTED));
 

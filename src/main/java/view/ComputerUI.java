@@ -35,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
@@ -51,6 +52,8 @@ import view.SnapshotDialog.Mode;
 
 public class ComputerUI implements FocusRequester {
 
+  private static final Font HEADLINE_FONT = new Font("Tahoma", Font.BOLD, 14);
+
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(255, 255, 200);
 
   static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -58,7 +61,7 @@ public class ComputerUI implements FocusRequester {
   private JFrame frame;
   private Cell[] memCells;
   private Register[] regCells;
-  private Register pcCell;
+
   private JEditorPane lblPrintOutput;
   private JEditorPane lblErrorMessage;
   private JScrollPane scrollPane;
@@ -81,7 +84,6 @@ public class ComputerUI implements FocusRequester {
   private AbstractCell[] currentCells;
 
   private FileHandler fileHandler;
-  private ComputerMenu menu;
 
   public ComputerUI(Memory memory, CPU cpu, ObservableIO io) {
     this.memory = memory;
@@ -122,10 +124,13 @@ public class ComputerUI implements FocusRequester {
 
   /** Initialize the contents of the frame. */
   private void initialize() {
+    ComputerMenu menu;
+    Register pcCell;
     frame = new JFrame();
     frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     frame.addWindowListener(
         new WindowAdapter() {
+          @Override
           public void windowClosing(WindowEvent e) {
             handleExit();
           }
@@ -219,8 +224,8 @@ public class ComputerUI implements FocusRequester {
       scrollPane =
           new JScrollPane(
               memoryCellsPanel,
-              JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-              JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+              ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
+              ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
       memoryCellsPanel.setBorder(null);
       scrollPane.setBorder(null);
       scrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -238,27 +243,19 @@ public class ComputerUI implements FocusRequester {
       memCells = new Cell[memory.size()];
       for (int i = 0; i < memory.size(); i++) {
         final int idx = i;
-        memCells[i] =
-            new Cell(
-                i,
-                value -> {
-                  memory.setValueAt(idx, value);
-                },
-                cellSelecter);
+        memCells[i] = new Cell(i, value -> memory.setValueAt(idx, value), cellSelecter);
         memoryCellsPanel.add(memCells[i]);
       }
 
-      {
-        memory.addListener(
-            (startIdx, values) ->
-                inv(
-                    () -> {
-                      boolean executing = isExecuting.get();
-                      for (int i = 0; i < values.length; i++) {
-                        memCells[startIdx + i].setValue(values[i], executing);
-                      }
-                    }));
-      }
+      memory.addListener(
+          (startIdx, values) ->
+              inv(
+                  () -> {
+                    boolean executing = isExecuting.get();
+                    for (int i = 0; i < values.length; i++) {
+                      memCells[startIdx + i].setValue(values[i], executing);
+                    }
+                  }));
     }
 
     // Registers and program counter
@@ -276,6 +273,7 @@ public class ComputerUI implements FocusRequester {
       // R1-R3 are general purpose registers, OP1-OP3 are used for operations.
       regCells = new Register[Registry.NUM_REGISTERS];
       int offset = 3;
+      final String cellFormat = "cell 0 %d";
       for (int i = 0; i < regCells.length - 1; i++) {
         final int idx = i;
         regCells[i] =
@@ -284,56 +282,50 @@ public class ComputerUI implements FocusRequester {
                 Registry.REGISTER_NAMES[i],
                 value -> registry.setValueAt(idx, value),
                 regSelecter);
-        regCellsPanel.add(regCells[i], String.format("cell 0 %d", offset + idx));
+        regCellsPanel.add(regCells[i], String.format(cellFormat, offset + idx));
         if (idx == 2) {
           offset++;
-          Component rigidArea_5 = Box.createRigidArea(new Dimension(10, 10));
-          regCellsPanel.add(rigidArea_5, String.format("cell 0 %d", offset + idx));
+          regCellsPanel.add(
+              Box.createRigidArea(new Dimension(10, 10)), String.format(cellFormat, offset + idx));
         }
       }
 
-      Component rigidArea_6 = Box.createRigidArea(new Dimension(20, 10));
-      regCellsPanel.add(rigidArea_6, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS));
+      regCellsPanel.add(
+          Box.createRigidArea(new Dimension(20, 10)),
+          String.format(cellFormat, offset + Registry.NUM_REGISTERS));
 
-      pcCell =
-          new Register(
-              Registry.NUM_REGISTERS - 1, "PC", value -> pc.setCurrentIndex(value), regSelecter);
-      regCellsPanel.add(pcCell, String.format("cell 0 %d", offset + Registry.NUM_REGISTERS + 1));
+      pcCell = new Register(Registry.NUM_REGISTERS - 1, "PC", pc::setCurrentIndex, regSelecter);
+      regCellsPanel.add(pcCell, String.format(cellFormat, offset + Registry.NUM_REGISTERS + 1));
       regCells[Registry.NUM_REGISTERS - 1] = pcCell;
 
       {
         cpu.addRegistryListener(
-            (startIdx, values) -> {
-              inv(
-                  () -> {
-                    boolean executing = isExecuting.get();
-                    for (int i = 0; i < values.length; i++) {
-                      regCells[startIdx + i].setValue(values[i], executing);
-                    }
-                  });
-            });
+            (startIdx, values) ->
+                inv(
+                    () -> {
+                      boolean executing = isExecuting.get();
+                      for (int i = 0; i < values.length; i++) {
+                        regCells[startIdx + i].setValue(values[i], executing);
+                      }
+                    }));
         pc.addListener(
-            (oldIdx, newIdx) -> {
-              inv(
-                  () -> {
-                    if (oldIdx >= 0 && oldIdx < memory.size()) {
-                      memCells[oldIdx].clearProgramCounterFocus();
-                    }
-                    pcCell.setValue(newIdx, isExecuting.get());
-                    programCounterFocusIdx.set(newIdx);
-                    if (newIdx >= 0 && newIdx < memory.size()) {
-                      memCells[newIdx].setProgramCounterFocus();
-                    }
-                  });
-            });
-        // memory.addListener((address, value) -> inv(() -> {}));
+            (oldIdx, newIdx) ->
+                inv(
+                    () -> {
+                      if (oldIdx >= 0 && oldIdx < memory.size()) {
+                        memCells[oldIdx].clearProgramCounterFocus();
+                      }
+                      pcCell.setValue(newIdx, isExecuting.get());
+                      programCounterFocusIdx.set(newIdx);
+                      if (newIdx >= 0 && newIdx < memory.size()) {
+                        memCells[newIdx].setProgramCounterFocus();
+                      }
+                    }));
       }
     }
 
     // Divider between registers and controls
-    {
-      frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 1 4, top");
-    }
+    frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 1 4, top");
 
     // Execution controls
     {
@@ -343,17 +335,14 @@ public class ComputerUI implements FocusRequester {
       controlPanel.setLayout(new MigLayout("", "[][][grow,fill]", "[][][][][]"));
 
       JLabel lblControlHeader = new JLabel("Controls");
-      lblControlHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
+      lblControlHeader.setFont(HEADLINE_FONT);
       controlPanel.add(lblControlHeader, "cell 0 0");
 
       // Step button
       {
         JButton btnStep = new JButton("Step");
         btnStep.setFocusable(false);
-        btnStep.addActionListener(
-            e -> {
-              handleStep();
-            });
+        btnStep.addActionListener(e -> handleStep());
         controlPanel.add(btnStep, "cell 0 1");
       }
 
@@ -361,10 +350,7 @@ public class ComputerUI implements FocusRequester {
       {
         JButton btnRun = new JButton("Run");
         btnRun.setFocusable(false);
-        btnRun.addActionListener(
-            e -> {
-              handleRun();
-            });
+        btnRun.addActionListener(e -> handleRun());
         controlPanel.add(btnRun, "cell 1 1");
       }
 
@@ -386,12 +372,12 @@ public class ComputerUI implements FocusRequester {
         JScrollPane outputScroll =
             new JScrollPane(
                 lblPrintOutput,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         outputScroll.setMaximumSize(new Dimension(600, 150));
         controlPanel.add(outputScroll, "cell 1 3 2 1, grow, top, left");
 
-        io.addListener((value) -> handlePrint(value));
+        io.addListener(this::handlePrint);
       }
 
       // Error message textbox
@@ -409,8 +395,8 @@ public class ComputerUI implements FocusRequester {
         JScrollPane errorScroll =
             new JScrollPane(
                 lblErrorMessage,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         errorScroll.setMaximumSize(new Dimension(600, 150));
         controlPanel.add(errorScroll, "cell 1 4 2 1, grow, top, left");
       }
@@ -522,29 +508,22 @@ public class ComputerUI implements FocusRequester {
   }
 
   void handleResetState() {
-    {
-      lblPrintOutput.setText("");
-      lblErrorMessage.setText("");
-      pc.setCurrentIndex(0);
-      registry.reset();
-      inv(() -> resetCellColors());
-    }
+    lblPrintOutput.setText("");
+    lblErrorMessage.setText("");
+    pc.setCurrentIndex(0);
+    registry.reset();
+    inv(this::resetCellColors);
   }
 
   void handleResetAllData() {
     cpu.reset();
     memory.reset();
-    memCells[0].focus(0);
-
-    executor.schedule(() -> inv(() -> resetCellColors()), 700, TimeUnit.MILLISECONDS);
+    executor.schedule(() -> inv(this::resetCellColors), 700, TimeUnit.MILLISECONDS);
   }
 
   void handleExit() {
-    System.out.println("Exiting");
     if (fileHandler.isModified()) {
-      System.out.println("File is modified");
       if (fileHandler.isFileOpened()) {
-        System.out.println("File is opened");
         int result =
             JOptionPane.showConfirmDialog(
                 frame,
@@ -558,7 +537,6 @@ public class ComputerUI implements FocusRequester {
         }
         // If the user chooses to cancel, do nothing.
       } else {
-        System.out.println("File is not opened");
         int result =
             JOptionPane.showConfirmDialog(
                 frame,
@@ -573,7 +551,6 @@ public class ComputerUI implements FocusRequester {
         // If the user chooses to cancel, do nothing.
       }
     } else {
-      System.out.println("File is not modified");
       System.exit(0);
     }
   }
@@ -610,7 +587,7 @@ public class ComputerUI implements FocusRequester {
   }
 
   void setMemorySnapshot(String[] snapshot) {
-    if (snapshot == null) {
+    if (snapshot == null || snapshot.length == 0) {
       return;
     }
     memory.importFromBinary(snapshot);
@@ -653,7 +630,7 @@ public class ComputerUI implements FocusRequester {
 
     JLabel lblHeader = new JLabel(header);
     cellPanel.add(lblHeader, "cell 0 0 4 1");
-    lblHeader.setFont(new Font("Tahoma", Font.BOLD, 14));
+    lblHeader.setFont(HEADLINE_FONT);
 
     cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "cell 0 1 2 1");
 

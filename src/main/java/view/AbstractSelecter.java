@@ -38,7 +38,8 @@ public abstract class AbstractSelecter {
   protected final SelectionPainter painter;
   private final FocusRequester focusRequester;
 
-  public AbstractSelecter(int maxRange, SelectionPainter painter, FocusRequester focusRequester) {
+  protected AbstractSelecter(
+      int maxRange, SelectionPainter painter, FocusRequester focusRequester) {
     this.maxRange = maxRange;
     this.painter = painter;
     this.focusRequester = focusRequester;
@@ -188,15 +189,14 @@ public abstract class AbstractSelecter {
     selecting = true;
     paintMouseSelection = false;
     ComputerUI.executor.schedule(
-        () -> {
-          inv(
-              () -> {
-                if (selecting && !paintMouseSelection) {
-                  paintMouseSelection = true;
-                  _paint();
-                }
-              });
-        },
+        () ->
+            inv(
+                () -> {
+                  if (selecting && !paintMouseSelection) {
+                    paintMouseSelection = true;
+                    _paint();
+                  }
+                }),
         300,
         TimeUnit.MILLISECONDS);
     _paint();
@@ -251,20 +251,28 @@ public abstract class AbstractSelecter {
   public final void moveCellsUp() {
     if (selectStartRange == -1) {
       expandSelectionUp();
+    } else if (_moveCellsUpHelper()) {
+      selectStartRange--;
+      selectEndRange--;
+      caretPosRow--;
+      _paint();
     }
-    _moveCellsUpHelper();
   }
 
   public final void moveCellsDown() {
     if (selectStartRange == -1) {
       expandSelectionDown();
+    } else if (_moveCellsDownHelper()) {
+      selectStartRange++;
+      selectEndRange++;
+      caretPosRow++;
+      _paint();
     }
-    _moveCellsDownHelper();
   }
 
-  protected abstract void _moveCellsUpHelper();
+  protected abstract boolean _moveCellsUpHelper();
 
-  protected abstract void _moveCellsDownHelper();
+  protected abstract boolean _moveCellsDownHelper();
 
   public final void copySelection() {
     if (selectStartRange == -1) {
@@ -286,7 +294,7 @@ public abstract class AbstractSelecter {
     if (contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
       try {
         String data = (String) contents.getTransferData(DataFlavor.stringFlavor);
-        String[] lines = data.replaceAll(" ", "").split("\n");
+        String[] lines = data.replace(" ", "").split("\n");
         int[] values = new int[lines.length];
         for (int i = 0; i < lines.length; i++) {
           values[i] = Integer.parseInt(lines[i].trim(), 2);

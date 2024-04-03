@@ -19,17 +19,17 @@ public class ThreadConfinementChecker extends RepaintManager {
 
   @Override
   public synchronized void addInvalidComponent(JComponent component) {
-    check(component);
+    check();
     super.addInvalidComponent(component);
   }
 
   @Override
   public void addDirtyRegion(JComponent component, int x, int y, int w, int h) {
-    check(component);
+    check();
     super.addDirtyRegion(component, x, y, w, h);
   }
 
-  private static void check(JComponent c) {
+  private static void check() {
 
     // If the current thread is the EDT, all is fine.
     // Otherwise, we need to check more carefully.

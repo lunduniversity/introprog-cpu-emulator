@@ -11,8 +11,7 @@ import net.miginfocom.swing.MigLayout;
 
 public class SnapshotDialog extends JDialog {
   private JTextArea textArea;
-  private JButton actionButton;
-  private JButton cancelButton;
+
   private boolean confirmed = false;
 
   // Enum to represent dialog mode
@@ -31,10 +30,13 @@ public class SnapshotDialog extends JDialog {
   }
 
   private void initializeComponents(Mode mode) {
+    JButton cancelButton;
+    JButton actionButton;
     setLayout(new MigLayout("", "[][grow]", "[][][grow][]"));
 
     // Set dialog title and description based on mode
-    String title, description;
+    String title;
+    String description;
     if (mode == Mode.IMPORT) {
       title = "Import memory snapshot";
       description = "Paste a memory snapshot in Base64 format below to restore it:";

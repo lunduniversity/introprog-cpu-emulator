@@ -13,11 +13,11 @@ public abstract class Instruction {
   protected final int operand;
   protected final boolean autoIncrement;
 
-  public Instruction(String name, int operand) {
+  protected Instruction(String name, int operand) {
     this(name, operand, true);
   }
 
-  public Instruction(String name, int operand, boolean autoIncrement) {
+  protected Instruction(String name, int operand, boolean autoIncrement) {
     this.name = name;
     this.operand = operand;
     this.autoIncrement = autoIncrement;
@@ -65,7 +65,8 @@ public abstract class Instruction {
   }
 
   public static String toBinaryString(int value, int length, int groupSize) {
-    String bin = String.format("%" + length + "s", Integer.toBinaryString(value)).replace(' ', '0');
+    String formatSpecifier = String.format("%%%ds", length);
+    String bin = String.format(formatSpecifier, Integer.toBinaryString(value)).replace(' ', '0');
     if (groupSize > 1 && bin.length() > groupSize) {
       // Insert spaces every groupSize characters
       StringBuilder sb = new StringBuilder(bin);

@@ -12,7 +12,9 @@ public class Nop extends Instruction {
   }
 
   @Override
-  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {}
+  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+    // Do nothing
+  }
 
   @Override
   protected String printOperand() {
