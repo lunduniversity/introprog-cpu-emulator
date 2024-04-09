@@ -1,7 +1,7 @@
 package view;
 
 import static util.LazySwing.action;
-import static util.LazySwing.checkEDT;
+import static util.LazySwing.colorToHex;
 import static util.LazySwing.inv;
 import static util.LazySwing.runSafely;
 
@@ -27,19 +27,20 @@ import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 import model.CPU;
 import model.Memory;
 import model.ProgramCounter;
@@ -56,7 +57,8 @@ public class ComputerUI implements FocusRequester {
 
   private static final Font HEADLINE_FONT = new Font("Tahoma", Font.BOLD, 14);
 
-  private static final Color ERROR_HIGHLIGHT_COLOR = new Color(255, 255, 200);
+  private static final Color ERROR_HIGHLIGHT_COLOR = new Color(200, 55, 40);
+  private static final String ERROR_HIGHLIGHT_COLOR_STRING = colorToHex(ERROR_HIGHLIGHT_COLOR);
 
   static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -64,8 +66,7 @@ public class ComputerUI implements FocusRequester {
   private Cell[] memCells;
   private Register[] regCells;
 
-  private JEditorPane txtOutput;
-  private JEditorPane lblErrorMessage;
+  private JTextPane txtOutput;
   private JScrollPane scrollPane;
 
   private ObservableValue<Integer> programCounterFocusIdx;
@@ -110,8 +111,10 @@ public class ComputerUI implements FocusRequester {
     memCells[programCounterFocusIdx.get()].setProgramCounterFocus();
 
     frame.pack();
-    frame.setMinimumSize(frame.getSize());
-    scrollPane.setMaximumSize(new Dimension(400, Integer.MAX_VALUE));
+    // frame.setMinimumSize(frame.getSize());
+
+    // Max size is set during initialization, for pack() to work appropriately. Now we remove it.
+    scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
 
@@ -145,7 +148,7 @@ public class ComputerUI implements FocusRequester {
     fileHandler =
         new FileHandler(
             frame,
-            title -> inv(() -> frame.setTitle("SeaPeaEwe" + title != null ? " - " + title : "")));
+            title -> inv(() -> frame.setTitle("SeaPeaEwe" + (title != null ? " - " + title : ""))));
     menu = new ComputerMenu(this, fileHandler);
     frame.setJMenuBar(menu);
 
@@ -183,10 +186,12 @@ public class ComputerUI implements FocusRequester {
     imap.put(KeyStroke.getKeyStroke("DOWN"), "caretDown");
     imap.put(KeyStroke.getKeyStroke("LEFT"), "caretLeft");
     imap.put(KeyStroke.getKeyStroke("RIGHT"), "caretRight");
+    imap.put(KeyStroke.getKeyStroke("ENTER"), "caretNextCell");
     amap.put("caretUp", action(e -> currentSelecter.moveCaretUp()));
     amap.put("caretDown", action(e -> currentSelecter.moveCaretDown()));
     amap.put("caretLeft", action(e -> currentSelecter.moveCaretLeft()));
     amap.put("caretRight", action(e -> currentSelecter.moveCaretRight()));
+    amap.put("caretNextCell", action(e -> currentSelecter.moveCaretToNextCell()));
 
     // Handle setting bit values (flipping bits are handled in the ComuterMenu class)
     imap.put(KeyStroke.getKeyStroke("0"), "setBit0");
@@ -359,17 +364,34 @@ public class ComputerUI implements FocusRequester {
         controlPanel.add(btnRun, "cell 1 1");
       }
 
+      // Reset button
+      {
+        JButton btnReset = new JButton("Reset");
+        btnReset.setFocusable(false);
+        btnReset.addActionListener(e -> handleResetState());
+        controlPanel.add(btnReset, "cell 2 1");
+      }
+      // Help button
+      {
+        JButton btnHelp = new JButton("Help (F1)");
+        btnHelp.setFocusable(false);
+        btnHelp.addActionListener(e -> handleResetState());
+        controlPanel.add(btnHelp, "cell 2 1");
+      }
+
       // Small space
       controlPanel.add(Box.createRigidArea(new Dimension(10, 10)), "cell 0 2");
 
-      // Print output textbox
+      // Output textbox
       {
         JLabel lblOutput = new JLabel("Output:");
         controlPanel.add(lblOutput, "cell 0 3, top, right");
 
-        txtOutput = new JEditorPane();
+        txtOutput = new JTextPane();
+        txtOutput.setContentType("text/html");
+        txtOutput.setEditorKit(new HTMLEditorKit());
         txtOutput.setFocusable(false);
-        txtOutput.setOpaque(false);
+        // txtOutput.setOpaque(false);
         txtOutput.setEditable(false);
         txtOutput.setMargin(new Insets(0, 0, 0, 0));
         txtOutput.setFont(lblOutput.getFont());
@@ -379,49 +401,11 @@ public class ComputerUI implements FocusRequester {
                 txtOutput,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        outputScroll.setMaximumSize(new Dimension(600, 150));
-        controlPanel.add(outputScroll, "cell 1 3 2 1, grow, top, left");
+        outputScroll.setMinimumSize(new Dimension(200, 150));
+        controlPanel.add(outputScroll, "cell 0 4 3 1, grow, top, left");
 
         io.addListener(this::handlePrint);
       }
-
-      // Error message textbox
-      {
-        JLabel lblError = new JLabel("Error:");
-        controlPanel.add(lblError, "cell 0 4, top, right");
-
-        lblErrorMessage = new JEditorPane();
-        lblErrorMessage.setFocusable(false);
-        lblErrorMessage.setOpaque(false);
-        lblErrorMessage.setEditable(false);
-        lblErrorMessage.setMargin(new Insets(0, 0, 0, 0));
-        lblErrorMessage.setFont(lblError.getFont());
-        lblErrorMessage.setBorder(null);
-        JScrollPane errorScroll =
-            new JScrollPane(
-                lblErrorMessage,
-                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        errorScroll.setMaximumSize(new Dimension(600, 150));
-        controlPanel.add(errorScroll, "cell 1 4 2 1, grow, top, left");
-      }
-
-      // Small space
-      controlPanel.add(Box.createRigidArea(new Dimension(10, 10)), "cell 0 5");
-
-      // Reset button
-      {
-        JButton btnReset = new JButton("Reset program");
-        btnReset.setFocusable(false);
-        btnReset.addActionListener(e -> handleResetState());
-        controlPanel.add(btnReset, "cell 0 6 2 1");
-      }
-    }
-
-    // Divider. Vertical line or border that fills all vertical space.
-    {
-      JSeparator rightDivider = new JSeparator(SwingConstants.VERTICAL);
-      frame.getContentPane().add(rightDivider, "cell 2 3 1 3, growy");
     }
   }
 
@@ -450,6 +434,8 @@ public class ComputerUI implements FocusRequester {
     return currentSelecter;
   }
 
+  void toggleHelp(boolean display, MenuCheckboxSetter setter) {}
+
   void toggleAsciiTable(boolean display, MenuCheckboxSetter setter) {
     if (display) {
       if (asciiTable == null) {
@@ -458,7 +444,6 @@ public class ComputerUI implements FocusRequester {
             new WindowAdapter() {
               @Override
               public void windowClosed(WindowEvent e) {
-                checkEDT();
                 setter.setCheckbox(false);
               }
             });
@@ -480,7 +465,6 @@ public class ComputerUI implements FocusRequester {
             new WindowAdapter() {
               @Override
               public void windowClosed(WindowEvent e) {
-                checkEDT();
                 setter.setCheckbox(false);
               }
             });
@@ -503,12 +487,20 @@ public class ComputerUI implements FocusRequester {
   void toggleMoveCaretAfterInput(boolean value) {}
 
   void flipBit() {
+    if (currentSelecter.isMouseSelectingOngoing()) {
+      return; // Do not allow editing during selection
+    }
     currentCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
+    currentSelecter.moveCaretRight();
     fileHandler.setIsModified(true);
   }
 
   void setBit(boolean value) {
+    if (currentSelecter.isMouseSelectingOngoing()) {
+      return; // Do not allow editing during selection
+    }
     currentCells[currentSelecter.getCaretRow()].setBit(currentSelecter.getCaretCol(), value);
+    currentSelecter.moveCaretRight();
     fileHandler.setIsModified(true);
   }
 
@@ -538,13 +530,13 @@ public class ComputerUI implements FocusRequester {
 
   void handleResetState() {
     txtOutput.setText("");
-    lblErrorMessage.setText("");
     pc.setCurrentIndex(0);
     registry.reset();
     inv(this::resetCellColors);
   }
 
   void handleResetAllData() {
+    // TODO: Add a confirmation dialog!
     cpu.reset();
     memory.reset();
     executor.schedule(() -> inv(this::resetCellColors), 700, TimeUnit.MILLISECONDS);
@@ -632,19 +624,34 @@ public class ComputerUI implements FocusRequester {
       r.unhighlight();
     }
     txtOutput.setBackground(UIManager.getColor("Panel.background"));
-    lblErrorMessage.setText("");
-    lblErrorMessage.setBackground(UIManager.getColor("Panel.background"));
   }
 
   private void handlePrint(int value) {
     // Treat value as ASCII character and append to print label
     char c = (char) (value & 0xFF);
-    txtOutput.setText(txtOutput.getText() + c);
+    appendHtmlContent(String.valueOf(c));
   }
 
   private void handleError(Exception ex) {
-    lblErrorMessage.setText(ex.getMessage());
-    lblErrorMessage.setBackground(ERROR_HIGHLIGHT_COLOR);
+    appendHtmlContent(
+        String.format(
+            "<p style='color:%s;font-weight:bold;'>%s<br>%s</p>",
+            ERROR_HIGHLIGHT_COLOR_STRING, ex.getClass().getSimpleName(), ex.getMessage()));
+  }
+
+  // Helper method to append HTML content to the JTextPane.
+  private void appendHtmlContent(String htmlContent) {
+    inv(
+        () -> {
+          try {
+            // Get the document (model) and insert the HTML content.
+            HTMLDocument doc = (HTMLDocument) txtOutput.getDocument();
+            HTMLEditorKit editorKit = (HTMLEditorKit) txtOutput.getEditorKit();
+            editorKit.insertHTML(doc, doc.getLength(), htmlContent, 0, 0, null);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
   }
 
   private JPanel createCellPanel(String header, boolean includeLabel) {

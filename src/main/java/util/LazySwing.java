@@ -11,6 +11,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 public class LazySwing {
@@ -20,15 +21,15 @@ public class LazySwing {
   }
 
   public static void inv(Runnable runnable, boolean forceNewInvocation) {
-    if (forceNewInvocation || !javax.swing.SwingUtilities.isEventDispatchThread()) {
-      javax.swing.SwingUtilities.invokeLater(runnable);
+    if (forceNewInvocation || !SwingUtilities.isEventDispatchThread()) {
+      SwingUtilities.invokeLater(runnable);
     } else {
       runnable.run();
     }
   }
 
   public static void checkEDT() {
-    if (!javax.swing.SwingUtilities.isEventDispatchThread()) {
+    if (!SwingUtilities.isEventDispatchThread()) {
       new IllegalStateException("This method must be called on the EDT").printStackTrace();
     }
   }
@@ -52,7 +53,7 @@ public class LazySwing {
   }
 
   public static boolean isEDT() {
-    return javax.swing.SwingUtilities.isEventDispatchThread();
+    return SwingUtilities.isEventDispatchThread();
   }
 
   public static AbstractAction action(ActionListener listener) {
@@ -62,6 +63,12 @@ public class LazySwing {
         listener.actionPerformed(e);
       }
     };
+  }
+
+  public static String colorToHex(Color color) {
+    // Use Integer.toHexString to convert the RGB values to hex
+    // and String.format to ensure leading zeros are included if necessary.
+    return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
   }
 
   public static void showBorders(Component component) {

@@ -18,7 +18,7 @@ public class ByteStorage implements Memory {
   private Set<StorageListener> listeners = new HashSet<>();
 
   public ByteStorage(int size) {
-    store = new int[size & 0xFF];
+    store = new int[size & 0xFFFF];
   }
 
   @Override

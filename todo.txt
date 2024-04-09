@@ -19,28 +19,84 @@
 [x] highlighta markerad instr i instrbeskr
 
 
-[] WindowListener för extra fönster, för att återställa meny checkbox
-[] Bug: När InstrDesc-fönstret öppnat, IndexOutOfBounds när man ändrar minnesceller
-[] Flytta markören när nytt värde sätts
+[x] WindowListener för extra fönster, för att återställa meny checkbox
+[x] Bug: När InstrDesc-fönstret öppnat, IndexOutOfBounds när man ändrar minnesceller
+[] Skapa nytt infofönster, med allmän info. Piltangenter, mus för att flytta och sätta värden, referera till menyn, etc.
+[x] Flytta markören när nytt värde sätts
+[] Ändra markering upp/ner. Sätt begin index och flytta end index.
+[] Lägg till shift-klick igen, metod finns redan i selecter (addSelectedCell)
 [] Gör text markerbar
 [] InstrTable, ankra tabellen till toppen
-[] Extra hjälpfönster
-[] Templates
+[] Templates. Lägg programfiler i resources, och populera menyn med dem
+[] F1 och F2 för fokus till fönsterna?
+[] PgUp och PgDn för att scrolla i minnet och i ascii tabellen
+[] Ctrl F för att söka?
+[] Swing Look and Feel, för sitt respektive OS
+[] Rödmarkera PC om utanför minnesrymden. (Och markera inte i Description)
+[] Ändra output och error till ett stort textfält. Ha knapparna ovanför: step, run, reset, help
+[] Döp om Reset program till endast Reset
+[] Flytta Reset i menyn från Edit till Execute
+[] Bug: Description highlightar fel instruktion, den laggar ett steg efter
+[] Shift+Tab == Tab
+[] När i "select mode" tillåt inte input för att ändra bitar (caret vs selection)
+[] Använd ytan under execute för info: Var är markören, vad är markerat, etc.
+[] Tillåt text att bli markerad och kopierad
+[] Menyalternativ för View:
+  [] Återställ fönsterpositioner och -storlekar
+  [] Öka och minska textstorlek
+[] Menyn Help kan innehålla länkar till kursmaterial
+[] Döp om registret PRT till OUT
+[] Descriptions, tabellen måste innehålla instruktionens namn, e.g. LD -> Load, ST -> Store, etc. Fetstil.
+[] Ändra print-instruktionerna:
+  [] Print Text (PRT)     ascii symbols
+  [] Print Decimal (PRD)  decimal numbers
+  [] Print Loop (PRL)     ascii symbols
+[] 
+[] Bug: Ladda värde till PC, rosa ram försvinner inte.
+[] Utöka rosa ram så att alla minnesceller som instruktionen kommer läsa markeras
+[] Lägg till utskrift för när sista minnescellen nås
+[] Lägg till bekräftelse dialog innan delete all data!
 [] 
 [] 
-
-0001 0100
-1000 1000
-1110 0100
-0000 1100
-0001 0110
-0000 1110
-0101 0000
-1010 1100
-1010 0110
-0010 1100
+[] 
 
 
+Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -6 is negative
+        at java.base/java.lang.System.arraycopy(Native Method)
+        at model.ByteStorage.moveCellsUp(ByteStorage.java:205)
+        at view.CellSelecter._moveCellsUpHelper(CellSelecter.java:44)
+        at view.AbstractSelecter.moveCellsUp(AbstractSelecter.java:264)
+        at view.ComputerMenu.lambda$new$12(ComputerMenu.java:86)
+        at util.LazySwing$1.actionPerformed(LazySwing.java:63)
 
 
-manually updating pc no longer moves the marked cell
+Labbinstrutioner
+
+Börja med att öppna enkelt template och steppa igenom
+
+Till slut, fibonacci
+
+Föreläsning:
+
+Binärt talsystem, och hex, ascii Vad är en cpu? register Adressrymd
+
+massa design tradeoffs i verktigheten. 32 cs 64 bitar
+
+Jag gör ett enkelt och ett mer avancerat program
+
+Visa Java bytekod. javap -c
+
+Kör scala program med scala-native för att producera en körbarfil, gör binary dump och inspektera assembly kod.
+
+Installera alla scala grejer, kolla på pgk kurssida, under verktyg
+
+
+
+
+
+
+
+
+
+
+

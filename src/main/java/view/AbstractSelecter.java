@@ -31,7 +31,7 @@ public abstract class AbstractSelecter {
   // For mouse selection
   protected int mouseStartIdx;
   protected int mouseEndIdx;
-  protected boolean selecting;
+  protected boolean mouseSelectingOngoing;
   protected boolean paintMouseSelection;
 
   protected final int maxRange;
@@ -84,7 +84,7 @@ public abstract class AbstractSelecter {
       caretPosRow--;
     }
     selectStartRange = selectEndRange = -1;
-    _paint();
+    _paintRange(caretPosRow, caretPosRow + 2);
   }
 
   public void moveCaretDown() {
@@ -92,7 +92,7 @@ public abstract class AbstractSelecter {
       caretPosRow++;
     }
     selectStartRange = selectEndRange = -1;
-    _paint();
+    _paintRange(caretPosRow - 1, caretPosRow + 1);
   }
 
   public void moveCaretLeft() {
@@ -100,7 +100,7 @@ public abstract class AbstractSelecter {
       caretPosCol--;
     }
     selectStartRange = selectEndRange = -1;
-    _paint();
+    _paintRange(caretPosRow, caretPosRow + 1);
   }
 
   public void moveCaretRight() {
@@ -108,19 +108,28 @@ public abstract class AbstractSelecter {
       caretPosCol++;
     }
     selectStartRange = selectEndRange = -1;
-    _paint();
+    _paintRange(caretPosRow, caretPosRow + 1);
+  }
+
+  public void moveCaretToNextCell() {
+    if (caretPosRow < maxRange - 1) {
+      caretPosRow++;
+      caretPosCol = 0;
+    }
+    selectStartRange = selectEndRange = -1;
+    _paintRange(caretPosRow - 1, caretPosRow + 1);
   }
 
   public void expandSelectionUp() {
     if (selectStartRange == -1) {
       selectStartRange = caretPosRow;
-      selectEndRange = selectStartRange + 1;
+      selectEndRange = selectStartRange - 1;
     } else {
-      selectStartRange = Math.max(0, selectStartRange - 1);
+      selectEndRange = Math.max(0, selectEndRange - 1);
     }
-    caretPosRow = selectStartRange;
-    caretPosCol = 0;
-    _paint();
+    _paintRange(
+        Math.min(selectStartRange, selectEndRange - 1),
+        Math.max(selectStartRange, selectEndRange + 1) + 1);
   }
 
   public void expandSelectionDown() {
@@ -130,9 +139,9 @@ public abstract class AbstractSelecter {
     } else {
       selectEndRange = Math.min(maxRange, selectEndRange + 1);
     }
-    caretPosRow = selectStartRange;
-    caretPosCol = 0;
-    _paint();
+    _paintRange(
+        Math.min(selectStartRange, selectEndRange - 1),
+        Math.max(selectStartRange, selectEndRange + 1) + 1);
   }
 
   public int[] getCaretPosition() {
@@ -148,9 +157,10 @@ public abstract class AbstractSelecter {
   }
 
   public void clearCaret() {
+    int oldCaretRow = caretPosRow;
     caretPosRow = -1;
     caretPosCol = -1;
-    _paint();
+    _paintRange(oldCaretRow, oldCaretRow + 1);
   }
 
   public void setSelectedCell(int selectedCell) {
@@ -172,8 +182,6 @@ public abstract class AbstractSelecter {
         selectEndRange = selectedCell + 1;
       }
     }
-    caretPosRow = selectedCell;
-    caretPosCol = 0;
     _paint();
   }
 
@@ -186,13 +194,13 @@ public abstract class AbstractSelecter {
   public void startSelection(int idx) {
     mouseStartIdx = idx;
     mouseEndIdx = idx;
-    selecting = true;
+    mouseSelectingOngoing = true;
     paintMouseSelection = false;
     ComputerUI.executor.schedule(
         () ->
             inv(
                 () -> {
-                  if (selecting && !paintMouseSelection) {
+                  if (mouseSelectingOngoing && !paintMouseSelection) {
                     paintMouseSelection = true;
                     _paint();
                   }
@@ -203,7 +211,7 @@ public abstract class AbstractSelecter {
   }
 
   public void updateSelection(int idx) {
-    if (selecting) {
+    if (mouseSelectingOngoing) {
       mouseEndIdx = idx;
       paintMouseSelection = true;
       _paint();
@@ -211,40 +219,42 @@ public abstract class AbstractSelecter {
   }
 
   public void endSelection() {
-    if (selecting) {
+    if (mouseSelectingOngoing) {
       selectStartRange = Math.min(mouseStartIdx, mouseEndIdx);
       selectEndRange = Math.max(mouseStartIdx, mouseEndIdx) + 1;
-      caretPosRow = selectStartRange;
-      caretPosCol = 0;
-      selecting = false;
+      mouseSelectingOngoing = false;
     }
     _paint();
   }
 
   public void cancelSelection() {
-    selecting = false;
+    mouseSelectingOngoing = false;
     _paint();
   }
 
-  public boolean isSelecting() {
-    return selecting;
+  public boolean isMouseSelectingOngoing() {
+    return mouseSelectingOngoing;
   }
 
   public void moveSelectionUp() {
     if (selectStartRange > 0) {
+      int oldStart = selectStartRange;
+      int oldEnd = selectEndRange;
       selectStartRange--;
       selectEndRange--;
       caretPosRow--;
-      _paint();
+      _paintRange(Math.min(oldStart, selectStartRange), Math.max(oldEnd, selectEndRange) + 1);
     }
   }
 
   public void moveSelectionDown() {
     if (selectStartRange != -1 && selectEndRange < maxRange) {
+      int oldStart = selectStartRange;
+      int oldEnd = selectEndRange;
       selectStartRange++;
       selectEndRange++;
       caretPosRow++;
-      _paint();
+      _paintRange(Math.min(oldStart, selectStartRange), Math.max(oldEnd, selectEndRange) + 1);
     }
   }
 
@@ -252,10 +262,12 @@ public abstract class AbstractSelecter {
     if (selectStartRange == -1) {
       expandSelectionUp();
     } else if (_moveCellsUpHelper()) {
+      int oldStart = selectStartRange;
+      int oldEnd = selectEndRange;
       selectStartRange--;
       selectEndRange--;
       caretPosRow--;
-      _paint();
+      _paintRange(Math.min(oldStart, selectStartRange), Math.max(oldEnd, selectEndRange) + 1);
     }
   }
 
@@ -263,10 +275,12 @@ public abstract class AbstractSelecter {
     if (selectStartRange == -1) {
       expandSelectionDown();
     } else if (_moveCellsDownHelper()) {
+      int oldStart = selectStartRange;
+      int oldEnd = selectEndRange;
       selectStartRange++;
       selectEndRange++;
       caretPosRow++;
-      _paint();
+      _paintRange(Math.min(oldStart, selectStartRange), Math.max(oldEnd, selectEndRange) + 1);
     }
   }
 
@@ -326,23 +340,30 @@ public abstract class AbstractSelecter {
   protected abstract int setValuesInRange(int start, int[] values);
 
   protected void _paint() {
+    _paintRange(0, maxRange);
+  }
+
+  protected void _paintRange(int min, int max) {
+    System.out.println("Painting range: " + min + " to " + max);
     Runnable r =
-        selecting
+        mouseSelectingOngoing
             ? () -> { // If mouse selection is active
               int start = Math.min(mouseStartIdx, mouseEndIdx);
               int end = Math.max(mouseStartIdx, mouseEndIdx);
-              for (int i = 0; i < maxRange; i++) {
+              for (int i = min; i < max; i++) {
                 boolean isSelected = i >= start && i <= end && paintMouseSelection;
                 painter.paintSelection(i, isSelected, -1, false);
               }
             }
             : () -> {
-              for (int i = 0; i < maxRange; i++) {
-                boolean isSelected = i >= selectStartRange && i < selectEndRange;
+              int start = Math.min(selectStartRange, selectEndRange);
+              int end = Math.max(selectStartRange, selectEndRange);
+              for (int i = min; i < max; i++) {
+                boolean isSelected = i >= start && i < end;
                 painter.paintSelection(i, isSelected, i == caretPosRow ? caretPosCol : -1, active);
               }
             };
-    inv(r, false);
+    inv(r);
   }
 
   public void clearSelectedCells() {
