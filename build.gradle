@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'dod-seapeaewe'
-version '0.1'
+version '0.2'
 
 repositories {
     mavenCentral()
@@ -16,14 +16,18 @@ dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:+'
 
+    // https://mvnrepository.com/artifact/org.mockito/mockito-core
+    testImplementation 'org.mockito:mockito-core:+'
+
 
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-swing
     implementation 'com.miglayout:miglayout-swing:+'
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-core
     implementation 'com.miglayout:miglayout-core:+'
 
-    // https://mvnrepository.com/artifact/org.mockito/mockito-core
-    testImplementation 'org.mockito:mockito-core:+'
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    // implementation 'com.google.code.gson:gson:+'
+    implementation 'com.google.code.gson:gson:2.10.1'
 
 }
 

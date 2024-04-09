@@ -23,12 +23,14 @@ public class ComputerMenu extends JMenuBar {
     JMenu menuSelect = new JMenu("Select");
     JMenu menuExecute = new JMenu("Execute");
     JMenu menuView = new JMenu("View");
+    JMenu menuSettings = new JMenu("Settings");
     JMenu menuHelp = new JMenu("Help");
     add(menuFile);
     add(menuEdit);
     add(menuSelect);
     add(menuExecute);
     add(menuView);
+    add(menuSettings);
     add(menuHelp);
 
     // File menu items
@@ -50,7 +52,7 @@ public class ComputerMenu extends JMenuBar {
     menuFile.add(itmExit);
 
     // Edit menu items
-    JMenuItem itmFlipBit = new JMenuItem("Flip selected bit"); // ENTER
+    JMenuItem itmFlipBit = new JMenuItem("Flip selected bit"); // f
     JMenuItem itmUndo = new JMenuItem("Undo"); // ctrl + z
     JMenuItem itmRedo = new JMenuItem("Redo"); // ctrl + y
     JMenuItem itmResetState = new JMenuItem("Reset program"); // ctrl + r
@@ -98,6 +100,16 @@ public class ComputerMenu extends JMenuBar {
     menuExecute.add(itmRun);
 
     // View menu items
+
+    // Settings menu items
+    JMenuItem itmOpenHelp = new JCheckBoxMenuItem("Open Help on startup");
+    JMenuItem itmOpenAscii = new JCheckBoxMenuItem("Open ASCII table on startup");
+    JMenuItem itmOpenInstr = new JCheckBoxMenuItem("Open Instructions on startup");
+    JMenuItem itmMoveCaret = new JCheckBoxMenuItem("Move caret after input");
+    menuSettings.add(itmOpenHelp);
+    menuSettings.add(itmOpenAscii);
+    menuSettings.add(itmOpenInstr);
+    menuSettings.add(itmMoveCaret);
 
     // Help menu items
     JMenuItem itmAsciiTable = new JCheckBoxMenuItem("Show ASCII Table");
@@ -156,7 +168,19 @@ public class ComputerMenu extends JMenuBar {
     itmRun.addActionListener(e -> ui.handleRun());
 
     // View menu items
-    // none for now
+
+    // Settings menu items
+    itmOpenHelp.addItemListener(
+        itemEvent -> ui.toggleHelpOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
+    itmOpenAscii.addItemListener(
+        itemEvent ->
+            ui.toggleAsciiTableOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
+    itmOpenInstr.addItemListener(
+        itemEvent ->
+            ui.toggleInstructionsOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
+    itmMoveCaret.addItemListener(
+        itemEvent ->
+            ui.toggleMoveCaretAfterInput(itemEvent.getStateChange() == ItemEvent.SELECTED));
 
     // Help menu items
     itmAsciiTable.addItemListener(
@@ -172,7 +196,7 @@ public class ComputerMenu extends JMenuBar {
     itmExport.setAccelerator(KeyStroke.getKeyStroke("ctrl E"));
     itmImport.setAccelerator(KeyStroke.getKeyStroke("ctrl I"));
     itmExit.setAccelerator(KeyStroke.getKeyStroke("ctrl Q"));
-    itmFlipBit.setAccelerator(KeyStroke.getKeyStroke("ENTER"));
+    itmFlipBit.setAccelerator(KeyStroke.getKeyStroke("F"));
     itmUndo.setAccelerator(KeyStroke.getKeyStroke("ctrl Z"));
     itmRedo.setAccelerator(KeyStroke.getKeyStroke("ctrl Y"));
     itmResetState.setAccelerator(KeyStroke.getKeyStroke("ctrl R"));

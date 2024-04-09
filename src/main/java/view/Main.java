@@ -9,7 +9,7 @@ import util.ThreadConfinementChecker;
 
 public class Main {
 
-  private static final int NUM_MEMORY_CELLS = 128;
+  private static final int NUM_MEMORY_CELLS = 256; // 256 is the maximum number of memory cells!
 
   public static void main(String[] args) {
     // Install custom RepaintManager to detect Swing threading issues

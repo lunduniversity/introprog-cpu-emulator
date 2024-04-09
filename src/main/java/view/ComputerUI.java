@@ -62,7 +62,7 @@ public class ComputerUI implements FocusRequester {
   private Cell[] memCells;
   private Register[] regCells;
 
-  private JEditorPane lblPrintOutput;
+  private JEditorPane txtOutput;
   private JEditorPane lblErrorMessage;
   private JScrollPane scrollPane;
 
@@ -119,7 +119,9 @@ public class ComputerUI implements FocusRequester {
 
     // showBorders(frame);
 
-    // Example program: UBJRF8DQ:12:SEVMTE8h
+    // Example programs:
+    // Print hello: UBJRF8DQ:12:SEVMTE8h
+    // Infinite loop: UwdUF4M=:2:hA==:15:gw==
   }
 
   /** Initialize the contents of the frame. */
@@ -162,6 +164,7 @@ public class ComputerUI implements FocusRequester {
 
     // Switch between memory and register selecter
     imap.put(KeyStroke.getKeyStroke("TAB"), "switchSelecter");
+    imap.put(KeyStroke.getKeyStroke("shift TAB"), "switchSelecter");
     amap.put(
         "switchSelecter",
         action(
@@ -200,8 +203,8 @@ public class ComputerUI implements FocusRequester {
                 "A simple simulation of a CPU and memory.%nThis computer has an 8-bit processor,"
                     + " with %d bytes of memory and (%d+1) registers (including program counter).\n"
                     + "Note that all registers have names, but are still addressed using their"
-                    + " indices 0\u20147.",
-                memory.size(), Registry.NUM_REGISTERS));
+                    + " indices 0\u2014%d.",
+                memory.size(), Registry.NUM_REGISTERS, Registry.NUM_REGISTERS - 1));
     lblDescription.setLineWrap(true);
     lblDescription.setWrapStyleWord(true);
     lblDescription.setEditable(false);
@@ -357,21 +360,21 @@ public class ComputerUI implements FocusRequester {
       // Small space
       controlPanel.add(Box.createRigidArea(new Dimension(10, 10)), "cell 0 2");
 
-      // Print output textbox  UwdUF4M=:2:hA==:15:gw==
+      // Print output textbox
       {
         JLabel lblOutput = new JLabel("Output:");
         controlPanel.add(lblOutput, "cell 0 3, top, right");
 
-        lblPrintOutput = new JEditorPane();
-        lblPrintOutput.setFocusable(false);
-        lblPrintOutput.setOpaque(false);
-        lblPrintOutput.setEditable(false);
-        lblPrintOutput.setMargin(new Insets(0, 0, 0, 0));
-        lblPrintOutput.setFont(lblOutput.getFont());
-        lblPrintOutput.setBorder(null);
+        txtOutput = new JEditorPane();
+        txtOutput.setFocusable(false);
+        txtOutput.setOpaque(false);
+        txtOutput.setEditable(false);
+        txtOutput.setMargin(new Insets(0, 0, 0, 0));
+        txtOutput.setFont(lblOutput.getFont());
+        txtOutput.setBorder(null);
         JScrollPane outputScroll =
             new JScrollPane(
-                lblPrintOutput,
+                txtOutput,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         outputScroll.setMaximumSize(new Dimension(600, 150));
@@ -473,6 +476,14 @@ public class ComputerUI implements FocusRequester {
     frame.requestFocus();
   }
 
+  void toggleHelpOnStartup(boolean value) {}
+
+  void toggleAsciiTableOnStartup(boolean value) {}
+
+  void toggleInstructionsOnStartup(boolean value) {}
+
+  void toggleMoveCaretAfterInput(boolean value) {}
+
   void flipBit() {
     currentCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
     fileHandler.setIsModified(true);
@@ -508,7 +519,7 @@ public class ComputerUI implements FocusRequester {
   }
 
   void handleResetState() {
-    lblPrintOutput.setText("");
+    txtOutput.setText("");
     lblErrorMessage.setText("");
     pc.setCurrentIndex(0);
     registry.reset();
@@ -602,7 +613,7 @@ public class ComputerUI implements FocusRequester {
     for (Register r : regCells) {
       r.unhighlight();
     }
-    lblPrintOutput.setBackground(UIManager.getColor("Panel.background"));
+    txtOutput.setBackground(UIManager.getColor("Panel.background"));
     lblErrorMessage.setText("");
     lblErrorMessage.setBackground(UIManager.getColor("Panel.background"));
   }
@@ -610,7 +621,7 @@ public class ComputerUI implements FocusRequester {
   private void handlePrint(int value) {
     // Treat value as ASCII character and append to print label
     char c = (char) (value & 0xFF);
-    lblPrintOutput.setText(lblPrintOutput.getText() + c);
+    txtOutput.setText(txtOutput.getText() + c);
   }
 
   private void handleError(Exception ex) {
