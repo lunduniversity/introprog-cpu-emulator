@@ -237,7 +237,7 @@ public class InstructionTable extends JFrame {
         (pcValue, newIdx) ->
             inv(
                 () -> {
-                  if (pcValue >= 0 && pcValue < memory.size()) {
+                  if (0 <= pcValue && pcValue < memory.size()) {
                     lblInstr.setBorder(
                         (memory.getValueAt(pcValue) & 0xF0) == opcode
                             ? INSTR_FOCUS_BORDER
@@ -249,8 +249,8 @@ public class InstructionTable extends JFrame {
             inv(
                 () -> {
                   // If the current PC is in the modified range
-                  if (startIdx >= pc.getCurrentIndex()
-                      && pc.getCurrentIndex() <= startIdx + values.length) {
+                  if (startIdx <= pc.getCurrentIndex()
+                      && pc.getCurrentIndex() < startIdx + values.length) {
                     lblInstr.setBorder(
                         (values[pc.getCurrentIndex() - startIdx] & 0xF0) == opcode
                             ? INSTR_FOCUS_BORDER

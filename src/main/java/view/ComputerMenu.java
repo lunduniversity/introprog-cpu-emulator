@@ -14,6 +14,10 @@ import util.FileHandler;
 
 public class ComputerMenu extends JMenuBar {
 
+  public interface MenuCheckboxSetter {
+    void setCheckbox(boolean selected);
+  }
+
   public ComputerMenu(ComputerUI ui, FileHandler fileHandler) {
 
     JFrame frame = ui.getFrame();
@@ -184,9 +188,15 @@ public class ComputerMenu extends JMenuBar {
 
     // Help menu items
     itmAsciiTable.addItemListener(
-        itemEvent -> ui.toggleAsciiTable(itemEvent.getStateChange() == ItemEvent.SELECTED));
+        itemEvent ->
+            ui.toggleAsciiTable(
+                itemEvent.getStateChange() == ItemEvent.SELECTED,
+                checked -> itmAsciiTable.setSelected(checked)));
     itmInstructions.addItemListener(
-        itemEvent -> ui.toggleInstructions(itemEvent.getStateChange() == ItemEvent.SELECTED));
+        itemEvent ->
+            ui.toggleInstructions(
+                itemEvent.getStateChange() == ItemEvent.SELECTED,
+                checked -> itmInstructions.setSelected(checked)));
 
     // Bind shortcut keys
     itmOpen.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));

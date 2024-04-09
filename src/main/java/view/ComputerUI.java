@@ -1,6 +1,7 @@
 package view;
 
 import static util.LazySwing.action;
+import static util.LazySwing.checkEDT;
 import static util.LazySwing.inv;
 import static util.LazySwing.runSafely;
 
@@ -48,6 +49,7 @@ import util.FileHandler;
 import util.ObservableValue;
 import view.AbstractSelecter.FocusRequester;
 import view.AbstractSelecter.StorageType;
+import view.ComputerMenu.MenuCheckboxSetter;
 import view.SnapshotDialog.Mode;
 
 public class ComputerUI implements FocusRequester {
@@ -448,10 +450,18 @@ public class ComputerUI implements FocusRequester {
     return currentSelecter;
   }
 
-  void toggleAsciiTable(boolean display) {
+  void toggleAsciiTable(boolean display, MenuCheckboxSetter setter) {
     if (display) {
       if (asciiTable == null) {
         asciiTable = new AsciiTable(frame);
+        asciiTable.addWindowListener(
+            new WindowAdapter() {
+              @Override
+              public void windowClosed(WindowEvent e) {
+                checkEDT();
+                setter.setCheckbox(false);
+              }
+            });
       }
     } else {
       if (asciiTable != null) {
@@ -462,10 +472,18 @@ public class ComputerUI implements FocusRequester {
     frame.requestFocus();
   }
 
-  void toggleInstructions(boolean display) {
+  void toggleInstructions(boolean display, MenuCheckboxSetter setter) {
     if (display) {
       if (instructionTable == null) {
         instructionTable = new InstructionTable(frame, memory, pc);
+        instructionTable.addWindowListener(
+            new WindowAdapter() {
+              @Override
+              public void windowClosed(WindowEvent e) {
+                checkEDT();
+                setter.setCheckbox(false);
+              }
+            });
       }
     } else {
       if (instructionTable != null) {

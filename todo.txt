@@ -1,0 +1,46 @@
+[x] NOP är bra för då kan man "deleta" logik
+[] Kanske instr i listan ska kunna klickas på så att denna fylls i 
+[x] Kanske skriva bredvid reg vilket binärt ordningsnummer det har
+[x] Lägg in alla knappar i meny och lägg till kortkommando på alla menyval
+[x] Kanske göra instr uppsättn som ett eget resizable fönster med scorllbars V H
+[x] Help -meny med ASCI-tabell och Instr upps
+[x] en grön ram run den aktuell minnescell som accepterar input 
+[x] och ev. tillåt markera många minnesceller och då göra copy-pejst av minnesregioner; varför? jo man kommer behöva göra insert när man jobbar med sitt program  (en enkalre variant är en instertknapp som flyttar ner och lägger in NOP)
+[x] lägg till linkande vscode Alt-piluppner för swappa runt rader ; även i meny 
+[x] copy-paste mellan minnes celler verkar användbart 
+[x] i File meny sådant som har med inladdning och sparning göra; 
+  [x] ladda program från fil/snapshot
+  [x] spara program till fil/snapshot
+  [x] Visa vilken fil som är öppen
+  [x] Visa när öppen fil har osparade ändringar
+  [x] Varna när osparade ändringar kan försvinna (load, close, exit...)
+[] viewmenyn ev fullscreen; om underförster eller egna fönster, condense or verbose; 
+[x] scrolla output och error
+[x] highlighta markerad instr i instrbeskr
+
+
+[] WindowListener för extra fönster, för att återställa meny checkbox
+[] Bug: När InstrDesc-fönstret öppnat, IndexOutOfBounds när man ändrar minnesceller
+[] Flytta markören när nytt värde sätts
+[] Gör text markerbar
+[] InstrTable, ankra tabellen till toppen
+[] Extra hjälpfönster
+[] Templates
+[] 
+[] 
+
+0001 0100
+1000 1000
+1110 0100
+0000 1100
+0001 0110
+0000 1110
+0101 0000
+1010 1100
+1010 0110
+0010 1100
+
+
+
+
+manually updating pc no longer moves the marked cell
