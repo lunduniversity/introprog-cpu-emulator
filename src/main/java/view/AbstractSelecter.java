@@ -1,6 +1,7 @@
 package view;
 
 import static util.LazySwing.inv;
+import static util.Utils.INVALID_RANGE;
 
 import instruction.Instruction;
 import java.awt.Toolkit;
@@ -12,6 +13,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
+import util.Utils.Range;
 
 public abstract class AbstractSelecter {
 
@@ -85,7 +87,7 @@ public abstract class AbstractSelecter {
     }
     resetSelection();
     resetSelection();
-    _paintRange(caretPosRow, caretPosRow + 2);
+    _paintRange(new Range(caretPosRow, caretPosRow + 2));
   }
 
   public void moveCaretDown() {
@@ -93,7 +95,7 @@ public abstract class AbstractSelecter {
       caretPosRow++;
     }
     resetSelection();
-    _paintRange(caretPosRow - 1, caretPosRow + 1);
+    _paintRange(new Range(caretPosRow - 1, caretPosRow + 1));
   }
 
   public void moveCaretLeft() {
@@ -101,7 +103,7 @@ public abstract class AbstractSelecter {
       caretPosCol--;
     }
     resetSelection();
-    _paintRange(caretPosRow, caretPosRow + 1);
+    _paintRange(new Range(caretPosRow, caretPosRow + 1));
   }
 
   public void moveCaretRight() {
@@ -109,7 +111,7 @@ public abstract class AbstractSelecter {
       caretPosCol++;
     }
     resetSelection();
-    _paintRange(caretPosRow, caretPosRow + 1);
+    _paintRange(new Range(caretPosRow, caretPosRow + 1));
   }
 
   public void moveCaretToNextCell() {
@@ -118,14 +120,14 @@ public abstract class AbstractSelecter {
       caretPosCol = 0;
     }
     resetSelection();
-    _paintRange(caretPosRow - 1, caretPosRow + 1);
+    _paintRange(new Range(caretPosRow - 1, caretPosRow + 1));
   }
 
   public void expandSelectionUp() {
     if (selectStartRange == -1) {
       selectStartRange = caretPosRow;
       selectEndRange = selectStartRange;
-      _paintRange(selectEndRange, selectStartRange + 1);
+      _paintRange(new Range(selectEndRange, selectStartRange + 1));
     } else {
       int oldEnd = selectEndRange;
       if (selectStartRange == selectEndRange - 1) {
@@ -136,9 +138,9 @@ public abstract class AbstractSelecter {
         selectEndRange = Math.max(0, selectEndRange - 1);
       }
       if (selectStartRange <= selectEndRange) {
-        _paintRange(selectStartRange, oldEnd);
+        _paintRange(new Range(selectStartRange, oldEnd));
       } else {
-        _paintRange(selectEndRange, selectStartRange + 1);
+        _paintRange(new Range(selectEndRange, selectStartRange + 1));
       }
     }
     _paint();
@@ -148,7 +150,7 @@ public abstract class AbstractSelecter {
     if (selectStartRange == -1) {
       selectStartRange = caretPosRow;
       selectEndRange = selectStartRange + 1;
-      _paintRange(selectStartRange, selectEndRange);
+      _paintRange(new Range(selectStartRange, selectEndRange));
     } else {
       int oldEnd = selectEndRange;
       if (selectStartRange >= selectEndRange) {
@@ -156,10 +158,10 @@ public abstract class AbstractSelecter {
         if (selectStartRange == selectEndRange) {
           selectEndRange = Math.min(maxRange, selectEndRange + 1);
         }
-        _paintRange(oldEnd, selectEndRange);
+        _paintRange(new Range(oldEnd, selectEndRange));
       } else {
         selectEndRange = Math.min(maxRange, selectEndRange + 1);
-        _paintRange(selectStartRange, selectEndRange);
+        _paintRange(new Range(selectStartRange, selectEndRange));
       }
     }
     _paint();
@@ -178,10 +180,10 @@ public abstract class AbstractSelecter {
   }
 
   public void clearCaret() {
-    int oldCaretRow = caretPosRow;
+    Range oldPos = new Range(caretPosRow, caretPosRow + 1);
     caretPosRow = -1;
     caretPosCol = -1;
-    _paintRange(oldCaretRow, oldCaretRow + 1);
+    _paintRange(oldPos);
   }
 
   public void setSelectedCell(int selectedCell) {
@@ -258,60 +260,60 @@ public abstract class AbstractSelecter {
   }
 
   public void moveSelectionUp() {
-    if (selectStartRange > 0 && selectEndRange > 0) {
-      int oldStart = selectStartRange;
-      int oldEnd = selectEndRange;
+    Range selection = _properSelectionRange();
+    if (selection.isAbove(1)) {
       selectStartRange--;
       selectEndRange--;
       caretPosRow--;
-      _paintRange(_min(selectStartRange, selectEndRange), _max(oldStart + 1, oldEnd));
+      _paintRange(selection.decFrom());
     }
   }
 
   public void moveSelectionDown() {
-    if (selectStartRange != -1 && selectStartRange < maxRange && selectEndRange < maxRange) {
-      int oldStart = selectStartRange;
-      int oldEnd = selectEndRange;
+    Range selection = _properSelectionRange();
+    if (selection.isBelow(maxRange - 1)) {
       selectStartRange++;
       selectEndRange++;
       caretPosRow++;
-      _paintRange(_min(oldStart, oldEnd), _max(selectStartRange + 1, selectEndRange));
+      _paintRange(selection.incTo());
     }
   }
 
   public final void moveCellsUp() {
     if (selectStartRange == -1) {
       expandSelectionUp();
-    } else if (_moveCellsUpHelper()) {
-      int oldStart = selectStartRange;
-      int oldEnd = selectEndRange;
+    }
+
+    Range range = _properSelectionRange();
+
+    if (_moveCellsUpDelegater(range.from(), range.to())) {
       selectStartRange--;
       selectEndRange--;
       caretPosRow--;
-      _paintRange(
-          _min(oldStart, selectStartRange, oldEnd, selectEndRange),
-          _max(oldStart, selectStartRange, oldEnd, selectEndRange));
+      _paintRange(range.decFrom());
     }
   }
 
   public final void moveCellsDown() {
     if (selectStartRange == -1) {
       expandSelectionDown();
-    } else if (_moveCellsDownHelper()) {
+    }
+
+    Range range = _properSelectionRange();
+
+    if (_moveCellsDownHelper(range.from(), range.to())) {
       int oldStart = selectStartRange;
       int oldEnd = selectEndRange;
       selectStartRange++;
       selectEndRange++;
       caretPosRow++;
-      _paintRange(
-          _min(oldStart, selectStartRange, oldEnd, selectEndRange),
-          _max(oldStart, selectStartRange, oldEnd, selectEndRange));
+      _paintRange(range.incTo());
     }
   }
 
-  protected abstract boolean _moveCellsUpHelper();
+  protected abstract boolean _moveCellsUpDelegater(int start, int end);
 
-  protected abstract boolean _moveCellsDownHelper();
+  protected abstract boolean _moveCellsDownHelper(int start, int end);
 
   public final void copySelection() {
     if (selectStartRange == -1) {
@@ -366,40 +368,35 @@ public abstract class AbstractSelecter {
 
   protected void resetSelection() {
     if (selectStartRange != -1) {
-      int start = Math.min(selectStartRange, selectEndRange);
-      int end = Math.max(selectStartRange, selectEndRange);
+      Range selection = _properSelectionRange();
       selectStartRange = selectEndRange = -1;
-      _paintRange(start, end + 1);
+      _paintRange(selection);
     }
   }
 
   protected void drawCaret() {
     if (caretPosRow != -1) {
-      _paintRange(caretPosRow, caretPosRow + 1);
+      _paintRange(new Range(caretPosRow, caretPosRow + 1));
     }
   }
 
   protected void _paint() {
-    _paintRange(0, maxRange);
+    _paintRange(new Range(0, maxRange));
   }
 
-  protected void _paintRange(int range[]) {
-    _paintRange(range[0], range[1]);
-  }
-
-  protected void _paintRange(int min, int max) {
+  protected void _paintRange(Range range) {
     System.out.println(
         "Painting range: "
-            + min
+            + range.from()
             + " to "
-            + max
+            + range.to()
             + " (actual range: "
             + selectStartRange
             + " to "
             + selectEndRange
             + ")");
-    int safeMin = Math.max(0, min);
-    int safeMax = Math.min(max, maxRange);
+    int safeMin = Math.max(0, range.from());
+    int safeMax = Math.min(range.to(), maxRange);
     Runnable r =
         mouseSelectingOngoing
             ? () -> { // If mouse selection is active
@@ -467,15 +464,19 @@ public abstract class AbstractSelecter {
     return max;
   }
 
-  private int[] range(int delta, int... values) {
-    int min = _min(values);
-    int max = _max(values);
-    if (delta < 0) {
-      return new int[] {min + delta, max};
+  private Range _properRange(int start, int end) {
+    if (start < end) {
+      return new Range(start, end);
+    } else {
+      return new Range(end, start + 1);
     }
-    if (delta > 0) {
-      return new int[] {min, max + delta};
+  }
+
+  private Range _properSelectionRange() {
+    if (selectStartRange == -1) {
+      return INVALID_RANGE;
+    } else {
+      return _properRange(selectStartRange, selectEndRange);
     }
-    return new int[] {min, max};
   }
 }

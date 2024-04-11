@@ -193,7 +193,7 @@ public class ByteStorage implements Memory {
   @Override
   public boolean moveCellsUp(final int startIdx, final int endIdx) {
     // If startIdx is 0 do nothing
-    if (startIdx <= 0) {
+    if (startIdx <= 0 || endIdx > store.length || startIdx >= endIdx) {
       return false;
     }
 
