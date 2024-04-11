@@ -1,8 +1,13 @@
 package view;
 
+import static util.LazySwing.decreaseFontSize;
+import static util.LazySwing.increaseFontSize;
+import static util.LazySwing.resetFontSize;
 import static util.LazySwing.runSafely;
 
 import java.awt.event.ItemEvent;
+import java.util.List;
+import java.util.stream.IntStream;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -11,6 +16,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import util.FileHandler;
 import util.MenuFactory;
+import util.TemplatesHandler;
 
 public class ComputerMenu extends JMenuBar {
 
@@ -23,18 +29,20 @@ public class ComputerMenu extends JMenuBar {
     JFrame frame = ui.getFrame();
     MenuFactory mf = new MenuFactory(frame);
 
-    JMenu menuFile = new JMenu("File");
-    JMenu menuEdit = new JMenu("Edit");
-    JMenu menuSelect = new JMenu("Select");
-    JMenu menuExecute = new JMenu("Execute");
-    JMenu menuView = new JMenu("View");
-    JMenu menuSettings = new JMenu("Settings");
-    JMenu menuHelp = new JMenu("Help");
+    JMenu menuFile = mf.menu("<u>F</u>ile", "alt F");
+    JMenu menuEdit = mf.menu("<u>E</u>dit", "alt E");
+    JMenu menuSelect = mf.menu("<u>S</u>elect", "alt S");
+    JMenu menuExecute = mf.menu("E<u>x</u>cute", "alt X");
+    JMenu menuView = mf.menu("<u>V</u>iew", "alt V");
+    JMenu menuTemplates = mf.menu("<u>T</u>emplates", "alt T");
+    JMenu menuSettings = mf.menu("<u>C</u>onfigure", "alt C");
+    JMenu menuHelp = mf.menu("<u>H</u>elp", "alt H");
     add(menuFile);
     add(menuEdit);
     add(menuSelect);
     add(menuExecute);
     add(menuView);
+    add(menuTemplates);
     add(menuSettings);
     add(menuHelp);
 
@@ -54,7 +62,7 @@ public class ComputerMenu extends JMenuBar {
             "Close opened file",
             "ctrl W",
             e -> {
-              ui.handleResetAllData();
+              ui.handleDeleteAllData();
               runSafely(fileHandler::closeOpenedFile);
             });
     JMenuItem itmExport = mf.item("Export base64", "ctrl E", e -> ui.exportAsBase64());
@@ -103,7 +111,7 @@ public class ComputerMenu extends JMenuBar {
             "ctrl shift DELETE",
             e -> ui.getCurrentSelecter().deleteSelectedCells());
     JMenuItem itmResetData =
-        mf.item("Delete all cells (use carefully!)", "ctrl shift M", e -> ui.handleResetAllData());
+        mf.item("Delete all cells (use carefully!)", "ctrl shift M", e -> ui.handleDeleteAllData());
     menuEdit.add(itmFlipBit);
     menuEdit.add(itmUndo);
     menuEdit.add(itmRedo);
@@ -153,6 +161,47 @@ public class ComputerMenu extends JMenuBar {
     menuExecute.add(itmResetState);
 
     // View menu items
+    JMenuItem itmIncFontSize =
+        mf.item(
+            "Increase font size",
+            new String[] {"ctrl PLUS", "ctrl ADD", "ctrl shift EQUALS"},
+            e -> increaseFontSize(frame));
+    JMenuItem itmDecFontSize =
+        mf.item("Decrease font size", "ctrl MINUS", e -> decreaseFontSize(frame));
+    JMenuItem itmResetFontSize = mf.item("Reset font size", "ctrl 0", e -> resetFontSize(frame));
+    menuView.add(itmIncFontSize);
+    menuView.add(itmDecFontSize);
+    menuView.add(itmResetFontSize);
+
+    // Templates menu items
+    List<String> templateNames = TemplatesHandler.getTemplateNames();
+    IntStream.range(0, templateNames.size())
+        .mapToObj(
+            i ->
+                mf.item(
+                    templateNames.get(i),
+                    "ctrl alt " + (i + 1),
+                    e -> {
+                      boolean load = true;
+                      if (fileHandler.isFileOpened() || fileHandler.isModified()) {
+                        int result =
+                            JOptionPane.showConfirmDialog(
+                                frame,
+                                "Loading a template will overwrite and replace the current"
+                                    + " memory.\n"
+                                    + "There is no way to undo this action. Do you want to"
+                                    + " continue?",
+                                "Confirm template load",
+                                JOptionPane.OK_CANCEL_OPTION);
+                        if (result != JOptionPane.YES_OPTION) {
+                          load = false;
+                        }
+                      }
+                      if (load) {
+                        ui.setMemorySnapshot(TemplatesHandler.getTemplate(templateNames.get(i)));
+                      }
+                    }))
+        .forEach(menuTemplates::add);
 
     // Settings menu items
     JCheckBoxMenuItem itmOpenHelp =
@@ -211,119 +260,5 @@ public class ComputerMenu extends JMenuBar {
     menuHelp.add(itmShowHelp);
     menuHelp.add(itmShowAsciiTable);
     menuHelp.add(itmShowInstructions);
-
-    // Add action listeners to the buttons
-
-    // File menu items
-    itmOpen.addActionListener(e -> ui.setMemorySnapshot(runSafely(fileHandler::openFile)));
-    itmSave.addActionListener(e -> runSafely(() -> fileHandler.saveFile(ui.getMemorySnapshot())));
-    itmSaveAs.addActionListener(
-        e -> runSafely(() -> fileHandler.saveFileAs(ui.getMemorySnapshot())));
-    itmClose.addActionListener(
-        e -> {
-          ui.handleResetAllData();
-          runSafely(fileHandler::closeOpenedFile);
-        });
-    itmExport.addActionListener(e -> ui.exportAsBase64());
-    itmImport.addActionListener(e -> ui.importFromBase64());
-    itmExit.addActionListener(e -> ui.handleExit());
-
-    itmClose.setEnabled(false);
-    fileHandler.addPropertyChangeListener(
-        evt -> {
-          if (evt.getPropertyName().equals("openedFile")) {
-            itmClose.setEnabled(evt.getNewValue() != null);
-          }
-        });
-
-    // Edit menu items
-    itmFlipBit.addActionListener(e -> ui.flipBit());
-    itmUndo.addActionListener(
-        e -> JOptionPane.showMessageDialog(frame, "Undo not implemented yet"));
-    itmRedo.addActionListener(
-        e -> JOptionPane.showMessageDialog(frame, "Redo not implemented yet"));
-    itmResetState.addActionListener(e -> ui.handleResetState());
-    itmMoveUp.addActionListener(e -> ui.getCurrentSelecter().moveCellsUp());
-    itmMoveDown.addActionListener(e -> ui.getCurrentSelecter().moveCellsDown());
-    itmCopy.addActionListener(e -> ui.getCurrentSelecter().copySelection());
-    itmPaste.addActionListener(e -> ui.getCurrentSelecter().pasteSelection());
-    itmClear.addActionListener(e -> ui.getCurrentSelecter().clearSelectedCells());
-    itmDelete.addActionListener(e -> ui.getCurrentSelecter().deleteSelectedCells());
-    itmResetData.addActionListener(e -> ui.handleResetAllData());
-
-    // Select menu items
-    itmSelectUp.addActionListener(e -> ui.getCurrentSelecter().expandSelectionUp());
-    itmSelectDown.addActionListener(e -> ui.getCurrentSelecter().expandSelectionDown());
-    itmMoveSelectionUp.addActionListener(e -> ui.getCurrentSelecter().moveSelectionUp());
-    itmMoveSelectionDown.addActionListener(e -> ui.getCurrentSelecter().moveSelectionDown());
-    itmClearSelection.addActionListener(e -> ui.getCurrentSelecter().clearSelection());
-
-    // Run menu items
-    itmStep.addActionListener(e -> ui.handleStep());
-    itmRun.addActionListener(e -> ui.handleRun());
-
-    // View menu items
-
-    // Settings menu items
-    itmOpenHelp.addItemListener(
-        itemEvent -> ui.toggleHelpOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
-    itmOpenAscii.addItemListener(
-        itemEvent ->
-            ui.toggleAsciiTableOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
-    itmOpenInstr.addItemListener(
-        itemEvent ->
-            ui.toggleInstructionsOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
-    itmMoveCaret.addItemListener(
-        itemEvent ->
-            ui.toggleMoveCaretAfterInput(itemEvent.getStateChange() == ItemEvent.SELECTED));
-
-    // Help menu items
-    itmShowAsciiTable.addItemListener(
-        itemEvent ->
-            ui.toggleAsciiTable(
-                itemEvent.getStateChange() == ItemEvent.SELECTED, itmShowAsciiTable::setSelected));
-    itmShowInstructions.addItemListener(
-        itemEvent ->
-            ui.toggleInstructions(
-                itemEvent.getStateChange() == ItemEvent.SELECTED,
-                itmShowInstructions::setSelected));
-
-    // Bind shortcut keys
-    // // File menu items
-    // itmOpen.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
-    // itmSave.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
-    // itmSaveAs.setAccelerator(KeyStroke.getKeyStroke("ctrl shift S"));
-    // itmClose.setAccelerator(KeyStroke.getKeyStroke("ctrl W"));
-    // itmExport.setAccelerator(KeyStroke.getKeyStroke("ctrl E"));
-    // itmImport.setAccelerator(KeyStroke.getKeyStroke("ctrl I"));
-    // itmExit.setAccelerator(KeyStroke.getKeyStroke("ctrl Q"));
-
-    // // Edit menu items
-    // itmFlipBit.setAccelerator(KeyStroke.getKeyStroke("F"));
-    // itmUndo.setAccelerator(KeyStroke.getKeyStroke("ctrl Z"));
-    // itmRedo.setAccelerator(KeyStroke.getKeyStroke("ctrl Y"));
-    // itmMoveUp.setAccelerator(KeyStroke.getKeyStroke("alt UP"));
-    // itmMoveDown.setAccelerator(KeyStroke.getKeyStroke("alt DOWN"));
-    // itmCopy.setAccelerator(KeyStroke.getKeyStroke("ctrl C"));
-    // itmPaste.setAccelerator(KeyStroke.getKeyStroke("ctrl V"));
-    // itmClear.setAccelerator(KeyStroke.getKeyStroke("ctrl DELETE"));
-    // itmDelete.setAccelerator(KeyStroke.getKeyStroke("ctrl shift DELETE"));
-    // itmResetData.setAccelerator(KeyStroke.getKeyStroke("ctrl shift M"));
-
-    // // Select menu items
-    // itmSelectUp.setAccelerator(KeyStroke.getKeyStroke("shift UP"));
-    // itmSelectDown.setAccelerator(KeyStroke.getKeyStroke("shift DOWN"));
-    // itmMoveSelectionUp.setAccelerator(KeyStroke.getKeyStroke("ctrl UP"));
-    // itmMoveSelectionDown.setAccelerator(KeyStroke.getKeyStroke("ctrl DOWN"));
-    // itmClearSelection.setAccelerator(KeyStroke.getKeyStroke("ESCAPE"));
-
-    // // Run menu items
-    // itmStep.setAccelerator(KeyStroke.getKeyStroke("SPACE"));
-    // itmRun.setAccelerator(KeyStroke.getKeyStroke("ctrl SPACE"));
-    // itmResetState.setAccelerator(KeyStroke.getKeyStroke("ctrl R"));
-
-    // // Help menu items
-    // itmShowAsciiTable.setAccelerator(KeyStroke.getKeyStroke("F1"));
-    // itmShowInstructions.setAccelerator(KeyStroke.getKeyStroke("F2"));
   }
 }

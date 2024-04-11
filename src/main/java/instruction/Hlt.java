@@ -14,6 +14,7 @@ public class Hlt extends Instruction {
   @Override
   protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     pc.halt();
+    io.print('\n');
   }
 
   @Override

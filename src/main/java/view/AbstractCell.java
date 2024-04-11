@@ -4,8 +4,8 @@ import instruction.InstructionFactory;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.HexFormat;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -89,6 +89,27 @@ public abstract class AbstractCell extends JPanel {
     bitPanel.setBackground(UIManager.getColor("TextField.background"));
     add(bitPanel, "grow");
     bitPanel.setLayout(new MigLayout("flowx, gap 0 0, insets 0", "[sg bit]", ""));
+    bitPanel.addMouseListener(
+        new MouseAdapter() {
+
+          @Override
+          public void mousePressed(MouseEvent e) {
+            cellSelecter.requestFocus();
+            if (e.getButton() == MouseEvent.BUTTON1) {
+              cellSelecter.startSelection(index);
+            }
+          }
+
+          @Override
+          public void mouseReleased(MouseEvent e) {
+            cellSelecter.endSelection();
+          }
+
+          @Override
+          public void mouseEntered(MouseEvent e) {
+            cellSelecter.updateSelection(index);
+          }
+        });
 
     bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
     bits = new JLabel[8];
@@ -103,7 +124,7 @@ public abstract class AbstractCell extends JPanel {
       bit.setHorizontalAlignment(SwingConstants.CENTER);
       if (cellSelecter != null) {
         bit.addMouseListener(
-            new MouseListener() {
+            new MouseAdapter() {
 
               @Override
               public void mouseClicked(MouseEvent e) {
@@ -126,16 +147,6 @@ public abstract class AbstractCell extends JPanel {
               @Override
               public void mouseReleased(MouseEvent e) {
                 cellSelecter.endSelection();
-              }
-
-              @Override
-              public void mouseEntered(MouseEvent e) {
-                cellSelecter.updateSelection(index);
-              }
-
-              @Override
-              public void mouseExited(MouseEvent e) {
-                // Do nothing
               }
             });
       }

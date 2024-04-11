@@ -23,11 +23,12 @@
 [x] Bug: När InstrDesc-fönstret öppnat, IndexOutOfBounds när man ändrar minnesceller
 [] Skapa nytt infofönster, med allmän info. Piltangenter, mus för att flytta och sätta värden, referera till menyn, etc.
 [x] Flytta markören när nytt värde sätts
-[] Ändra markering upp/ner. Sätt begin index och flytta end index.
+[x] Ändra markering upp/ner. Sätt begin index och flytta end index.
 [] Lägg till shift-klick igen, metod finns redan i selecter (addSelectedCell)
 [] Gör text markerbar
 [x] InstrTable, ankra tabellen till toppen
-[] Templates. Lägg programfiler i resources, och populera menyn med dem
+[x] Templates. Lägg programfiler i resources, och populera menyn med dem
+  [] Bekräfta template laddning om lokala ändringar gjorts
 [] F1 och F2 för fokus till fönsterna?
 [x] PgUp och PgDn för att scrolla i minnet och i ascii tabellen
 [] Ctrl F för att söka?

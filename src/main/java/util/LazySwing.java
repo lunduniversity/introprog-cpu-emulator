@@ -3,6 +3,7 @@ package util;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -18,6 +19,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 public class LazySwing {
+
+  private static final int DEFAULT_FONT_SIZE = 14;
+  private static final int MIN_FONT_SIZE = 8;
+  private static final int MAX_FONT_SIZE = 30;
+  private static int currentFontSize = DEFAULT_FONT_SIZE;
 
   public static void inv(Runnable runnable) {
     inv(runnable, true);
@@ -105,6 +111,39 @@ public class LazySwing {
       return modifierText + "+" + keyText;
     } else {
       return keyText;
+    }
+  }
+
+  public static void increaseFontSize(Component comp) {
+    if (currentFontSize < MAX_FONT_SIZE) {
+      currentFontSize += 2;
+      updateComponentTreeUI(comp, 2);
+    }
+  }
+
+  public static void decreaseFontSize(Component comp) {
+    if (currentFontSize > MIN_FONT_SIZE) {
+      currentFontSize -= 2;
+      updateComponentTreeUI(comp, -2);
+    }
+  }
+
+  public static void resetFontSize(Component comp) {
+    int diff = currentFontSize - DEFAULT_FONT_SIZE;
+    currentFontSize = DEFAULT_FONT_SIZE;
+    updateComponentTreeUI(comp, -diff);
+  }
+
+  public static void updateComponentTreeUI(Component comp, int increment) {
+    if (comp instanceof Container) {
+      for (Component child : ((Container) comp).getComponents()) {
+        updateComponentTreeUI(child, increment);
+      }
+    }
+    if (comp.getFont() != null) {
+      Font font = comp.getFont();
+      Font newFont = font.deriveFont((float) (font.getSize() + increment));
+      comp.setFont(newFont);
     }
   }
 }

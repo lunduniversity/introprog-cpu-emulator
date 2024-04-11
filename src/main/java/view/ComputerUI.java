@@ -15,6 +15,7 @@ import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -40,6 +41,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.ElementIterator;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import model.CPU;
@@ -57,10 +61,18 @@ import view.SnapshotDialog.Mode;
 public class ComputerUI implements FocusRequester {
 
   private static final Font HEADLINE_FONT = new Font("Tahoma", Font.BOLD, 14);
-  private static final Font HEADER_FONT = new JLabel().getFont().deriveFont(Font.BOLD, 14);
+  private static final Font HEADER_FONT = new JLabel().getFont().deriveFont(Font.BOLD, 12);
 
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(200, 55, 40);
   private static final String ERROR_HIGHLIGHT_COLOR_STRING = colorToHex(ERROR_HIGHLIGHT_COLOR);
+
+  private static final String EMPTY_HTML =
+      String.format(
+          "<html><head><style>"
+              + "body { color: black; } "
+              + ".error { color: '%s'; font-weight: bold; }"
+              + "</style></head><body></body></html>",
+          ERROR_HIGHLIGHT_COLOR_STRING);
 
   static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -70,6 +82,7 @@ public class ComputerUI implements FocusRequester {
 
   private JTextPane txtOutput;
   private JScrollPane scrollPane;
+  private JPanel controlPanel;
 
   private ObservableValue<Integer> programCounterFocusIdx;
   private AtomicBoolean isExecuting = new AtomicBoolean(false);
@@ -134,8 +147,6 @@ public class ComputerUI implements FocusRequester {
 
   /** Initialize the contents of the frame. */
   private void initialize() {
-    ComputerMenu menu;
-    Register pcCell;
     frame = new JFrame();
     frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     frame.addWindowListener(
@@ -152,8 +163,7 @@ public class ComputerUI implements FocusRequester {
         new FileHandler(
             frame,
             title -> inv(() -> frame.setTitle("SeaPeaEwe" + (title != null ? " - " + title : ""))));
-    menu = new ComputerMenu(this, fileHandler);
-    frame.setJMenuBar(menu);
+    frame.setJMenuBar(new ComputerMenu(this, fileHandler));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -163,8 +173,8 @@ public class ComputerUI implements FocusRequester {
     JTextArea lblDescription =
         new JTextArea(
             String.format(
-                "A simple simulation of a CPU and memory.%nThis computer has an 8-bit processor,"
-                    + " with %d bytes of memory and (%d+1) registers (including program counter).\n"
+                "A simple emulator of a CPU and memory. This computer has an 8-bit processor,"
+                    + " with %d bytes of memory and (%d+1) registers (including program counter). "
                     + "Note that all registers have names, but are still addressed using their"
                     + " indices 0\u2014%d.",
                 memory.size(), Registry.NUM_REGISTERS, Registry.NUM_REGISTERS - 1));
@@ -195,7 +205,7 @@ public class ComputerUI implements FocusRequester {
       memoryCellsPanel.setBorder(null);
       scrollPane.setBorder(null);
       scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-      scrollPane.setMaximumSize(new Dimension(450, 700));
+      scrollPane.setMaximumSize(new Dimension(450, 450));
 
       // Remove arrow key bindings for vertical and horizontal scroll bars
       InputMap im = scrollPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -260,7 +270,8 @@ public class ComputerUI implements FocusRequester {
           Box.createRigidArea(new Dimension(20, 10)),
           String.format(cellFormat, offset + Registry.NUM_REGISTERS));
 
-      pcCell = new Register(Registry.NUM_REGISTERS - 1, "PC", pc::setCurrentIndex, regSelecter);
+      Register pcCell =
+          new Register(Registry.NUM_REGISTERS - 1, "PC", pc::setCurrentIndex, regSelecter);
       regCellsPanel.add(pcCell, String.format(cellFormat, offset + Registry.NUM_REGISTERS + 1));
       regCells[Registry.NUM_REGISTERS - 1] = pcCell;
 
@@ -295,10 +306,10 @@ public class ComputerUI implements FocusRequester {
 
     // Execution controls
     {
-      JPanel controlPanel = new JPanel();
+      controlPanel = new JPanel();
       controlPanel.setBorder(BorderFactory.createTitledBorder(null, "Controls", 0, 0, null));
       frame.getContentPane().add(controlPanel, "cell 1 5,growx, top");
-      controlPanel.setLayout(new MigLayout("", "[][][grow,fill]", "[][][][][]"));
+      controlPanel.setLayout(new MigLayout("", "[][][][][grow,shrink]", "[][][][][]"));
 
       JLabel lblControlHeader = new JLabel("Controls");
       lblControlHeader.setFont(HEADLINE_FONT);
@@ -332,7 +343,7 @@ public class ComputerUI implements FocusRequester {
         JButton btnHelp = new JButton("Help (F1)");
         btnHelp.setFocusable(false);
         btnHelp.addActionListener(e -> handleResetState());
-        controlPanel.add(btnHelp, "cell 2 1");
+        controlPanel.add(btnHelp, "cell 3 1");
       }
 
       // Small space
@@ -343,6 +354,11 @@ public class ComputerUI implements FocusRequester {
         JLabel lblOutput = new JLabel("Output:");
         controlPanel.add(lblOutput, "cell 0 3, top, left");
 
+        JButton btnClearOutput = new JButton("Clear output");
+        btnClearOutput.setFocusable(false);
+        btnClearOutput.addActionListener(e -> handleClearOutput());
+        controlPanel.add(btnClearOutput, "cell 2 3 2 1, right");
+
         txtOutput = new JTextPane();
         txtOutput.setContentType("text/html");
         txtOutput.setEditorKit(new HTMLEditorKit());
@@ -352,13 +368,14 @@ public class ComputerUI implements FocusRequester {
         txtOutput.setMargin(new Insets(0, 0, 0, 0));
         txtOutput.setFont(lblOutput.getFont());
         txtOutput.setBorder(null);
+        txtOutput.setText(EMPTY_HTML);
         JScrollPane outputScroll =
             new JScrollPane(
                 txtOutput,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        outputScroll.setMinimumSize(new Dimension(200, 150));
-        controlPanel.add(outputScroll, "cell 0 4 3 1, grow, top, left");
+        outputScroll.setMinimumSize(new Dimension(150, 150));
+        controlPanel.add(outputScroll, "cell 0 4 5 1, grow, top, left");
 
         io.addListener(this::handlePrint);
       }
@@ -541,17 +558,36 @@ public class ComputerUI implements FocusRequester {
   }
 
   void handleResetState() {
-    txtOutput.setText("");
     pc.setCurrentIndex(0);
     registry.reset();
     inv(this::resetCellColors);
   }
 
-  void handleResetAllData() {
-    // TODO: Add a confirmation dialog!
-    cpu.reset();
-    memory.reset();
-    executor.schedule(() -> inv(this::resetCellColors), 700, TimeUnit.MILLISECONDS);
+  void handleClearOutput() {
+    // txtOutput.setContentType("text/plain");
+    // txtOutput.setText("");
+    // txtOutput.setContentType("text/html");
+
+    txtOutput.setText("");
+
+    controlPanel.revalidate();
+    controlPanel.repaint();
+  }
+
+  void handleDeleteAllData() {
+    int result =
+        JOptionPane.showConfirmDialog(
+            frame,
+            "This will delete all data in memory and registers.\n"
+                + "This action cannot be undone. Are you sure you want to continue?",
+            "Delete all data",
+            JOptionPane.WARNING_MESSAGE,
+            JOptionPane.OK_CANCEL_OPTION);
+    if (result == JOptionPane.OK_OPTION) {
+      cpu.reset();
+      memory.reset();
+      executor.schedule(() -> inv(this::resetCellColors), 700, TimeUnit.MILLISECONDS);
+    }
   }
 
   void handleExit() {
@@ -637,17 +673,27 @@ public class ComputerUI implements FocusRequester {
     }
   }
 
+  private boolean newParagraph = true;
+
   private void handlePrint(int value) {
     // Treat value as ASCII character and append to print label
     char c = (char) (value & 0xFF);
-    appendHtmlContent(String.valueOf(c));
+    if (c == '\n') {
+      newParagraph = true;
+    } else {
+      if (newParagraph) {
+        appendHtmlContent("<p>");
+        newParagraph = false;
+      }
+      appendStringContent(String.valueOf(c));
+    }
   }
 
   private void handleError(Exception ex) {
+    newParagraph = true;
     appendHtmlContent(
         String.format(
-            "<p style='color:%s;font-weight:bold;'>%s<br>%s</p>",
-            ERROR_HIGHLIGHT_COLOR_STRING, ex.getClass().getSimpleName(), ex.getMessage()));
+            "<p class='error'>%s<br>%s</p>", ex.getClass().getSimpleName(), ex.getMessage()));
   }
 
   // Helper method to append HTML content to the JTextPane.
@@ -655,13 +701,45 @@ public class ComputerUI implements FocusRequester {
     inv(
         () -> {
           try {
-            // Get the document (model) and insert the HTML content.
             HTMLDocument doc = (HTMLDocument) txtOutput.getDocument();
             HTMLEditorKit editorKit = (HTMLEditorKit) txtOutput.getEditorKit();
             editorKit.insertHTML(doc, doc.getLength(), htmlContent, 0, 0, null);
           } catch (Exception e) {
             e.printStackTrace();
           }
+          controlPanel.revalidate();
+          controlPanel.repaint();
+        });
+  }
+
+  // Helper method to append HTML content to the JTextPane.
+  private void appendStringContent(final String content) {
+    inv(
+        () -> {
+          try {
+            HTMLDocument doc = (HTMLDocument) txtOutput.getDocument();
+            String transformed = content.equals(" ") ? "&nbsp;" : content;
+
+            // Find the last paragraph ('<p>') element.
+            ElementIterator iterator = new ElementIterator(doc);
+            Element elem;
+            Element lastParagraphElement = null;
+            while ((elem = iterator.next()) != null) {
+              if (elem.getName().equals("p")) {
+                lastParagraphElement = elem;
+              }
+            }
+
+            // Check if a last '<p>' was found and append the content to it.
+            if (lastParagraphElement != null) {
+              doc.insertBeforeEnd(lastParagraphElement, transformed);
+            }
+          } catch (BadLocationException | IOException e) {
+            e.printStackTrace();
+          }
+
+          controlPanel.revalidate();
+          controlPanel.repaint();
         });
   }
 
@@ -672,9 +750,14 @@ public class ComputerUI implements FocusRequester {
     cellPanel.setLayout(
         new MigLayout(
             "gap 5,insets 0,wrap " + numCols,
-            (includeLabel ? "[30px:30px:30px]" : "")
-                + "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
-            "[][][]"));
+            // (includeLabel ? "[30px:30px:30px]" : "")
+            //     +
+            // "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
+            // "[][][]"
+            "[sg addr]"
+                + (includeLabel ? "[sg name]" : "")
+                + "[sg value][sg hex][sg dec][sg ascii][sg instr]",
+            "[]"));
 
     JLabel lblHeader = new JLabel(header);
     cellPanel.add(lblHeader, "left, wrap, span " + numCols);

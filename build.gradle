@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
+    id 'application'
 }
 
 group 'dod-seapeaewe'
@@ -29,6 +30,15 @@ dependencies {
     // implementation 'com.google.code.gson:gson:+'
     implementation 'com.google.code.gson:gson:2.10.1'
 
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClassName = 'view.Main'
 }
 
 test {

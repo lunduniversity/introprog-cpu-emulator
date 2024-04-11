@@ -56,5 +56,9 @@ public class Utils {
     public boolean isBelow(int value) {
       return to <= value;
     }
+
+    public Range merge(Range other) {
+      return new Range(Math.min(from, other.from), Math.max(to, other.to));
+    }
   }
 }

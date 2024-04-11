@@ -9,6 +9,7 @@ import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
@@ -22,9 +23,40 @@ public class MenuFactory {
     this.amap = frame.getRootPane().getActionMap();
   }
 
+  public JMenu menu(String text, String keyStroke) {
+    KeyStroke ks = KeyStroke.getKeyStroke(keyStroke);
+    JMenu item = new JMenu("<html>" + text + "</html>");
+
+    imap.put(ks, text);
+    amap.put(
+        text,
+        action(
+            e -> {
+              item.doClick();
+              item.requestFocusInWindow();
+            }));
+
+    return item;
+  }
+
+  public JMenuItem item(String text, String[] keyStrokes, ActionListener listener) {
+    KeyStroke ks = KeyStroke.getKeyStroke(keyStrokes[0]);
+    JMenuItem item = new AcceleratorMenuItem(text, ks);
+    item.addActionListener(listener);
+
+    for (String keyStroke : keyStrokes) {
+      ks = KeyStroke.getKeyStroke(keyStroke);
+      imap.put(ks, text);
+    }
+    amap.put(text, action(listener));
+
+    return item;
+  }
+
   public JMenuItem item(String text, String keyStroke, ActionListener listener) {
     KeyStroke ks = KeyStroke.getKeyStroke(keyStroke);
     JMenuItem item = new AcceleratorMenuItem(text, ks);
+    item.addActionListener(listener);
 
     imap.put(ks, text);
     amap.put(text, action(listener));
