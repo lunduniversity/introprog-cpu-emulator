@@ -31,6 +31,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
@@ -56,6 +57,7 @@ import view.SnapshotDialog.Mode;
 public class ComputerUI implements FocusRequester {
 
   private static final Font HEADLINE_FONT = new Font("Tahoma", Font.BOLD, 14);
+  private static final Font HEADER_FONT = new JLabel().getFont().deriveFont(Font.BOLD, 14);
 
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(200, 55, 40);
   private static final String ERROR_HIGHLIGHT_COLOR_STRING = colorToHex(ERROR_HIGHLIGHT_COLOR);
@@ -107,6 +109,7 @@ public class ComputerUI implements FocusRequester {
     this.programCounterFocusIdx = new ObservableValue<>(pc.getCurrentIndex());
     initialize();
     requestFocus(StorageType.MEMORY);
+    configureKeyBindings();
 
     memCells[programCounterFocusIdx.get()].setProgramCounterFocus();
 
@@ -151,53 +154,6 @@ public class ComputerUI implements FocusRequester {
             title -> inv(() -> frame.setTitle("SeaPeaEwe" + (title != null ? " - " + title : ""))));
     menu = new ComputerMenu(this, fileHandler);
     frame.setJMenuBar(menu);
-
-    // Disabling TAB and Shift+TAB for focus traversal in this JPanel
-    Set<AWTKeyStroke> forwardKeys =
-        new HashSet<>(frame.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
-    forwardKeys.remove(KeyStroke.getKeyStroke("TAB"));
-    frame.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, forwardKeys);
-
-    Set<AWTKeyStroke> backwardKeys =
-        new HashSet<>(frame.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
-    backwardKeys.remove(KeyStroke.getKeyStroke("shift TAB"));
-    frame.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, backwardKeys);
-
-    // Configuring key bindings
-    InputMap imap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    ActionMap amap = frame.getRootPane().getActionMap();
-
-    // Switch between memory and register selecter
-    imap.put(KeyStroke.getKeyStroke("TAB"), "switchSelecter");
-    imap.put(KeyStroke.getKeyStroke("shift TAB"), "switchSelecter");
-    amap.put(
-        "switchSelecter",
-        action(
-            e -> {
-              if (currentSelecter == cellSelecter) {
-                regSelecter.requestFocus();
-              } else if (currentSelecter == regSelecter) {
-                cellSelecter.requestFocus();
-              }
-            }));
-
-    // Handle arrow keys to move caret
-    imap.put(KeyStroke.getKeyStroke("UP"), "caretUp");
-    imap.put(KeyStroke.getKeyStroke("DOWN"), "caretDown");
-    imap.put(KeyStroke.getKeyStroke("LEFT"), "caretLeft");
-    imap.put(KeyStroke.getKeyStroke("RIGHT"), "caretRight");
-    imap.put(KeyStroke.getKeyStroke("ENTER"), "caretNextCell");
-    amap.put("caretUp", action(e -> currentSelecter.moveCaretUp()));
-    amap.put("caretDown", action(e -> currentSelecter.moveCaretDown()));
-    amap.put("caretLeft", action(e -> currentSelecter.moveCaretLeft()));
-    amap.put("caretRight", action(e -> currentSelecter.moveCaretRight()));
-    amap.put("caretNextCell", action(e -> currentSelecter.moveCaretToNextCell()));
-
-    // Handle setting bit values (flipping bits are handled in the ComuterMenu class)
-    imap.put(KeyStroke.getKeyStroke("0"), "setBit0");
-    imap.put(KeyStroke.getKeyStroke("1"), "setBit1");
-    amap.put("setBit0", action(e -> setBit(false)));
-    amap.put("setBit1", action(e -> setBit(true)));
 
     JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -385,7 +341,7 @@ public class ComputerUI implements FocusRequester {
       // Output textbox
       {
         JLabel lblOutput = new JLabel("Output:");
-        controlPanel.add(lblOutput, "cell 0 3, top, right");
+        controlPanel.add(lblOutput, "cell 0 3, top, left");
 
         txtOutput = new JTextPane();
         txtOutput.setContentType("text/html");
@@ -407,6 +363,62 @@ public class ComputerUI implements FocusRequester {
         io.addListener(this::handlePrint);
       }
     }
+  }
+
+  private void configureKeyBindings() {
+    // Disabling TAB and Shift+TAB for focus traversal in this JPanel
+    Set<AWTKeyStroke> forwardKeys =
+        new HashSet<>(frame.getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+    forwardKeys.remove(KeyStroke.getKeyStroke("TAB"));
+    frame.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, forwardKeys);
+
+    Set<AWTKeyStroke> backwardKeys =
+        new HashSet<>(frame.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
+    backwardKeys.remove(KeyStroke.getKeyStroke("shift TAB"));
+    frame.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, backwardKeys);
+
+    // Configuring key bindings
+    InputMap imap = frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    ActionMap amap = frame.getRootPane().getActionMap();
+
+    // Switch between memory and register selecter
+    imap.put(KeyStroke.getKeyStroke("TAB"), "switchSelecter");
+    imap.put(KeyStroke.getKeyStroke("shift TAB"), "switchSelecter");
+    amap.put(
+        "switchSelecter",
+        action(
+            e -> {
+              if (currentSelecter == cellSelecter) {
+                regSelecter.requestFocus();
+              } else if (currentSelecter == regSelecter) {
+                cellSelecter.requestFocus();
+              }
+            }));
+
+    // Handle arrow keys to move caret
+    imap.put(KeyStroke.getKeyStroke("UP"), "caretUp");
+    imap.put(KeyStroke.getKeyStroke("DOWN"), "caretDown");
+    imap.put(KeyStroke.getKeyStroke("LEFT"), "caretLeft");
+    imap.put(KeyStroke.getKeyStroke("RIGHT"), "caretRight");
+    imap.put(KeyStroke.getKeyStroke("ENTER"), "caretNextCell");
+    amap.put("caretUp", action(e -> currentSelecter.moveCaretUp()));
+    amap.put("caretDown", action(e -> currentSelecter.moveCaretDown()));
+    amap.put("caretLeft", action(e -> currentSelecter.moveCaretLeft()));
+    amap.put("caretRight", action(e -> currentSelecter.moveCaretRight()));
+    amap.put("caretNextCell", action(e -> currentSelecter.moveCaretToNextCell()));
+
+    // Handle setting bit values (flipping bits are handled in the ComuterMenu class)
+    imap.put(KeyStroke.getKeyStroke("0"), "setBit0");
+    imap.put(KeyStroke.getKeyStroke("1"), "setBit1");
+    amap.put("setBit0", action(e -> setBit(false)));
+    amap.put("setBit1", action(e -> setBit(true)));
+
+    // Handle page up and page down to scroll memory cells
+    final JScrollBar vscroll = scrollPane.getVerticalScrollBar();
+    imap.put(KeyStroke.getKeyStroke("PAGE_UP"), "scrollUp");
+    imap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "scrollDown");
+    amap.put("scrollUp", action(e -> vscroll.setValue(vscroll.getValue() - 16 * 4)));
+    amap.put("scrollDown", action(e -> vscroll.setValue(vscroll.getValue() + 16 * 4)));
   }
 
   @Override
@@ -623,7 +635,6 @@ public class ComputerUI implements FocusRequester {
     for (Register r : regCells) {
       r.unhighlight();
     }
-    txtOutput.setBackground(UIManager.getColor("Panel.background"));
   }
 
   private void handlePrint(int value) {
@@ -657,54 +668,37 @@ public class ComputerUI implements FocusRequester {
   private JPanel createCellPanel(String header, boolean includeLabel) {
     JPanel cellPanel = new JPanel();
     cellPanel.setBorder(null);
+    int numCols = includeLabel ? 7 : 6;
     cellPanel.setLayout(
         new MigLayout(
-            "gap 5,insets 0",
+            "gap 5,insets 0,wrap " + numCols,
             (includeLabel ? "[30px:30px:30px]" : "")
                 + "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
             "[][][]"));
 
     JLabel lblHeader = new JLabel(header);
-    cellPanel.add(lblHeader, "cell 0 0 4 1");
+    cellPanel.add(lblHeader, "left, wrap, span " + numCols);
     lblHeader.setFont(HEADLINE_FONT);
 
-    cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "cell 0 1 2 1");
+    cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "wrap");
 
-    int offset = 0;
-
-    JLabel lblAddress = new JLabel("Addr");
-    lblAddress.setBorder(null);
-    lblAddress.setHorizontalAlignment(SwingConstants.RIGHT);
-    cellPanel.add(lblAddress, String.format("cell %d 2,alignx right", offset + 0));
-
+    cellPanel.add(header("Addr", SwingConstants.RIGHT), "alignx right");
     if (includeLabel) {
-      JLabel lblName = new JLabel("Name");
-      lblName.setBorder(null);
-      lblName.setHorizontalAlignment(SwingConstants.RIGHT);
-      cellPanel.add(lblName, String.format("cell %d 2,alignx right", offset + 1));
-      offset++;
+      cellPanel.add(header("Name", SwingConstants.RIGHT), "alignx right");
     }
-
-    JLabel lblValue = new JLabel("Value");
-    lblValue.setHorizontalAlignment(SwingConstants.CENTER);
-    cellPanel.add(lblValue, String.format("cell %d 2,alignx center", offset + 1));
-
-    JLabel lblHex = new JLabel("Hex");
-    lblHex.setHorizontalAlignment(SwingConstants.LEFT);
-    cellPanel.add(lblHex, String.format("cell %d 2,alignx left", offset + 2));
-
-    JLabel lblDec = new JLabel("Dec");
-    lblDec.setHorizontalAlignment(SwingConstants.LEFT);
-    cellPanel.add(lblDec, String.format("cell %d 2,alignx left", offset + 3));
-
-    JLabel lblAscii = new JLabel("Ascii");
-    lblAscii.setHorizontalAlignment(SwingConstants.LEFT);
-    cellPanel.add(lblAscii, String.format("cell %d 2,alignx left", offset + 4));
-
-    JLabel lblInstruction = new JLabel("Instr");
-    lblInstruction.setHorizontalAlignment(SwingConstants.LEFT);
-    cellPanel.add(lblInstruction, String.format("cell %d 2,alignx left", offset + 5));
+    cellPanel.add(header("Value", SwingConstants.CENTER), "alignx center");
+    cellPanel.add(header("Hex", SwingConstants.LEFT), "alignx left");
+    cellPanel.add(header("Dec", SwingConstants.LEFT), "alignx left");
+    cellPanel.add(header("Ascii", SwingConstants.LEFT), "alignx left");
+    cellPanel.add(header("Instr", SwingConstants.LEFT), "alignx left");
 
     return cellPanel;
+  }
+
+  private JLabel header(String text, int orientation) {
+    JLabel label = new JLabel(text, orientation);
+    label.setFont(HEADER_FONT);
+    label.setBorder(null);
+    return label;
   }
 }

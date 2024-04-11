@@ -30,12 +30,13 @@ public class AsciiTable extends JFrame {
     JEditorPane notice = new JEditorPane();
     notice.setContentType("text/html");
     notice.setText(
-        "Note that characters 0-31 and 127 are control characters and thus not printable.");
+        "Note that characters 0-31 and 127 are control characters and thus not printable. 32 is the"
+            + " space character.");
     // notice.setLineWrap(true);
     // notice.setWrapStyleWord(true);
     notice.setOpaque(false);
     notice.setEditable(false);
-    notice.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+    // notice.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
     notice.setFont(new JLabel().getFont().deriveFont(14f));
     JScrollPane sc =
         new JScrollPane(
@@ -86,12 +87,13 @@ public class AsciiTable extends JFrame {
 
     pack(); // Adjusts size to contents
     setSize(270, parent.getHeight());
-    setVisible(true);
 
     Point parentLocation = parent.getLocation();
     int xCoord = parentLocation.x - getWidth();
     int yCoord = parentLocation.y;
     setLocation(xCoord, yCoord);
+
+    setVisible(true);
   }
 
   private JLabel lbl(String text) {

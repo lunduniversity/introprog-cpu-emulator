@@ -42,11 +42,15 @@ public class RegisterSelecter extends AbstractSelecter {
   }
 
   protected boolean _moveCellsUpHelper() {
-    return registry.moveCellsUp(selectStartRange, selectEndRange);
+    int start = Math.min(selectStartRange, selectEndRange);
+    int end = Math.max(selectStartRange, selectEndRange);
+    return registry.moveCellsUp(start, end);
   }
 
   protected boolean _moveCellsDownHelper() {
-    return registry.moveCellsDown(selectStartRange, selectEndRange);
+    int start = Math.min(selectStartRange, selectEndRange);
+    int end = Math.max(selectStartRange, selectEndRange);
+    return registry.moveCellsDown(start, end);
   }
 
   @Override

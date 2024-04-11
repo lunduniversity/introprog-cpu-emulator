@@ -5,6 +5,7 @@ import io.IOModule;
 import javax.swing.SwingUtilities;
 import model.ByteStorage;
 import model.CPU;
+import util.LookAndFeelUtils;
 import util.ThreadConfinementChecker;
 
 public class Main {
@@ -14,6 +15,7 @@ public class Main {
   public static void main(String[] args) {
     // Install custom RepaintManager to detect Swing threading issues
     ThreadConfinementChecker.install();
+    LookAndFeelUtils.setPlatformSpecificLookAndFeel();
 
     // Create the model
     ByteStorage memory = new ByteStorage(NUM_MEMORY_CELLS);

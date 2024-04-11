@@ -1,5 +1,7 @@
 package util;
 
+import static util.LazySwing.getKeyStrokeString;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -37,7 +39,7 @@ public class AcceleratorMenuItem extends JMenuItem {
 
   public AcceleratorMenuItem(String text, KeyStroke keyStroke) {
     super(text);
-    this.acceleratorText = keyStroke != null ? keyStroke.toString() : null;
+    this.acceleratorText = keyStroke != null ? getKeyStrokeString(keyStroke) : null;
     addMouseListener(
         new MouseAdapter() {
 

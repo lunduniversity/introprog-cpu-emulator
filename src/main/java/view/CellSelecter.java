@@ -41,11 +41,15 @@ public class CellSelecter extends AbstractSelecter {
   }
 
   protected boolean _moveCellsUpHelper() {
-    return memory.moveCellsUp(selectStartRange, selectEndRange);
+    int start = Math.min(selectStartRange, selectEndRange);
+    int end = Math.max(selectStartRange, selectEndRange);
+    return memory.moveCellsUp(start, end);
   }
 
   protected boolean _moveCellsDownHelper() {
-    return memory.moveCellsDown(selectStartRange, selectEndRange);
+    int start = Math.min(selectStartRange, selectEndRange);
+    int end = Math.max(selectStartRange, selectEndRange);
+    return memory.moveCellsDown(start, end);
   }
 
   @Override

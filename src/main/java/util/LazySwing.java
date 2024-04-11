@@ -5,12 +5,15 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
@@ -87,6 +90,21 @@ public class LazySwing {
       for (Component child : ((Container) component).getComponents()) {
         showBorders(child);
       }
+    }
+  }
+
+  public static String getKeyStrokeString(KeyStroke keyStroke) {
+    // Getting the modifier text, if any
+    String modifierText = InputEvent.getModifiersExText(keyStroke.getModifiers());
+
+    // Getting the key text
+    String keyText = KeyEvent.getKeyText(keyStroke.getKeyCode());
+
+    // Constructing the final string
+    if (!modifierText.isEmpty()) {
+      return modifierText + "+" + keyText;
+    } else {
+      return keyText;
     }
   }
 }

@@ -26,10 +26,10 @@
 [] Ändra markering upp/ner. Sätt begin index och flytta end index.
 [] Lägg till shift-klick igen, metod finns redan i selecter (addSelectedCell)
 [] Gör text markerbar
-[] InstrTable, ankra tabellen till toppen
+[x] InstrTable, ankra tabellen till toppen
 [] Templates. Lägg programfiler i resources, och populera menyn med dem
 [] F1 och F2 för fokus till fönsterna?
-[] PgUp och PgDn för att scrolla i minnet och i ascii tabellen
+[x] PgUp och PgDn för att scrolla i minnet och i ascii tabellen
 [] Ctrl F för att söka?
 [] Swing Look and Feel, för sitt respektive OS
 [] Rödmarkera PC om utanför minnesrymden. (Och markera inte i Description)

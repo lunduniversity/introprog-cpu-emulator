@@ -43,12 +43,12 @@ public class InstructionTable extends JFrame {
     initGUI();
 
     setSize(new Dimension(600, 850));
-    setVisible(true);
-
     Point parentLocation = parent.getLocation();
     int xCoord = parentLocation.x + parent.getWidth();
     int yCoord = parentLocation.y;
     setLocation(xCoord, yCoord);
+
+    setVisible(true);
 
     // showBorders(this);
   }
@@ -88,7 +88,7 @@ public class InstructionTable extends JFrame {
       JPanel table =
           new JPanel(new MigLayout("wrap 4, gap 7 0, insets 0", "[][][grow][grow]", "[grow]"));
       table.setBorder(null);
-      contentPane.add(table, "grow");
+      contentPane.add(table, "top,left,grow");
 
       // Headers
       for (String header : new String[] {"Instr", "Opcode", "Operand (abcd)", "Description"}) {
