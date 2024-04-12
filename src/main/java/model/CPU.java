@@ -19,7 +19,7 @@ public class CPU {
     this.factory = factory;
     this.io = io;
     this.registry = new RegStorage();
-    this.pc = new ProgramCounter(this.registry);
+    this.pc = new ProgramCounter(this.registry, memory.size());
   }
 
   public void step() {

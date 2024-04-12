@@ -2,6 +2,7 @@ package view;
 
 import instruction.InstructionFactory;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -16,9 +17,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import net.miginfocom.swing.MigLayout;
 
-public abstract class AbstractCell extends JPanel {
-
-  private static final long serialVersionUID = 1L;
+public abstract class AbstractCell {
 
   private static final Border PC_FOCUS_BORDER = BorderFactory.createLineBorder(Color.MAGENTA, 2);
   private static final Border PC_NO_FOCUS_BORDER =
@@ -26,6 +25,8 @@ public abstract class AbstractCell extends JPanel {
 
   private static final Color DEFAULT_BG_COLOR = UIManager.getColor("TextField.background");
   private static final Color HIGHLIGHT_BG_COLOR = new Color(255, 255, 200);
+  private static final Color HIGHLIGHT_ERROR_BG_COLOR = new Color(240, 150, 150);
+  private static final Color HIGHLIGHT_COMPLETED_BG_COLOR = new Color(150, 240, 150);
   private static final Color SELECT_BG_COLOR = new Color(200, 255, 200);
   private static final Color CARET_BG_COLOR = new Color(50, 230, 210);
 
@@ -52,6 +53,7 @@ public abstract class AbstractCell extends JPanel {
   private transient CellValueListener valueListener;
 
   protected AbstractCell(
+      Container parent,
       final int index,
       String address,
       String label,
@@ -60,34 +62,20 @@ public abstract class AbstractCell extends JPanel {
 
     this.valueListener = valueListener;
 
-    setBorder(null);
-    setLayout(
-        new MigLayout(
-            "gap 5, insets 0, flowx, wrap " + (label != null ? "8" : "7"),
-            (label != null ? "[30px:30px:30px]" : "")
-                + "[30px:30px:30px][100px:100px:100px][30px:30px:30px][30px:30px:30px][30px:30px:30px][][110px::,grow]",
-            "[]"));
-
     lblAddress = new JLabel(address);
     lblAddress.setBorder(null);
-    lblAddress.setHorizontalTextPosition(SwingConstants.RIGHT);
-    lblAddress.setPreferredSize(new Dimension(30, 20));
-    lblAddress.setHorizontalAlignment(SwingConstants.RIGHT);
-    add(lblAddress, "alignx right");
+    parent.add(lblAddress);
 
     if (label != null) {
       lblIndex = new JLabel(label);
       lblIndex.setBorder(null);
-      lblIndex.setHorizontalTextPosition(SwingConstants.RIGHT);
-      lblIndex.setPreferredSize(new Dimension(30, 20));
-      lblIndex.setHorizontalAlignment(SwingConstants.RIGHT);
-      add(lblIndex, "alignx right");
+      parent.add(lblIndex);
     }
 
     bitPanel = new JPanel();
     bitPanel.setBorder(PC_NO_FOCUS_BORDER);
     bitPanel.setBackground(UIManager.getColor("TextField.background"));
-    add(bitPanel, "grow");
+    parent.add(bitPanel);
     bitPanel.setLayout(new MigLayout("flowx, gap 0 0, insets 0", "[sg bit]", ""));
     bitPanel.addMouseListener(
         new MouseAdapter() {
@@ -150,43 +138,29 @@ public abstract class AbstractCell extends JPanel {
               }
             });
       }
-      bitPanel.add(bit, "growx");
+      bitPanel.add(bit);
       bits[i] = bit;
       if (i == bits.length / 2 - 1) {
         bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
       }
     }
-    bitPanel.add(Box.createRigidArea(new Dimension(5, 10)));
+    bitPanel.add(Box.createRigidArea(new Dimension(2, 5)), "gap 0");
 
     lblHex = new JLabel(hex(0));
     lblHex.setBorder(null);
-    lblHex.setHorizontalTextPosition(SwingConstants.RIGHT);
-    lblHex.setHorizontalAlignment(SwingConstants.RIGHT);
-    lblHex.setPreferredSize(new Dimension(30, 20));
-    add(lblHex, "alignx right");
+    parent.add(lblHex);
 
     lblDec = new JLabel(pad(0));
     lblDec.setBorder(null);
-    lblDec.setHorizontalTextPosition(SwingConstants.RIGHT);
-    lblDec.setHorizontalAlignment(SwingConstants.RIGHT);
-    lblDec.setPreferredSize(new Dimension(30, 20));
-    add(lblDec, "alignx right");
+    parent.add(lblDec);
 
     lblAscii = new JLabel("");
     lblAscii.setBorder(null);
-    lblAscii.setHorizontalTextPosition(SwingConstants.RIGHT);
-    lblAscii.setHorizontalAlignment(SwingConstants.RIGHT);
-    lblAscii.setPreferredSize(new Dimension(30, 20));
-    add(lblAscii, "alignx right");
-
-    add(Box.createRigidArea(new Dimension(2, 5)));
+    parent.add(lblAscii);
 
     lblInstruction = new JLabel();
     lblInstruction.setBorder(null);
-    lblInstruction.setHorizontalTextPosition(SwingConstants.LEFT);
-    lblInstruction.setHorizontalAlignment(SwingConstants.LEFT);
-    lblInstruction.setMinimumSize(new Dimension(60, 20));
-    add(lblInstruction, "alignx left grow");
+    parent.add(lblInstruction);
 
     updateValue();
   }
@@ -247,12 +221,20 @@ public abstract class AbstractCell extends JPanel {
 
   // Highlighting is used to indicate that the cell is being executed
   public AbstractCell highlight() {
-    _bgColor(HIGHLIGHT_BG_COLOR);
+    setBgColor(HIGHLIGHT_BG_COLOR);
     return this;
   }
 
+  public void highlightError() {
+    setBgColor(HIGHLIGHT_ERROR_BG_COLOR);
+  }
+
+  public void highlightCompleted() {
+    setBgColor(HIGHLIGHT_COMPLETED_BG_COLOR);
+  }
+
   public AbstractCell unhighlight() {
-    _bgColor(DEFAULT_BG_COLOR);
+    setBgColor(DEFAULT_BG_COLOR);
     return this;
   }
 
@@ -262,13 +244,12 @@ public abstract class AbstractCell extends JPanel {
   public AbstractCell setSelected(boolean selected, int caretPos, boolean active) {
     if (selected) {
       wasSelected = true;
-      _bgColor(active ? SELECT_BG_COLOR : INACTIVE_SELECT_BG_COLOR);
+      setBgColor(active ? SELECT_BG_COLOR : INACTIVE_SELECT_BG_COLOR);
     } else {
-      // _bgColor(active ? DEFAULT_BG_COLOR : INACTIVE_DEFAULT_BG_COLOR);
       if (wasSelected || wasCaret) {
         wasSelected = false;
         wasCaret = false;
-        _bgColor(DEFAULT_BG_COLOR);
+        setBgColor(DEFAULT_BG_COLOR);
       }
       if (caretPos >= 0) {
         wasCaret = true;
@@ -278,7 +259,7 @@ public abstract class AbstractCell extends JPanel {
     return this;
   }
 
-  private void _bgColor(Color color) {
+  private void setBgColor(Color color) {
     for (JLabel bit : bits) {
       bit.setBackground(color);
     }

@@ -1,6 +1,7 @@
 package view;
 
 import model.Memory;
+import util.Range;
 
 public class CellSelecter extends AbstractSelecter {
 
@@ -12,7 +13,7 @@ public class CellSelecter extends AbstractSelecter {
   }
 
   @Override
-  public StorageType _getStorageType() {
+  public StorageType getStorageType() {
     return StorageType.MEMORY;
   }
 
@@ -40,30 +41,26 @@ public class CellSelecter extends AbstractSelecter {
     return new int[] {selectStartRange, selectEndRange};
   }
 
-  protected boolean _moveCellsUpDelegater(int start, int end) {
-    return memory.moveCellsUp(start, end);
+  protected boolean moveCellsUpDelegater(Range range) {
+    return memory.moveCellsUp(range.from(), range.to());
   }
 
-  protected boolean _moveCellsDownHelper(int start, int end) {
-    return memory.moveCellsDown(start, end);
-  }
-
-  @Override
-  protected int[] getValuesInRange(int start, int end) {
-    int[] values = new int[end - start];
-    for (int i = start; i < end; i++) {
-      values[i - start] = memory.getValueAt(i);
-    }
-    return values;
+  protected boolean moveCellsDownDelegater(Range range) {
+    return memory.moveCellsDown(range.from(), range.to());
   }
 
   @Override
-  protected int setValuesInRange(int start, int[] values) {
-    return memory.setRange(start, values);
+  protected int[] getRangeDelegater(Range range) {
+    return memory.getValuesInRange(range);
   }
 
   @Override
-  protected void _deleteRange(int startIdx, int endIdx) {
-    memory.deleteCells(startIdx, endIdx);
+  protected int setRangeDelegater(Range range, int[] values) {
+    return memory.setValuesInRange(range, values);
+  }
+
+  @Override
+  protected void deleteRange(Range range) {
+    memory.deleteCells(range.from(), range.to());
   }
 }

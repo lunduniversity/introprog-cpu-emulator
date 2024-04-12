@@ -38,7 +38,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
@@ -49,6 +48,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import model.CPU;
 import model.Memory;
 import model.ProgramCounter;
+import model.ProgramCounterListener;
 import model.Registry;
 import net.miginfocom.swing.MigLayout;
 import util.FileHandler;
@@ -65,14 +65,17 @@ public class ComputerUI implements FocusRequester {
 
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(200, 55, 40);
   private static final String ERROR_HIGHLIGHT_COLOR_STRING = colorToHex(ERROR_HIGHLIGHT_COLOR);
+  private static final Color INFO_HIGHLIGHT_COLOR = new Color(40, 55, 200);
+  private static final String INFO_HIGHLIGHT_COLOR_STRING = colorToHex(INFO_HIGHLIGHT_COLOR);
 
   private static final String EMPTY_HTML =
       String.format(
           "<html><head><style>"
               + "body { color: black; } "
               + ".error { color: '%s'; font-weight: bold; }"
+              + ".info { color: '%s'; font-weight: bold; }"
               + "</style></head><body></body></html>",
-          ERROR_HIGHLIGHT_COLOR_STRING);
+          ERROR_HIGHLIGHT_COLOR_STRING, INFO_HIGHLIGHT_COLOR_STRING);
 
   static ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
@@ -189,13 +192,18 @@ public class ComputerUI implements FocusRequester {
     Component rigidArea = Box.createRigidArea(new Dimension(20, 10));
     frame.getContentPane().add(rigidArea, "cell 0 2");
 
-    JPanel memoryPanel = createCellPanel("Memory", false);
-    frame.getContentPane().add(memoryPanel, "cell 0 3 1 3, top, left, grow");
+    memoryPanel = createCellPanel(false);
+    appendHeaderToCellPanel(memoryPanel, "Memory", false);
+    frame.getContentPane().add(memoryPanel, "cell 0 3 1 3, top, left, grow, shrink");
 
     // Memory cells
     {
-      JPanel memoryCellsPanel =
-          new JPanel(new MigLayout("flowy, gap 0 0, insets 0, fill", "[grow]", "[grow]"));
+      memoryCellsPanel = createCellPanel(false);
+      // new JPanel(
+      //     new MigLayout(
+      //         "wrap 6, gap 0 0, insets 0, fill",
+      //         "[sg addr][sg value][sg hex][sg dec][sg ascii][sg instr]",
+      //         "[]"));
       memoryCellsPanel.setFocusable(true);
       scrollPane =
           new JScrollPane(
@@ -214,13 +222,14 @@ public class ComputerUI implements FocusRequester {
       im.put(KeyStroke.getKeyStroke("LEFT"), "none");
       im.put(KeyStroke.getKeyStroke("RIGHT"), "none");
 
-      memoryPanel.add(scrollPane, "cell 0 3 8 1, top, left, grow, h 400px::");
+      memoryPanel.add(scrollPane, "span, top, left, grow, shrink, h 400px::");
 
       memCells = new Cell[memory.size()];
       for (int i = 0; i < memory.size(); i++) {
         final int idx = i;
-        memCells[i] = new Cell(i, value -> memory.setValueAt(idx, value), cellSelecter);
-        memoryCellsPanel.add(memCells[i]);
+        memCells[i] =
+            new Cell(memoryCellsPanel, i, value -> memory.setValueAt(idx, value), cellSelecter);
+        // memoryCellsPanel.add(memCells[i]);
       }
 
       memory.addListener(
@@ -232,47 +241,49 @@ public class ComputerUI implements FocusRequester {
                       memCells[startIdx + i].setValue(values[i], executing);
                     }
                   }));
+
+      appendHeaderToCellPanel(memoryCellsPanel, null, false);
     }
 
     // Registers and program counter
     {
-      JPanel registerPanel = createCellPanel("Registers", true);
-      frame.getContentPane().add(registerPanel, "cell 1 3, top, left, grow");
+      JPanel registerPanel = createCellPanel(true);
+      appendHeaderToCellPanel(registerPanel, "Registers", true);
+      frame.getContentPane().add(registerPanel, "cell 1 3, top, left, grow, shrink");
 
-      JPanel regCellsPanel =
-          new JPanel(new MigLayout("flowy, gap 0 0, insets 0, fill", "[grow]", "[grow]"));
-      regCellsPanel.setFocusable(true);
-      regCellsPanel.setBorder(null);
-      registerPanel.add(regCellsPanel, "cell 0 3 8 1, top, left, grow");
+      // JPanel regCellsPanel =
+      //     new JPanel(new MigLayout("flowy, gap 0 0, insets 0, fill", "[grow]", "[grow]"));
+      // regCellsPanel.setFocusable(true);
+      // regCellsPanel.setBorder(null);
+      // registerPanel.add(regCellsPanel, "cell 0 3 8 1, top, left, grow");
 
       // Computer has 8 registers, OP1-OP3 and R1-R3, plus PRT and PC.
       // R1-R3 are general purpose registers, OP1-OP3 are used for operations.
       regCells = new Register[Registry.NUM_REGISTERS];
-      int offset = 3;
-      final String cellFormat = "cell 0 %d";
+      // int offset = 3;
+      // final String cellFormat = "cell 0 %d";
       for (int i = 0; i < regCells.length - 1; i++) {
         final int idx = i;
         regCells[i] =
             new Register(
+                registerPanel,
                 i,
                 Registry.REGISTER_NAMES[i],
                 value -> registry.setValueAt(idx, value),
                 regSelecter);
-        regCellsPanel.add(regCells[i], String.format(cellFormat, offset + idx));
+        // registerPanel.add(regCells[i], String.format(cellFormat, offset + idx));
         if (idx == 2) {
-          offset++;
-          regCellsPanel.add(
-              Box.createRigidArea(new Dimension(10, 10)), String.format(cellFormat, offset + idx));
+          // offset++;
+          registerPanel.add(Box.createRigidArea(new Dimension(10, 10)), "wrap");
         }
       }
 
-      regCellsPanel.add(
-          Box.createRigidArea(new Dimension(20, 10)),
-          String.format(cellFormat, offset + Registry.NUM_REGISTERS));
+      registerPanel.add(Box.createRigidArea(new Dimension(20, 10)), "wrap");
 
       Register pcCell =
-          new Register(Registry.NUM_REGISTERS - 1, "PC", pc::setCurrentIndex, regSelecter);
-      regCellsPanel.add(pcCell, String.format(cellFormat, offset + Registry.NUM_REGISTERS + 1));
+          new Register(
+              registerPanel, Registry.NUM_REGISTERS - 1, "PC", pc::setCurrentIndex, regSelecter);
+      // regCellsPanel.add(pcCell, String.format(cellFormat, offset + Registry.NUM_REGISTERS + 1));
       regCells[Registry.NUM_REGISTERS - 1] = pcCell;
 
       {
@@ -286,7 +297,9 @@ public class ComputerUI implements FocusRequester {
                       }
                     }));
         pc.addListener(
-            (oldIdx, newIdx) ->
+            new ProgramCounterListener() {
+              @Override
+              public void onProgramCounterChanged(int oldIdx, int newIdx) {
                 inv(
                     () -> {
                       if (oldIdx >= 0 && oldIdx < memory.size()) {
@@ -296,8 +309,17 @@ public class ComputerUI implements FocusRequester {
                       programCounterFocusIdx.set(newIdx);
                       if (newIdx >= 0 && newIdx < memory.size()) {
                         memCells[newIdx].setProgramCounterFocus();
+                      } else {
+                        pcCell.highlightError();
                       }
-                    }));
+                    });
+              }
+
+              public void onProgramCounterHalted() {
+                pcCell.highlightCompleted();
+                appendInfo("Program execution completed.");
+              }
+            });
       }
     }
 
@@ -308,7 +330,7 @@ public class ComputerUI implements FocusRequester {
     {
       controlPanel = new JPanel();
       controlPanel.setBorder(BorderFactory.createTitledBorder(null, "Controls", 0, 0, null));
-      frame.getContentPane().add(controlPanel, "cell 1 5,growx, top");
+      frame.getContentPane().add(controlPanel, "cell 1 5, top, grow, shrink");
       controlPanel.setLayout(new MigLayout("", "[][][][][grow,shrink]", "[][][][][]"));
 
       JLabel lblControlHeader = new JLabel("Controls");
@@ -342,7 +364,7 @@ public class ComputerUI implements FocusRequester {
       {
         JButton btnHelp = new JButton("Help (F1)");
         btnHelp.setFocusable(false);
-        btnHelp.addActionListener(e -> handleResetState());
+        btnHelp.addActionListener(e -> synchronizeColumnWidths());
         controlPanel.add(btnHelp, "cell 3 1");
       }
 
@@ -436,6 +458,18 @@ public class ComputerUI implements FocusRequester {
     imap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "scrollDown");
     amap.put("scrollUp", action(e -> vscroll.setValue(vscroll.getValue() - 16 * 4)));
     amap.put("scrollDown", action(e -> vscroll.setValue(vscroll.getValue() + 16 * 4)));
+  }
+
+  private void synchronizeColumnWidths() {
+    Component[] headerComponents = memoryPanel.getComponents();
+    Component[] bodyComponents = memoryCellsPanel.getComponents();
+
+    for (int i = 0; i < headerComponents.length; i++) {
+      headerComponents[i].setPreferredSize(
+          new Dimension(
+              bodyComponents[i].getPreferredSize().width,
+              headerComponents[i].getPreferredSize().height));
+    }
   }
 
   @Override
@@ -539,7 +573,7 @@ public class ComputerUI implements FocusRequester {
       resetCellColors();
       cpu.step();
     } catch (Exception ex) {
-      handleError(ex);
+      appendError(ex);
     } finally {
       inv(() -> isExecuting.set(false));
     }
@@ -551,7 +585,7 @@ public class ComputerUI implements FocusRequester {
       resetCellColors();
       cpu.run();
     } catch (Exception ex) {
-      handleError(ex);
+      appendError(ex);
     } finally {
       inv(() -> isExecuting.set(false));
     }
@@ -674,6 +708,8 @@ public class ComputerUI implements FocusRequester {
   }
 
   private boolean newParagraph = true;
+  private JPanel memoryPanel;
+  private JPanel memoryCellsPanel;
 
   private void handlePrint(int value) {
     // Treat value as ASCII character and append to print label
@@ -689,11 +725,16 @@ public class ComputerUI implements FocusRequester {
     }
   }
 
-  private void handleError(Exception ex) {
+  private void appendError(Exception ex) {
     newParagraph = true;
     appendHtmlContent(
         String.format(
             "<p class='error'>%s<br>%s</p>", ex.getClass().getSimpleName(), ex.getMessage()));
+  }
+
+  private void appendInfo(String msg) {
+    newParagraph = true;
+    appendHtmlContent(String.format("<p class='info'>%s</p>", msg));
   }
 
   // Helper method to append HTML content to the JTextPane.
@@ -743,43 +784,51 @@ public class ComputerUI implements FocusRequester {
         });
   }
 
-  private JPanel createCellPanel(String header, boolean includeLabel) {
+  private JPanel createCellPanel(boolean includeLabel) {
     JPanel cellPanel = new JPanel();
     cellPanel.setBorder(null);
     int numCols = includeLabel ? 7 : 6;
     cellPanel.setLayout(
         new MigLayout(
-            "gap 5,insets 0,wrap " + numCols,
+            "gap 5 0,insets 0,wrap " + numCols,
             // (includeLabel ? "[30px:30px:30px]" : "")
             //     +
             // "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
             // "[][][]"
-            "[sg addr]"
-                + (includeLabel ? "[sg name]" : "")
-                + "[sg value][sg hex][sg dec][sg ascii][sg instr]",
+            "[sg addr, right]"
+                + (includeLabel ? "[sg name, right]" : "")
+                + "[sg value, center, grow][sg hex, left][sg dec, left][sg ascii, left]10[sg"
+                + " instr, left, grow]",
             "[]"));
-
-    JLabel lblHeader = new JLabel(header);
-    cellPanel.add(lblHeader, "left, wrap, span " + numCols);
-    lblHeader.setFont(HEADLINE_FONT);
-
-    cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "wrap");
-
-    cellPanel.add(header("Addr", SwingConstants.RIGHT), "alignx right");
-    if (includeLabel) {
-      cellPanel.add(header("Name", SwingConstants.RIGHT), "alignx right");
-    }
-    cellPanel.add(header("Value", SwingConstants.CENTER), "alignx center");
-    cellPanel.add(header("Hex", SwingConstants.LEFT), "alignx left");
-    cellPanel.add(header("Dec", SwingConstants.LEFT), "alignx left");
-    cellPanel.add(header("Ascii", SwingConstants.LEFT), "alignx left");
-    cellPanel.add(header("Instr", SwingConstants.LEFT), "alignx left");
 
     return cellPanel;
   }
 
-  private JLabel header(String text, int orientation) {
-    JLabel label = new JLabel(text, orientation);
+  private JPanel appendHeaderToCellPanel(JPanel cellPanel, String header, boolean includeLabel) {
+    int numCols = includeLabel ? 7 : 6;
+    if (header != null) {
+      JLabel lblHeader = new JLabel(header);
+      cellPanel.add(lblHeader, "left, wrap, span " + numCols);
+      lblHeader.setFont(HEADLINE_FONT);
+
+      cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "wrap");
+    }
+
+    cellPanel.add(header("Addr"));
+    if (includeLabel) {
+      cellPanel.add(header("Name"));
+    }
+    cellPanel.add(header("Value"));
+    cellPanel.add(header("Hex"));
+    cellPanel.add(header("Dec"));
+    cellPanel.add(header("Ascii"));
+    cellPanel.add(header("Instr"));
+
+    return cellPanel;
+  }
+
+  private JLabel header(String text) {
+    JLabel label = new JLabel(text);
     label.setFont(HEADER_FONT);
     label.setBorder(null);
     return label;

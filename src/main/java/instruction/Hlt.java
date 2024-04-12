@@ -8,7 +8,7 @@ import model.Registry;
 public class Hlt extends Instruction {
 
   public Hlt(int operand) {
-    super(InstructionFactory.INST_NAME_HLT, operand);
+    super(InstructionFactory.INST_NAME_HLT, operand, false);
   }
 
   @Override

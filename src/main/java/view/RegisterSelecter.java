@@ -1,6 +1,7 @@
 package view;
 
 import model.Registry;
+import util.Range;
 
 public class RegisterSelecter extends AbstractSelecter {
 
@@ -13,7 +14,7 @@ public class RegisterSelecter extends AbstractSelecter {
   }
 
   @Override
-  public StorageType _getStorageType() {
+  public StorageType getStorageType() {
     return StorageType.REGISTER;
   }
 
@@ -41,31 +42,26 @@ public class RegisterSelecter extends AbstractSelecter {
     return copiedRange;
   }
 
-  protected boolean _moveCellsUpDelegater(int start, int end) {
-    return registry.moveCellsUp(start, end);
+  protected boolean moveCellsUpDelegater(Range range) {
+    return registry.moveCellsUp(range.from(), range.to());
   }
 
-  protected boolean _moveCellsDownHelper(int start, int end) {
-    return registry.moveCellsDown(start, end);
-  }
-
-  @Override
-  protected int[] getValuesInRange(int start, int end) {
-    registry.getRange(start, end);
-    int[] values = new int[end - start];
-    for (int i = start; i < end; i++) {
-      values[i - start] = registry.getValueAt(i);
-    }
-    return values;
+  protected boolean moveCellsDownDelegater(Range range) {
+    return registry.moveCellsDown(range.from(), range.to());
   }
 
   @Override
-  protected int setValuesInRange(int start, int[] values) {
-    return registry.setRange(start, values);
+  protected int[] getRangeDelegater(Range range) {
+    return registry.getValuesInRange(range);
   }
 
   @Override
-  protected void _deleteRange(int startIdx, int endIdx) {
+  protected int setRangeDelegater(Range range, int[] values) {
+    return registry.setValuesInRange(range, values);
+  }
+
+  @Override
+  protected void deleteRange(Range range) {
     // Do nothing. Deletion for registers should not be allowed.
   }
 }

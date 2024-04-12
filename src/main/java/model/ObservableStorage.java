@@ -1,5 +1,7 @@
 package model;
 
+import util.Range;
+
 public interface ObservableStorage {
   void addListener(StorageListener listener);
 
@@ -14,11 +16,11 @@ public interface ObservableStorage {
   /**
    * Set a range of values in the storage.
    *
-   * @param startIdx The starting index of the range, inclusive.
+   * @param range The starting index of the range, inclusive.
    * @param values An array of values to set in the storage.
    * @return The number of values that could not be set, due to the range being out of bounds.
    */
-  int setRange(int startIdx, int[] values);
+  int setValuesInRange(Range range, int[] values);
 
   /**
    * Get a value from the storage.
@@ -31,11 +33,10 @@ public interface ObservableStorage {
   /**
    * Get a range of values from the storage.
    *
-   * @param startIdx The starting index of the range, inclusive.
-   * @param endIdx The ending index of the range, exclusive.
+   * @param range The starting index of the range, inclusive.
    * @return An array of values from the storage.
    */
-  int[] getRange(int startIdx, int endIdx);
+  int[] getValuesInRange(Range range);
 
   /**
    * Move a range of cells up by one cell.

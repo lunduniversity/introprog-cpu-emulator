@@ -21,6 +21,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import model.Memory;
 import model.ProgramCounter;
+import model.ProgramCounterListener;
 import net.miginfocom.swing.MigLayout;
 
 public class InstructionTable extends JFrame {
@@ -234,16 +235,23 @@ public class InstructionTable extends JFrame {
     JLabel lblInstr = bold(instr);
     lblInstr.setBorder(INSTR_NO_FOCUS_BORDER);
     pc.addListener(
-        (pcValue, newIdx) ->
+        new ProgramCounterListener() {
+          @Override
+          public void onProgramCounterChanged(int oldIdx, int newIdx) {
             inv(
                 () -> {
-                  if (0 <= pcValue && pcValue < memory.size()) {
+                  if (0 <= newIdx && newIdx < memory.size()) {
                     lblInstr.setBorder(
-                        (memory.getValueAt(pcValue) & 0xF0) == opcode
+                        (memory.getValueAt(newIdx) & 0xF0) == opcode
                             ? INSTR_FOCUS_BORDER
                             : INSTR_NO_FOCUS_BORDER);
                   }
-                }));
+                });
+          }
+
+          @Override
+          public void onProgramCounterHalted() {}
+        });
     memory.addListener(
         (startIdx, values) ->
             inv(

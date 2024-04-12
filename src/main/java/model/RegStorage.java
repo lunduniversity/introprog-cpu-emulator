@@ -9,12 +9,15 @@ public class RegStorage extends ByteStorage implements Registry {
   @Override
   public int getRegister(String name) {
     int value = getValueAt(Registry.nameToIdx(name));
-    // Sign-extend the byte value to an int
-    return (byte) value;
+    return value & 0xFF;
   }
 
   @Override
   public void setRegister(String name, int value) {
     setValueAt(Registry.nameToIdx(name), value);
+  }
+
+  public int getRawValue(String name) {
+    return getRawValueAt(Registry.nameToIdx(name));
   }
 }

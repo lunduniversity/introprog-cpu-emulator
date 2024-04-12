@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import util.Range;
 
 public class ByteStorage implements Memory {
 
@@ -18,25 +19,32 @@ public class ByteStorage implements Memory {
   private Set<StorageListener> listeners = new HashSet<>();
 
   public ByteStorage(int size) {
-    store = new int[size & 0xFFFF];
+    if (size <= 0 || size > 256) {
+      throw new IllegalArgumentException("Invalid size: " + size);
+    }
+    store = new int[size];
   }
 
   @Override
   public void setValueAt(int address, int value) {
-    int cleanedAddress = address & 0xFF;
-    int cleanedValue = value & 0xFF;
-    store[cleanedAddress] = cleanedValue;
-    notifyListenersSingle(cleanedAddress, cleanedValue);
+    if (address < 0 || address >= store.length) {
+      throw new IllegalArgumentException("Address out of bounds: " + address);
+    }
+    store[address] = value;
+    notifyListenersSingle(address, value);
   }
 
   @Override
-  public int setRange(int startIdx, int[] values) {
-    int endIdx = Math.min(store.length, startIdx + values.length);
-    int excess = Math.max(0, startIdx + values.length - store.length);
-    for (int i = 0; startIdx + i < endIdx; i++) {
-      store[startIdx + i] = values[i] & 0xFF;
-    }
-    notifyListenersRange(startIdx, Arrays.copyOfRange(store, startIdx, endIdx));
+  public int setValuesInRange(Range range, int[] values) {
+    Range limited = range.limit(0, store.length);
+    int length = Math.min(values.length, limited.length());
+
+    System.arraycopy(values, 0, store, limited.from(), length);
+
+    int[] usedValues = Arrays.copyOfRange(values, 0, length);
+    int excess = values.length - length;
+
+    notifyListenersRange(range.from(), usedValues);
 
     return excess;
   }
@@ -46,9 +54,16 @@ public class ByteStorage implements Memory {
     return store[address & 0xFF];
   }
 
+  public int getRawValueAt(int address) {
+    return store[address];
+  }
+
   @Override
-  public int[] getRange(int startIdx, int endIdx) {
-    return Arrays.copyOfRange(store, startIdx, startIdx + endIdx);
+  public int[] getValuesInRange(Range range) {
+    if (!(range.isAbove(0) && range.isBelow(store.length))) {
+      throw new IllegalArgumentException("Invalid range: " + range);
+    }
+    return Arrays.copyOfRange(store, range.from(), range.to());
   }
 
   @Override
@@ -110,29 +125,44 @@ public class ByteStorage implements Memory {
   }
 
   public String exportAsBase64() {
-    List<Integer> countEmptBytes = new ArrayList<>();
+    List<Integer> zeroCounts = new ArrayList<>();
     List<byte[]> chunks = new ArrayList<>();
-    for (int i = 0; i < store.length; ) {
-      int count = 0;
-      while (i < store.length && store[i] == 0) {
-        count++;
-        i++;
-      }
-      if (count > 0) {
-        countEmptBytes.add(count);
+    int i = 0;
+
+    while (i < store.length) {
+      if (store[i] == 0) {
+        i += countZeros(i, zeroCounts);
       } else {
-        while (i < store.length && store[i] != 0) {
-          count++;
-          i++;
-        }
-        byte[] chunk = new byte[count];
-        for (int j = 0; j < count; j++) {
-          chunk[j] = (byte) store[i - count + j];
-        }
-        chunks.add(chunk);
+        chunks.add(copyNonZeroBytes(i));
+        i += chunks.get(chunks.size() - 1).length;
       }
     }
 
+    return formatBase64(zeroCounts, chunks);
+  }
+
+  private int countZeros(int startIndex, List<Integer> zeroCounts) {
+    int count = 0;
+    while (startIndex + count < store.length && store[startIndex + count] == 0) {
+      count++;
+    }
+    zeroCounts.add(count);
+    return count;
+  }
+
+  private byte[] copyNonZeroBytes(int startIndex) {
+    int count = 0;
+    while (startIndex + count < store.length && store[startIndex + count] != 0) {
+      count++;
+    }
+    byte[] chunk = new byte[count];
+    for (int j = 0; j < count; j++) {
+      chunk[j] = (byte) store[startIndex + j];
+    }
+    return chunk;
+  }
+
+  private String formatBase64(List<Integer> zeroCounts, List<byte[]> chunks) {
     if (chunks.isEmpty()) {
       return "";
     }
@@ -142,52 +172,58 @@ public class ByteStorage implements Memory {
         chunks.stream().map(encoder::encodeToString).collect(Collectors.toList());
 
     StringBuilder base64 = new StringBuilder();
-    Iterator<Integer> spaceIt = countEmptBytes.iterator();
+    Iterator<Integer> zeroIt = zeroCounts.iterator();
     Iterator<String> base64It = base64List.iterator();
-    if (store[0] == 0) {
-      base64.append(":").append(spaceIt.next()).append(":");
+
+    // Initial zeros
+    if (store[0] == 0 && zeroIt.hasNext()) {
+      base64.append(":").append(zeroIt.next()).append(":");
     }
+
+    // Build the encoded string
     while (base64It.hasNext()) {
       base64.append(base64It.next());
-      if (base64It.hasNext() && spaceIt.hasNext())
-        base64.append(":").append(spaceIt.next()).append(":");
+      if (zeroIt.hasNext()) {
+        base64.append(":").append(zeroIt.next()).append(":");
+      }
     }
 
     return base64.toString();
   }
 
   public void importFromBase64(String base64) {
-    // Check with regex that input has correct format
     if (!base64.matches("(:\\d+:)?([A-Za-z0-9+/]+={0,2}:\\d+:)*[A-Za-z0-9+/]+={0,2}")) {
       throw new IllegalArgumentException("Invalid format!");
     }
+
     Decoder decoder = Base64.getDecoder();
     int offset = 0;
-    for (int i = 0; i < base64.length(); ) {
+    int i = 0;
+
+    while (i < base64.length()) {
       if (base64.charAt(i) == ':') {
-        // Read the number of empty bytes
-        int start = i + 1;
-        int end = base64.indexOf(":", start + 1);
-        int count = Integer.parseInt(base64.substring(start, end));
-        i = end + 1;
-        offset += count;
+        offset += parseEmptySpaces(base64, i);
+        i = base64.indexOf(":", i + 1) + 1; // Move to the character after the second ':'
       } else {
-        // Read the base64 encoded chunk and fill in the store
-        int start = i;
-        int end = base64.indexOf(":", start + 1);
-        if (end == -1) {
-          end = base64.length();
-        }
-        String chunk = base64.substring(start, end);
-        byte[] decoded = decoder.decode(chunk);
-        for (int j = 0; j < decoded.length; j++) {
-          store[offset + j] = decoded[j] & 0xFF;
-        }
-        offset += decoded.length;
-        i = end;
+        i = decodeAndStore(base64, i, offset, decoder);
       }
     }
+
     notifyListenersAll();
+  }
+
+  private int parseEmptySpaces(String base64, int start) {
+    int end = base64.indexOf(":", start + 1);
+    return Integer.parseInt(base64.substring(start + 1, end));
+  }
+
+  private int decodeAndStore(String base64, int start, int offset, Decoder decoder) {
+    int end = base64.indexOf(":", start);
+    if (end == -1) end = base64.length();
+    String chunk = base64.substring(start, end);
+    byte[] decoded = decoder.decode(chunk);
+    System.arraycopy(decoded, 0, store, offset, decoded.length);
+    return end;
   }
 
   @Override

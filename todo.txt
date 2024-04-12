@@ -32,7 +32,7 @@
 [] F1 och F2 för fokus till fönsterna?
 [x] PgUp och PgDn för att scrolla i minnet och i ascii tabellen
 [] Ctrl F för att söka?
-[] Swing Look and Feel, för sitt respektive OS
+[x] Swing Look and Feel, för sitt respektive OS
 [] Rödmarkera PC om utanför minnesrymden. (Och markera inte i Description)
 [] Ändra output och error till ett stort textfält. Ha knapparna ovanför: step, run, reset, help
 [] Döp om Reset program till endast Reset
