@@ -22,8 +22,8 @@ public class JneTest {
     int destinationAddress = 200; // Example destination address
 
     // Setup conditions where OP1 does not equal OP2
-    when(mockRegistry.getRegister("OP1")).thenReturn(5);
-    when(mockRegistry.getRegister("OP2")).thenReturn(10);
+    when(mockRegistry.getRegister(Registry.REG_OP1)).thenReturn(5);
+    when(mockRegistry.getRegister(Registry.REG_OP2)).thenReturn(10);
     when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
     Jne jneInstruction = new Jne(operand);
@@ -42,8 +42,8 @@ public class JneTest {
     int destinationAddress = 200; // Example destination address, not used in this test
 
     // Setup conditions where OP1 equals OP2
-    when(mockRegistry.getRegister("OP1")).thenReturn(5);
-    when(mockRegistry.getRegister("OP2")).thenReturn(5);
+    when(mockRegistry.getRegister(Registry.REG_OP1)).thenReturn(5);
+    when(mockRegistry.getRegister(Registry.REG_OP2)).thenReturn(5);
     // The getRegister call for the operand might still happen, but should not result in a jump
     when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
@@ -56,9 +56,9 @@ public class JneTest {
 
   @Test
   public void testToString() {
-    Jne jumpOP1 = new Jne(Registry.nameToIdx("OP1"));
-    Jne jumpRES = new Jne(Registry.nameToIdx("RES"));
-    Jne jumpR3 = new Jne(Registry.nameToIdx("R3"));
+    Jne jumpOP1 = new Jne(Registry.nameToIdx(Registry.REG_OP1));
+    Jne jumpRES = new Jne(Registry.nameToIdx(Registry.REG_RES));
+    Jne jumpR3 = new Jne(Registry.nameToIdx(Registry.REG_R3));
     assertEquals(InstructionFactory.INST_NAME_JNE + " (dst: OP1)", jumpOP1.toString());
     assertEquals(InstructionFactory.INST_NAME_JNE + " (dst: RES)", jumpRES.toString());
     assertEquals(InstructionFactory.INST_NAME_JNE + " (dst: R3)", jumpR3.toString());

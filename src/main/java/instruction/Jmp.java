@@ -12,7 +12,7 @@ public class Jmp extends Instruction {
   }
 
   @Override
-  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Destination address is read from register indexed by operand.
     int dst = reg.getValueAt(operand);
     pc.jumpTo(dst);

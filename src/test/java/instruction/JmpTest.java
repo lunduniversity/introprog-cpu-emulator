@@ -31,9 +31,9 @@ public class JmpTest {
 
   @Test
   public void testToString() {
-    Jmp jumpOP1 = new Jmp(Registry.nameToIdx("OP1"));
-    Jmp jumpRES = new Jmp(Registry.nameToIdx("RES"));
-    Jmp jumpR3 = new Jmp(Registry.nameToIdx("R3"));
+    Jmp jumpOP1 = new Jmp(Registry.nameToIdx(Registry.REG_OP1));
+    Jmp jumpRES = new Jmp(Registry.nameToIdx(Registry.REG_RES));
+    Jmp jumpR3 = new Jmp(Registry.nameToIdx(Registry.REG_R3));
     assertEquals(InstructionFactory.INST_NAME_JMP + " (dst: OP1)", jumpOP1.toString());
     assertEquals(InstructionFactory.INST_NAME_JMP + " (dst: RES)", jumpRES.toString());
     assertEquals(InstructionFactory.INST_NAME_JMP + " (dst: R3)", jumpR3.toString());

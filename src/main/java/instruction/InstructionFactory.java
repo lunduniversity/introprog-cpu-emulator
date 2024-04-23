@@ -84,14 +84,13 @@ public class InstructionFactory {
       case INST_JNE:
         return new Jne(operand);
       case INST_PRT:
-        return new Prt(operand);
+        return new PrT(operand);
       case INST_PRL:
         return new PrL(operand);
       case INST_HLT:
         return new Hlt(operand);
       default:
         return new NullInstruction(opcode);
-        // throw new IllegalArgumentException(String.format("Unknown instruction: 0x%02X", code));
     }
   }
 
@@ -105,7 +104,7 @@ public class InstructionFactory {
     }
 
     @Override
-    protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+    protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
       throw new UnsupportedOperationException(
           String.format("Unknown instruction: %s", toBinaryString(opcode, 4)));
     }

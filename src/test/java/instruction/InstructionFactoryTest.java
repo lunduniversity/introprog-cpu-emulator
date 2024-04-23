@@ -123,7 +123,7 @@ public class InstructionFactoryTest {
         factory.createInstruction(InstructionFactory.INST_JNE),
         "Should create an instance of Jne.");
     assertInstanceOf(
-        Prt.class,
+        PrT.class,
         factory.createInstruction(InstructionFactory.INST_PRT),
         "Should create an instance of Hlt.");
     assertInstanceOf(

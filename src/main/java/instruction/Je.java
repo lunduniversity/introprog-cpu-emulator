@@ -12,12 +12,12 @@ public class Je extends Instruction {
   }
 
   @Override
-  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Destination address is read from register indexed by operand.
     // Values being compared are read from the registers OP1 and OP2.
 
-    int a = reg.getRegister("OP1");
-    int b = reg.getRegister("OP2");
+    int a = reg.getRegister(Registry.REG_OP1);
+    int b = reg.getRegister(Registry.REG_OP2);
 
     if (a == b) {
       int dst = reg.getValueAt(operand);

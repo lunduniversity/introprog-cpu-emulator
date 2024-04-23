@@ -12,11 +12,11 @@ public class Sub extends Instruction {
   }
 
   @Override
-  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    int a = reg.getRegister("OP1");
-    int b = reg.getRegister("OP2");
+  protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+    int a = reg.getRegister(Registry.REG_OP1);
+    int b = reg.getRegister(Registry.REG_OP2);
     int result = a - b;
-    reg.setRegister("RES", result);
+    reg.setRegister(Registry.REG_RES, result);
   }
 
   @Override

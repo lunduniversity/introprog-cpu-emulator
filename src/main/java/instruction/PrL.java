@@ -18,18 +18,18 @@ public class PrL extends Instruction {
   }
 
   @Override
-  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    int start = reg.getRegister("OP1");
-    int end = reg.getRegister("OP2");
+  protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+    int start = reg.getRegister(Registry.REG_OP1);
+    int end = reg.getRegister(Registry.REG_OP2);
 
     int character = mem.getValueAt(start);
-    reg.setRegister("PRT", character);
+    reg.setRegister(Registry.REG_OUT, character);
     io.print(character);
 
     if (start == end) {
       pc.next();
     } else {
-      reg.setRegister("OP1", start + 1);
+      reg.setRegister(Registry.REG_OP1, start + 1);
     }
   }
 

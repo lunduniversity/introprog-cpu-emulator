@@ -27,10 +27,10 @@ public abstract class Instruction {
     if (autoIncrement) {
       pc.next();
     }
-    _execute(mem, reg, pc, io);
+    internalExecute(mem, reg, pc, io);
   }
 
-  protected abstract void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io);
+  protected abstract void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io);
 
   @Override
   public String toString() {

@@ -12,7 +12,7 @@ public class Ld extends Instruction {
   }
 
   @Override
-  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     reg.setValueAt(operand, mem.getValueAt(pc.next()));
   }
 

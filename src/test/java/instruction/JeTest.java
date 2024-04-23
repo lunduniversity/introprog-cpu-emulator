@@ -11,9 +11,9 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-public class JeTest {
+class JeTest {
   @Test
-  public void testJumpWhenEqual() {
+  void testJumpWhenEqual() {
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
 
@@ -22,8 +22,8 @@ public class JeTest {
     int destinationAddress = 100; // Example destination address
 
     // Setup conditions where OP1 equals OP2
-    when(mockRegistry.getRegister("OP1")).thenReturn(5);
-    when(mockRegistry.getRegister("OP2")).thenReturn(5);
+    when(mockRegistry.getRegister(Registry.REG_OP1)).thenReturn(5);
+    when(mockRegistry.getRegister(Registry.REG_OP2)).thenReturn(5);
     when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
     Je jeInstruction = new Je(operand);
@@ -34,7 +34,7 @@ public class JeTest {
   }
 
   @Test
-  public void testNoJumpWhenNotEqual() {
+  void testNoJumpWhenNotEqual() {
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
 
@@ -42,8 +42,8 @@ public class JeTest {
     int destinationAddress = 100; // Example destination address, not used in this test
 
     // Setup conditions where OP1 does not equal OP2
-    when(mockRegistry.getRegister("OP1")).thenReturn(5);
-    when(mockRegistry.getRegister("OP2")).thenReturn(10);
+    when(mockRegistry.getRegister(Registry.REG_OP1)).thenReturn(5);
+    when(mockRegistry.getRegister(Registry.REG_OP2)).thenReturn(10);
     // Even though this call happens, it should not lead to a jump since OP1 != OP2
     when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
@@ -55,10 +55,10 @@ public class JeTest {
   }
 
   @Test
-  public void testToString() {
-    Je jumpOP1 = new Je(Registry.nameToIdx("OP1"));
-    Je jumpRES = new Je(Registry.nameToIdx("RES"));
-    Je jumpR3 = new Je(Registry.nameToIdx("R3"));
+  void testToString() {
+    Je jumpOP1 = new Je(Registry.nameToIdx(Registry.REG_OP1));
+    Je jumpRES = new Je(Registry.nameToIdx(Registry.REG_RES));
+    Je jumpR3 = new Je(Registry.nameToIdx(Registry.REG_R3));
     assertEquals(InstructionFactory.INST_NAME__JE + " (dst: OP1)", jumpOP1.toString());
     assertEquals(InstructionFactory.INST_NAME__JE + " (dst: RES)", jumpRES.toString());
     assertEquals(InstructionFactory.INST_NAME__JE + " (dst: R3)", jumpR3.toString());

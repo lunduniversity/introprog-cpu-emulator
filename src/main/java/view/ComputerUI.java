@@ -5,6 +5,7 @@ import static util.LazySwing.colorToHex;
 import static util.LazySwing.inv;
 import static util.LazySwing.runSafely;
 
+import io.IOListener;
 import io.ObservableIO;
 import java.awt.AWTKeyStroke;
 import java.awt.Color;
@@ -399,7 +400,18 @@ public class ComputerUI implements FocusRequester {
         outputScroll.setMinimumSize(new Dimension(150, 150));
         controlPanel.add(outputScroll, "cell 0 4 5 1, grow, top, left");
 
-        io.addListener(this::handlePrint);
+        io.addListener(
+            new IOListener() {
+              @Override
+              public void print(int value) {
+                handlePrint(value, false);
+              }
+
+              @Override
+              public void print(char character) {
+                handlePrint(character, true);
+              }
+            });
       }
     }
   }
@@ -711,17 +723,23 @@ public class ComputerUI implements FocusRequester {
   private JPanel memoryPanel;
   private JPanel memoryCellsPanel;
 
-  private void handlePrint(int value) {
-    // Treat value as ASCII character and append to print label
-    char c = (char) (value & 0xFF);
-    if (c == '\n') {
-      newParagraph = true;
-    } else {
-      if (newParagraph) {
-        appendHtmlContent("<p>");
-        newParagraph = false;
+  private void handlePrint(int value, boolean isAscii) {
+    if (isAscii) {
+      // Treat value as ASCII character and append to print label
+      char c = (char) (value & 0xFF);
+      if (c == '\n') {
+        newParagraph = true;
+      } else {
+        if (newParagraph) {
+          appendHtmlContent("<p>");
+          newParagraph = false;
+        }
+        appendStringContent(String.valueOf(c));
       }
-      appendStringContent(String.valueOf(c));
+    } else {
+      appendHtmlContent("<p>");
+      appendStringContent(String.valueOf(value));
+      newParagraph = true;
     }
   }
 

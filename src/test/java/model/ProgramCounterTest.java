@@ -31,41 +31,41 @@ public class ProgramCounterTest {
   void testSetAndGetCurrentIndex() {
     int testIndex = 10;
     pc.setCurrentIndex(testIndex);
-    verify(registry).setRegister("PC", testIndex);
+    verify(registry).setRegister(Registry.REG_PC, testIndex);
   }
 
   @Test
   void testNextReadPC() {
     pc.getCurrentIndex();
-    verify(registry).getRegister("PC");
+    verify(registry).getRegister(Registry.REG_PC);
   }
 
   @Test
   void testNextIncrementsPC() {
-    when(registry.getRegister("PC")).thenReturn(0);
+    when(registry.getRegister(Registry.REG_PC)).thenReturn(0);
     int nextIndex = pc.next();
     assertEquals(0, nextIndex, "Next should return the current index before incrementing it.");
-    verify(registry).setRegister("PC", 1);
+    verify(registry).setRegister(Registry.REG_PC, 1);
   }
 
   @Test
   void testJumpTo() {
     int newIndex = 20;
     pc.jumpTo(newIndex);
-    verify(registry).setRegister("PC", newIndex);
+    verify(registry).setRegister(Registry.REG_PC, newIndex);
   }
 
   @Test
   void testHaltSetPCToNegativeOne() {
-    when(registry.getRegister("PC")).thenReturn(-1);
+    when(registry.getRegister(Registry.REG_PC)).thenReturn(-1);
     pc.halt();
-    verify(registry).setRegister("PC", -1);
+    verify(registry).setRegister(Registry.REG_PC, -1);
   }
 
   @Test
   void testIsHaltedReadsPC() {
     pc.halt();
-    verify(registry).getRegister("PC");
+    verify(registry).getRegister(Registry.REG_PC);
   }
 
   @Test
@@ -82,7 +82,7 @@ public class ProgramCounterTest {
 
   @Test
   void testAddListener() {
-    when(registry.getRegister("PC")).thenReturn(0, 10, 11);
+    when(registry.getRegister(Registry.REG_PC)).thenReturn(0, 10, 11);
 
     ProgramCounterListener listener1 = mock(ProgramCounterListener.class);
     ProgramCounterListener listener2 = mock(ProgramCounterListener.class);
@@ -96,9 +96,9 @@ public class ProgramCounterTest {
     pc.next();
     pc.reset();
 
-    verify(registry).setRegister("PC", 10);
-    verify(registry).setRegister("PC", 11);
-    verify(registry).setRegister("PC", 0);
+    verify(registry).setRegister(Registry.REG_PC, 10);
+    verify(registry).setRegister(Registry.REG_PC, 11);
+    verify(registry).setRegister(Registry.REG_PC, 0);
 
     inOrder1.verify(listener1).onProgramCounterChanged(0, 10);
     inOrder1.verify(listener1).onProgramCounterChanged(10, 11);

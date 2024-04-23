@@ -2,7 +2,17 @@ package model;
 
 public interface Registry extends ObservableStorage {
 
-  static final String[] REGISTER_NAMES = {"OP1", "OP2", "RES", "R1", "R2", "R3", "PRT", "PC"};
+  static final String REG_OP1 = "OP1";
+  static final String REG_OP2 = "OP2";
+  static final String REG_RES = "RES";
+  static final String REG_R1 = "R1";
+  static final String REG_R2 = "R2";
+  static final String REG_R3 = "R3";
+  static final String REG_OUT = "OUT";
+  static final String REG_PC = "PC";
+  static final String[] REGISTER_NAMES = {
+    REG_OP1, REG_OP2, REG_RES, REG_R1, REG_R2, REG_R3, REG_OUT, REG_PC
+  };
   static final int NUM_REGISTERS = REGISTER_NAMES.length;
   static final String INVALID_REGISTER = "\u2013";
 
@@ -16,25 +26,9 @@ public interface Registry extends ObservableStorage {
   }
 
   static int nameToIdx(String name) {
-    switch (name) {
-      case "OP1":
-        return 0;
-      case "OP2":
-        return 1;
-      case "RES":
-        return 2;
-      case "R1":
-        return 3;
-      case "R2":
-        return 4;
-      case "R3":
-        return 5;
-      case "PRT":
-        return 6;
-      case "PC":
-        return 7;
-      default:
-        throw new IllegalArgumentException("Invalid register name: " + name);
+    for (int i = 0; i < REGISTER_NAMES.length; i++) {
+      if (REGISTER_NAMES[i].equals(name)) return i;
     }
+    throw new IllegalArgumentException("Invalid register name: " + name);
   }
 }

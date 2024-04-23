@@ -37,9 +37,9 @@ public class LdTest {
 
   @Test
   public void testToString() {
-    Ld loadOP1 = new Ld(Registry.nameToIdx("OP1"));
-    Ld loadOP2 = new Ld(Registry.nameToIdx("OP2"));
-    Ld loadR2 = new Ld(Registry.nameToIdx("R2"));
+    Ld loadOP1 = new Ld(Registry.nameToIdx(Registry.REG_OP1));
+    Ld loadOP2 = new Ld(Registry.nameToIdx(Registry.REG_OP2));
+    Ld loadR2 = new Ld(Registry.nameToIdx(Registry.REG_R2));
     assertEquals(InstructionFactory.INST_NAME__LD + " (dst: OP1)", loadOP1.toString());
     assertEquals(InstructionFactory.INST_NAME__LD + " (dst: OP2)", loadOP2.toString());
     assertEquals(InstructionFactory.INST_NAME__LD + " (dst: R2)", loadR2.toString());

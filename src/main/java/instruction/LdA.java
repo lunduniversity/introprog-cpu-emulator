@@ -12,7 +12,7 @@ public class LdA extends Instruction {
   }
 
   @Override
-  protected void _execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
+  protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     int address = mem.getValueAt(pc.next());
     reg.setValueAt(operand, mem.getValueAt(address));
   }

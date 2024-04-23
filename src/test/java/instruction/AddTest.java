@@ -10,25 +10,25 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-public class AddTest {
+class AddTest {
   @Test
-  public void testAddOperation() {
+  void testAddOperation() {
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
     IO mockIO = mock(IO.class);
 
     // Assuming that values have been loaded into registers OP1 and OP2
-    when(mockRegistry.getRegister("OP1")).thenReturn(5); // First operand
-    when(mockRegistry.getRegister("OP2")).thenReturn(10); // Second operand
+    when(mockRegistry.getRegister(Registry.REG_OP1)).thenReturn(5); // First operand
+    when(mockRegistry.getRegister(Registry.REG_OP2)).thenReturn(10); // Second operand
 
     Add addInstruction = new Add(0);
     addInstruction.execute(null, mockRegistry, mockPC, mockIO);
 
-    verify(mockRegistry).setRegister("RES", 15);
+    verify(mockRegistry).setRegister(Registry.REG_RES, 15);
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     Add addInstruction = new Add(0);
     assertEquals(InstructionFactory.INST_NAME_ADD, addInstruction.toString());
   }

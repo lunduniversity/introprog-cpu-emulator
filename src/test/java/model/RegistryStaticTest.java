@@ -9,13 +9,13 @@ public class RegistryStaticTest {
 
   @Test
   void testIdxToName() {
-    assertEquals("OP1", Registry.idxToName(0));
-    assertEquals("OP2", Registry.idxToName(1));
-    assertEquals("RES", Registry.idxToName(2));
-    assertEquals("R1", Registry.idxToName(3));
-    assertEquals("R2", Registry.idxToName(4));
-    assertEquals("R3", Registry.idxToName(5));
-    assertEquals("PRT", Registry.idxToName(6));
+    assertEquals(Registry.REG_OP1, Registry.idxToName(0));
+    assertEquals(Registry.REG_OP2, Registry.idxToName(1));
+    assertEquals(Registry.REG_RES, Registry.idxToName(2));
+    assertEquals(Registry.REG_R1, Registry.idxToName(3));
+    assertEquals(Registry.REG_R2, Registry.idxToName(4));
+    assertEquals(Registry.REG_R3, Registry.idxToName(5));
+    assertEquals(Registry.REG_OUT, Registry.idxToName(6));
   }
 
   @Test
@@ -26,13 +26,13 @@ public class RegistryStaticTest {
 
   @Test
   void testNameToIdx() {
-    assertEquals(0, Registry.nameToIdx("OP1"));
-    assertEquals(1, Registry.nameToIdx("OP2"));
-    assertEquals(2, Registry.nameToIdx("RES"));
-    assertEquals(3, Registry.nameToIdx("R1"));
-    assertEquals(4, Registry.nameToIdx("R2"));
-    assertEquals(5, Registry.nameToIdx("R3"));
-    assertEquals(6, Registry.nameToIdx("PRT"));
+    assertEquals(0, Registry.nameToIdx(Registry.REG_OP1));
+    assertEquals(1, Registry.nameToIdx(Registry.REG_OP2));
+    assertEquals(2, Registry.nameToIdx(Registry.REG_RES));
+    assertEquals(3, Registry.nameToIdx(Registry.REG_R1));
+    assertEquals(4, Registry.nameToIdx(Registry.REG_R2));
+    assertEquals(5, Registry.nameToIdx(Registry.REG_R3));
+    assertEquals(6, Registry.nameToIdx(Registry.REG_OUT));
   }
 
   @Test

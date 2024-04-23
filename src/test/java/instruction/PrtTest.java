@@ -21,19 +21,19 @@ public class PrtTest {
     int character = (int) 'M'; // Character to be printed
 
     // Assuming that value have been loaded into register PRT
-    when(mockRegistry.getRegister("PRT")).thenReturn(character);
+    when(mockRegistry.getRegister(Registry.REG_OUT)).thenReturn(character);
 
-    Prt printInstruction = new Prt(0);
+    PrT printInstruction = new PrT(0);
     printInstruction.execute(null, mockRegistry, mockPC, mockIO);
 
-    verify(mockRegistry).getRegister("PRT");
+    verify(mockRegistry).getRegister(Registry.REG_OUT);
     verify(mockPC, times(2)).next();
     verify(mockIO).print(character);
   }
 
   @Test
   public void testToString() {
-    Prt printInstruction = new Prt(0);
+    PrT printInstruction = new PrT(0);
     assertEquals(InstructionFactory.INST_NAME_PRT, printInstruction.toString());
   }
 }

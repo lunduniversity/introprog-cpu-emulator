@@ -29,8 +29,8 @@ public class CpyTest {
   public void testCopyRegisterToRegister() {
     // Setup operand for copying from register to register (R1 to R2)
     int operand = (0b01 << 2) | 0b01;
-    int srcRegister = Registry.nameToIdx("R1"); // Source register index
-    int destRegister = Registry.nameToIdx("R2"); // Destination register index
+    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R2); // Destination register index
     int value = 123; // Value to be copied
 
     // Simulate reading source and destination addresses (register indices)
@@ -53,7 +53,7 @@ public class CpyTest {
     // Similar to previous test, but with operand encoding for memory to register (10 to 01)
     int operand = (0b10 << 2) | 0b01;
     int memoryAddress = 16; // Example memory address
-    int destRegister = Registry.nameToIdx("R1"); // Destination register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
     int value = 456; // Value at the memory address to be copied
 
     // Set up mock behavior
@@ -73,7 +73,7 @@ public class CpyTest {
   public void testCopyConstantToRegister() {
     // Similar to previous test, but with operand encoding for constant to register (00 to 01)
     int operand = (0b00 << 2) | 0b01;
-    int destRegister = Registry.nameToIdx("R1"); // Destination register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
     int value = 89; // Constant value to be copied
 
     // Set up mock behavior
@@ -92,7 +92,7 @@ public class CpyTest {
   public void testCopyRegisterToMemory() {
     // Setup operand for copying from register to memory (R1 to memory address)
     int operand = (0b01 << 2) | 0b10;
-    int srcRegister = Registry.nameToIdx("R1"); // Source register index
+    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
     int memoryAddress = 10; // Destination memory address
     int value = 123; // Value to be copied
 

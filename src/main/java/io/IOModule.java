@@ -14,7 +14,15 @@ public class IOModule implements IO, ObservableIO {
   }
 
   @Override
-  public void print(int character) {
+  public void print(int value) {
+    modCount++;
+    for (IOListener listener : listeners) {
+      listener.print(value);
+    }
+  }
+
+  @Override
+  public void print(char character) {
     modCount++;
     for (IOListener listener : listeners) {
       listener.print(character);

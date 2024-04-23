@@ -44,11 +44,11 @@ public class PrLTest {
     }
 
     // Assuming that start and end address have been loaded into registers OP1 and OP2
-    OngoingStubbing<Integer> whenReg = when(mockRegistry.getRegister("OP1"));
+    OngoingStubbing<Integer> whenReg = when(mockRegistry.getRegister(Registry.REG_OP1));
     for (int i = 0; i < message.length(); i++) {
       whenReg = whenReg.thenReturn(offset + i);
     }
-    when(mockRegistry.getRegister("OP2")).thenReturn(offset + message.length() - 1);
+    when(mockRegistry.getRegister(Registry.REG_OP2)).thenReturn(offset + message.length() - 1);
 
     PrL printLoopInstr = new PrL(0);
 

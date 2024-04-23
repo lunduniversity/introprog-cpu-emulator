@@ -10,9 +10,9 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-public class StTest {
+class StTest {
   @Test
-  public void testStoreOperation() {
+  void testStoreOperation() {
     Memory mockMemory = mock(Memory.class);
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
@@ -42,10 +42,10 @@ public class StTest {
   }
 
   @Test
-  public void testToString() {
-    St storeOP1 = new St(Registry.nameToIdx("OP1"));
-    St storeOP2 = new St(Registry.nameToIdx("OP2"));
-    St storeR2 = new St(Registry.nameToIdx("R2"));
+  void testToString() {
+    St storeOP1 = new St(Registry.nameToIdx(Registry.REG_OP1));
+    St storeOP2 = new St(Registry.nameToIdx(Registry.REG_OP2));
+    St storeR2 = new St(Registry.nameToIdx(Registry.REG_R2));
     assertEquals(InstructionFactory.INST_NAME__ST + " (src: OP1)", storeOP1.toString());
     assertEquals(InstructionFactory.INST_NAME__ST + " (src: OP2)", storeOP2.toString());
     assertEquals(InstructionFactory.INST_NAME__ST + " (src: R2)", storeR2.toString());
