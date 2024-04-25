@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.stubbing.OngoingStubbing;
 
-public class PrLTest {
+class PrLTest {
 
   private Memory mockMemory;
   private Registry mockRegistry;
@@ -24,7 +24,7 @@ public class PrLTest {
   private IO mockIO;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     mockMemory = mock(Memory.class);
     mockRegistry = mock(Registry.class);
     mockPC = mock(ProgramCounter.class);
@@ -32,7 +32,7 @@ public class PrLTest {
   }
 
   @Test
-  public void testPrintLoopOperation() {
+  void testPrintLoopOperation() {
 
     // Create an InOrder verifier for mockIO
     InOrder inOrder = inOrder(mockIO);
@@ -72,7 +72,7 @@ public class PrLTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     PrL printLoopInstr = new PrL(0);
     assertEquals(InstructionFactory.INST_NAME_PRL, printLoopInstr.toString());
   }

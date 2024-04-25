@@ -10,9 +10,9 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-public class LdATest {
+class LdATest {
   @Test
-  public void testLoadFromAddressOperation() {
+  void testLoadFromAddressOperation() {
     Memory mockMemory = mock(Memory.class);
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
@@ -42,7 +42,7 @@ public class LdATest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     LdA loadOP1 = new LdA(Registry.nameToIdx(Registry.REG_OP1));
     LdA loadOP2 = new LdA(Registry.nameToIdx(Registry.REG_OP2));
     LdA loadR2 = new LdA(Registry.nameToIdx(Registry.REG_R2));

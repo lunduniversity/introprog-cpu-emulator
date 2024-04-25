@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ByteStorageTest {
+class ByteStorageTest {
 
   private ByteStorage store;
   private ByteStorage bigstore;
@@ -33,16 +33,28 @@ public class ByteStorageTest {
   }
 
   @Test
-  void testSetAndGetNegativeValue() {
-    // The storage should truncate the value to 0-255 range, i.e. use only the last 8 bits.
-    // Since Java int uses 2's complement, -12 is represented as 1...1 1111 0100.
+  void testGetValueTruncatesBits() {
+    // The storage uses regular int internally, but should truncate the value to 0-255 range, i.e.
+    // use only the last 8 bits, when fetching values. Since Java int uses 2's complement, -12 is
+    // represented as 1...1 1111 0100, and should be truncated to 111 0100 (244).
     int address = 5;
     int value = -12;
     int expectedValue = 0b1111_0100; // 244
     store.setValueAt(address, value);
 
     int storedValue = store.getValueAt(address);
-    assertEquals(expectedValue, storedValue, "The value retrieved should match the value set.");
+    assertEquals(expectedValue, storedValue, "Value should be truncated to 8 bits.");
+  }
+
+  @Test
+  void testGetRawValueDoesNotTruncates() {
+    int address = 5;
+    int value = -12;
+    int expectedValue = -12;
+    store.setValueAt(address, value);
+
+    int storedValue = store.getRawValueAt(address);
+    assertEquals(expectedValue, storedValue, "Raw value should be preserved.");
   }
 
   @Test
@@ -107,7 +119,7 @@ public class ByteStorageTest {
   }
 
   @Test
-  public void testBasicExportAsBase64() {
+  void testBasicExportAsBase64() {
     // Set some example values
     bigstore.setValueAt(0, 64);
     bigstore.setValueAt(1, 32);
@@ -120,7 +132,7 @@ public class ByteStorageTest {
   }
 
   @Test
-  public void testExportWithInitialOffset() {
+  void testExportWithInitialOffset() {
     // Leave some initial bytes empty
     for (int i = 7; i <= 29; i++) bigstore.setValueAt(i, (i + 1));
 
@@ -129,7 +141,7 @@ public class ByteStorageTest {
   }
 
   @Test
-  public void testExportWithSmallHoles() {
+  void testExportWithSmallHoles() {
     // Set bytes in ranges 0-6, 8-13 and 16-35, leaving holes at 7, 14 and 15
     for (int i = 0; i < 7; i++) bigstore.setValueAt(i, (i + 1));
     for (int i = 8; i < 14; i++) bigstore.setValueAt(i, (i + 1));
@@ -140,7 +152,7 @@ public class ByteStorageTest {
   }
 
   @Test
-  public void testExportWithLargeHoles() {
+  void testExportWithLargeHoles() {
     // Set bytes in ranges 0-11, 20-28 and 90-106, leaving holes at 12-19 and 29-89
     for (int i = 0; i < 12; i++) bigstore.setValueAt(i, (i + 1));
     for (int i = 20; i < 29; i++) bigstore.setValueAt(i, (i + 1));

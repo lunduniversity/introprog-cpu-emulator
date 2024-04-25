@@ -136,8 +136,8 @@ public class InstructionTable extends JFrame {
           pc);
       appendToTable(
           table,
-          InstructionFactory.INST_NAME__LD,
-          InstructionFactory.INST__LD,
+          InstructionFactory.INST_NAME_LOD,
+          InstructionFactory.INST_LOD,
           "Specifies destination register.",
           "Reads next memory <b>value</b> and loads it into a register.",
           pc);
@@ -150,8 +150,8 @@ public class InstructionTable extends JFrame {
           pc);
       appendToTable(
           table,
-          InstructionFactory.INST_NAME__ST,
-          InstructionFactory.INST__ST,
+          InstructionFactory.INST_NAME_STO,
+          InstructionFactory.INST_STO,
           "Specifies source regsiter.",
           "Reads next memory <b>address</b> and stores register value at it.",
           pc);
@@ -164,8 +164,8 @@ public class InstructionTable extends JFrame {
           pc);
       appendToTable(
           table,
-          InstructionFactory.INST_NAME__JE,
-          InstructionFactory.INST__JE,
+          InstructionFactory.INST_NAME_JEQ,
+          InstructionFactory.INST_JEQ,
           "Specifies source register.",
           "Jumps to address given by a register IF OP1 and OP2 are equal.",
           pc);

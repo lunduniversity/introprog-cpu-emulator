@@ -17,7 +17,7 @@ import io.IO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CPUTest {
+class CPUTest {
 
   private CPU cpu;
   private Memory memory;
@@ -26,8 +26,9 @@ public class CPUTest {
   private IO io;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     memory = mock(Memory.class);
+    when(memory.size()).thenReturn(256);
     factory = mock(InstructionFactory.class);
     io = mock(IO.class);
     cpu = new CPU(memory, factory, io);
@@ -35,7 +36,7 @@ public class CPUTest {
   }
 
   @Test
-  public void testStepExecutesSingleInstruction() {
+  void testStepExecutesSingleInstruction() {
     when(memory.getValueAt(any(int.class)))
         .thenReturn(InstructionFactory.INST_NOP); // Example instruction
     Instruction mockInstruction = mock(Instruction.class);
@@ -47,7 +48,7 @@ public class CPUTest {
   }
 
   @Test
-  public void testRunExecutesUntilHalted() {
+  void testRunExecutesUntilHalted() {
     // Note: CPU does an initial check for halt before starting the loop.
     // Return halt operation after three steps
     when(memory.getValueAt(any(int.class)))
@@ -68,19 +69,19 @@ public class CPUTest {
   }
 
   @Test
-  public void testStepWithCPUHaltedThrowsException() {
+  void testStepWithCPUHaltedThrowsException() {
     pc.halt();
     assertThrows(IllegalStateException.class, () -> cpu.step());
   }
 
   @Test
-  public void testRunWithCPUHaltedThrowsException() {
+  void testRunWithCPUHaltedThrowsException() {
     pc.halt();
     assertThrows(IllegalStateException.class, () -> cpu.run());
   }
 
   @Test
-  public void testRunDetectsInfiniteLoop() {
+  void testRunDetectsInfiniteLoop() {
     when(memory.getValueAt(any(int.class)))
         .thenReturn(InstructionFactory.INST_NOP); // Example instruction
     Instruction nop = mock(Nop.class);
@@ -90,7 +91,7 @@ public class CPUTest {
   }
 
   @Test
-  public void testResetResetsProgramCounterAndRegistry() {
+  void testResetResetsProgramCounterAndRegistry() {
     Registry reg = cpu.getRegistry();
     for (int i = 0; i < Registry.NUM_REGISTERS; i++) {
       reg.setValueAt(i, i + 1);
@@ -104,7 +105,7 @@ public class CPUTest {
   }
 
   @Test
-  public void testAddRegistryListener() {
+  void testAddRegistryListener() {
     StorageListener listener = mock(StorageListener.class);
     cpu.addRegistryListener(listener);
     cpu.getRegistry().setValueAt(5, 12);

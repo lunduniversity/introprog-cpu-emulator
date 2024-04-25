@@ -9,7 +9,7 @@ import model.Registry;
 public class PrD extends Instruction {
 
   public PrD(int operand) {
-    super(InstructionFactory.INST_NAME_PRT, operand);
+    super(InstructionFactory.INST_NAME_PRD, operand);
   }
 
   @Override

@@ -11,9 +11,9 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-public class JneTest {
+class JneTest {
   @Test
-  public void testJumpWhenNotEqual() {
+  void testJumpWhenNotEqual() {
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
 
@@ -34,7 +34,7 @@ public class JneTest {
   }
 
   @Test
-  public void testNoJumpWhenEqual() {
+  void testNoJumpWhenEqual() {
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
 
@@ -55,7 +55,7 @@ public class JneTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     Jne jumpOP1 = new Jne(Registry.nameToIdx(Registry.REG_OP1));
     Jne jumpRES = new Jne(Registry.nameToIdx(Registry.REG_RES));
     Jne jumpR3 = new Jne(Registry.nameToIdx(Registry.REG_R3));

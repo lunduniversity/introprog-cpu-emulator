@@ -12,21 +12,21 @@ import model.Registry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CpyTest {
+class CpyTest {
 
   private Memory mockMemory;
   private Registry mockRegistry;
   private ProgramCounter mockPC;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     mockMemory = mock(Memory.class);
     mockRegistry = mock(Registry.class);
     mockPC = mock(ProgramCounter.class);
   }
 
   @Test
-  public void testCopyRegisterToRegister() {
+  void testCopyRegisterToRegister() {
     // Setup operand for copying from register to register (R1 to R2)
     int operand = (0b01 << 2) | 0b01;
     int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
@@ -49,7 +49,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testCopyMemoryToRegister() {
+  void testCopyMemoryToRegister() {
     // Similar to previous test, but with operand encoding for memory to register (10 to 01)
     int operand = (0b10 << 2) | 0b01;
     int memoryAddress = 16; // Example memory address
@@ -70,7 +70,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testCopyConstantToRegister() {
+  void testCopyConstantToRegister() {
     // Similar to previous test, but with operand encoding for constant to register (00 to 01)
     int operand = (0b00 << 2) | 0b01;
     int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
@@ -89,7 +89,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testCopyRegisterToMemory() {
+  void testCopyRegisterToMemory() {
     // Setup operand for copying from register to memory (R1 to memory address)
     int operand = (0b01 << 2) | 0b10;
     int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
@@ -111,7 +111,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testCopyMemoryToMemory() {
+  void testCopyMemoryToMemory() {
     // Setup operand for copying from memory to memory (memory address to memory address)
     int operand = (0b10 << 2) | 0b10;
     int srcMemoryAddress = 5; // Source memory address
@@ -133,7 +133,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testCopyConstantToMemory() {
+  void testCopyConstantToMemory() {
     // Setup operand for copying from constant to memory (constant value to memory address)
     int operand = (0b00 << 2) | 0b10;
     int memoryAddress = 20; // Destination memory address
@@ -152,7 +152,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testInvalidSourceTypeThrowsException() {
+  void testInvalidSourceTypeThrowsException() {
     // Setup operand with an invalid source type
     int operand = (0b11 << 2) | 0b01; // Invalid source type (11)
 
@@ -163,7 +163,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testInvalidDestinationTypeThrowsException() {
+  void testInvalidDestinationTypeThrowsException() {
     // Setup operand with an invalid destination type
     int operand1 = (0b00 << 2) | 0b00; // Invalid destination type (00, constant value)
     int operand2 = (0b00 << 2) | 0b11; // Invalid destination type (11, illegal value)
@@ -179,7 +179,7 @@ public class CpyTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     // Test all possible operands
     int[] bits = {0b00, 0b01, 0b10, 0b11};
     for (int src : bits) {

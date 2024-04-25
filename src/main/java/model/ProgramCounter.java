@@ -55,7 +55,7 @@ public class ProgramCounter {
       notifyChanged(rawPC, rawPC);
       throw new IllegalStateException("Reached end of memory.");
     }
-    return isHalted || registry.getRawValue(Registry.REG_PC) >= memorySize;
+    return isHalted;
   }
 
   public void reset() {

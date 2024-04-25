@@ -17,12 +17,14 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.*;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -69,6 +71,10 @@ public class ComputerUI implements FocusRequester {
   private static final Color INFO_HIGHLIGHT_COLOR = new Color(40, 55, 200);
   private static final String INFO_HIGHLIGHT_COLOR_STRING = colorToHex(INFO_HIGHLIGHT_COLOR);
 
+  private static final Dimension SCROLLER_SIZE = new Dimension(450, 450);
+  private static final Dimension NO_SIZE_LIMIT =
+      new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+
   private static final String EMPTY_HTML =
       String.format(
           "<html><head><style>"
@@ -83,6 +89,9 @@ public class ComputerUI implements FocusRequester {
   private JFrame frame;
   private Cell[] memCells;
   private Register[] regCells;
+
+  private JPanel memoryPanel;
+  private JPanel memoryCellsPanel;
 
   private JTextPane txtOutput;
   private JScrollPane scrollPane;
@@ -106,6 +115,8 @@ public class ComputerUI implements FocusRequester {
   private AbstractCell[] currentCells;
 
   private FileHandler fileHandler;
+  private boolean newParagraph = true;
+  private JPanel registerPanel;
 
   public ComputerUI(Memory memory, CPU cpu, ObservableIO io) {
     this.memory = memory;
@@ -214,7 +225,7 @@ public class ComputerUI implements FocusRequester {
       memoryCellsPanel.setBorder(null);
       scrollPane.setBorder(null);
       scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-      scrollPane.setMaximumSize(new Dimension(450, 450));
+      scrollPane.setMaximumSize(SCROLLER_SIZE);
 
       // Remove arrow key bindings for vertical and horizontal scroll bars
       InputMap im = scrollPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -248,7 +259,7 @@ public class ComputerUI implements FocusRequester {
 
     // Registers and program counter
     {
-      JPanel registerPanel = createCellPanel(true);
+      registerPanel = createCellPanel(true);
       appendHeaderToCellPanel(registerPanel, "Registers", true);
       frame.getContentPane().add(registerPanel, "cell 1 3, top, left, grow, shrink");
 
@@ -332,11 +343,11 @@ public class ComputerUI implements FocusRequester {
       controlPanel = new JPanel();
       controlPanel.setBorder(BorderFactory.createTitledBorder(null, "Controls", 0, 0, null));
       frame.getContentPane().add(controlPanel, "cell 1 5, top, grow, shrink");
-      controlPanel.setLayout(new MigLayout("", "[][][][][grow,shrink]", "[][][][][]"));
+      controlPanel.setLayout(new MigLayout("fillx", "[][][][][grow,shrink]", "[]"));
 
       JLabel lblControlHeader = new JLabel("Controls");
       lblControlHeader.setFont(HEADLINE_FONT);
-      controlPanel.add(lblControlHeader, "cell 0 0");
+      controlPanel.add(lblControlHeader, "cell 0 0 5 1, top, left, wrap");
 
       // Step button
       {
@@ -365,7 +376,12 @@ public class ComputerUI implements FocusRequester {
       {
         JButton btnHelp = new JButton("Help (F1)");
         btnHelp.setFocusable(false);
-        btnHelp.addActionListener(e -> synchronizeColumnWidths());
+        // btnHelp.addActionListener(e -> synchronizeColumnWidths());
+        btnHelp.addActionListener(
+            e -> {
+              autoResizeFrame();
+              synchronizeColumnWidths();
+            });
         controlPanel.add(btnHelp, "cell 3 1");
       }
 
@@ -375,12 +391,12 @@ public class ComputerUI implements FocusRequester {
       // Output textbox
       {
         JLabel lblOutput = new JLabel("Output:");
-        controlPanel.add(lblOutput, "cell 0 3, top, left");
+        controlPanel.add(lblOutput, "cell 0 3 2 1, top, left");
 
         JButton btnClearOutput = new JButton("Clear output");
         btnClearOutput.setFocusable(false);
         btnClearOutput.addActionListener(e -> handleClearOutput());
-        controlPanel.add(btnClearOutput, "cell 2 3 2 1, right");
+        controlPanel.add(btnClearOutput, "cell 2 3 3 1, right");
 
         txtOutput = new JTextPane();
         txtOutput.setContentType("text/html");
@@ -398,7 +414,7 @@ public class ComputerUI implements FocusRequester {
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         outputScroll.setMinimumSize(new Dimension(150, 150));
-        controlPanel.add(outputScroll, "cell 0 4 5 1, grow, top, left");
+        controlPanel.add(outputScroll, "cell 0 4 5 1, grow, shrink, top, left");
 
         io.addListener(
             new IOListener() {
@@ -473,14 +489,53 @@ public class ComputerUI implements FocusRequester {
   }
 
   private void synchronizeColumnWidths() {
-    Component[] headerComponents = memoryPanel.getComponents();
-    Component[] bodyComponents = memoryCellsPanel.getComponents();
+    Component[] headerComponents =
+        Arrays.stream(memoryPanel.getComponents())
+            .filter(JLabel.class::isInstance)
+            .toArray(JLabel[]::new);
+    Component[] bodyComponents = new Component[headerComponents.length];
+    int numLabels = 0;
+    for (int i = 0; numLabels < headerComponents.length; i++) {
+      Component c = memoryCellsPanel.getComponent(i);
+      if (c instanceof JLabel || c instanceof JPanel) {
+        bodyComponents[numLabels++] = c;
+      } else {
+        System.out.println("Skipping component: " + c.getClass().getName());
+      }
+    }
 
     for (int i = 0; i < headerComponents.length; i++) {
+      // System.out.println("Header component: " + headerComponents[i].getText());
+      // System.out.println("Body component: " + bodyComponents[i].getText());
       headerComponents[i].setPreferredSize(
           new Dimension(
               bodyComponents[i].getPreferredSize().width,
               headerComponents[i].getPreferredSize().height));
+      // headerComponents[i].setSize(bodyComponents[i].getWidth(), headerComponents[i].getHeight());
+    }
+    memoryPanel.revalidate();
+    memoryPanel.repaint();
+  }
+
+  private void autoResizeFrame() {
+    Component[] components = {
+      memoryPanel, controlPanel, scrollPane, txtOutput, frame, registerPanel
+    };
+    scrollPane.setMaximumSize(SCROLLER_SIZE);
+    for (Component c : components) {
+      c.revalidate();
+      c.repaint();
+    }
+    frame.pack();
+    scrollPane.setMaximumSize(null);
+    Dimension size = frame.getSize();
+    frame.setMaximumSize(new Dimension(size.width, size.height));
+    frame.pack();
+    frame.setMaximumSize(null);
+
+    for (Component c : components) {
+      c.revalidate();
+      c.repaint();
     }
   }
 
@@ -719,10 +774,6 @@ public class ComputerUI implements FocusRequester {
     }
   }
 
-  private boolean newParagraph = true;
-  private JPanel memoryPanel;
-  private JPanel memoryCellsPanel;
-
   private void handlePrint(int value, boolean isAscii) {
     if (isAscii) {
       // Treat value as ASCII character and append to print label
@@ -808,15 +859,15 @@ public class ComputerUI implements FocusRequester {
     int numCols = includeLabel ? 7 : 6;
     cellPanel.setLayout(
         new MigLayout(
-            "gap 5 0,insets 0,wrap " + numCols,
+            "gap 5 0,insets 0,fillx,wrap " + numCols,
             // (includeLabel ? "[30px:30px:30px]" : "")
             //     +
             // "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
             // "[][][]"
             "[sg addr, right]"
                 + (includeLabel ? "[sg name, right]" : "")
-                + "[sg value, center, grow][sg hex, left][sg dec, left][sg ascii, left]10[sg"
-                + " instr, left, grow]",
+                + "[sg value, center][sg hex, left][sg dec, left][sg ascii, left]10[sg"
+                + " instr, left, grow, shrink]",
             "[]"));
 
     return cellPanel;
@@ -848,7 +899,7 @@ public class ComputerUI implements FocusRequester {
   private JLabel header(String text) {
     JLabel label = new JLabel(text);
     label.setFont(HEADER_FONT);
-    label.setBorder(null);
+    label.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
     return label;
   }
 }

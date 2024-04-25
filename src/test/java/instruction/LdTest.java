@@ -10,9 +10,9 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-public class LdTest {
+class LdTest {
   @Test
-  public void testLoadOperation() {
+  void testLoadOperation() {
     Memory mockMemory = mock(Memory.class);
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
@@ -36,12 +36,12 @@ public class LdTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     Ld loadOP1 = new Ld(Registry.nameToIdx(Registry.REG_OP1));
     Ld loadOP2 = new Ld(Registry.nameToIdx(Registry.REG_OP2));
     Ld loadR2 = new Ld(Registry.nameToIdx(Registry.REG_R2));
-    assertEquals(InstructionFactory.INST_NAME__LD + " (dst: OP1)", loadOP1.toString());
-    assertEquals(InstructionFactory.INST_NAME__LD + " (dst: OP2)", loadOP2.toString());
-    assertEquals(InstructionFactory.INST_NAME__LD + " (dst: R2)", loadR2.toString());
+    assertEquals(InstructionFactory.INST_NAME_LOD + " (dst: OP1)", loadOP1.toString());
+    assertEquals(InstructionFactory.INST_NAME_LOD + " (dst: OP2)", loadOP2.toString());
+    assertEquals(InstructionFactory.INST_NAME_LOD + " (dst: R2)", loadR2.toString());
   }
 }

@@ -11,30 +11,29 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-class PrTTest {
+class PrDTest {
   @Test
   void testPrintOperation() {
     ProgramCounter mockPC = mock(ProgramCounter.class);
     Registry mockRegistry = mock(Registry.class);
     IO mockIO = mock(IO.class);
 
-    char character = 'M'; // Character to be printed
-    int charCode = (int) character;
+    int value = 57; // Value to be printed
 
     // Assuming that value have been loaded into register PRT
-    when(mockRegistry.getRegister(Registry.REG_OUT)).thenReturn(charCode);
+    when(mockRegistry.getRegister(Registry.REG_OUT)).thenReturn(value);
 
-    PrT printInstruction = new PrT(0);
+    PrD printInstruction = new PrD(0);
     printInstruction.execute(null, mockRegistry, mockPC, mockIO);
 
     verify(mockRegistry).getRegister(Registry.REG_OUT);
     verify(mockPC, times(1)).next();
-    verify(mockIO).print(character);
+    verify(mockIO).print(value);
   }
 
   @Test
   void testToString() {
-    PrT printInstruction = new PrT(0);
-    assertEquals(InstructionFactory.INST_NAME_PRT, printInstruction.toString());
+    PrD printInstruction = new PrD(0);
+    assertEquals(InstructionFactory.INST_NAME_PRD, printInstruction.toString());
   }
 }

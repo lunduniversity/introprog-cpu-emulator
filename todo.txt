@@ -46,29 +46,21 @@
   [] Återställ fönsterpositioner och -storlekar
   [] Öka och minska textstorlek
 [] Menyn Help kan innehålla länkar till kursmaterial
-[] Döp om registret PRT till OUT
+[x] Döp om registret PRT till OUT
 [] Descriptions, tabellen måste innehålla instruktionens namn, e.g. LD -> Load, ST -> Store, etc. Fetstil.
-[] Ändra print-instruktionerna:
-  [] Print Text (PRT)     ascii symbols
-  [] Print Decimal (PRD)  decimal numbers
-  [] Print Loop (PRL)     ascii symbols
+[x] Ändra print-instruktionerna:
+  [x] Print Text (PRT)     ascii symbols
+  [x] Print Decimal (PRD)  decimal numbers
+  [x] Print Loop (PRL)     ascii symbols
 [] 
 [] Bug: Ladda värde till PC, rosa ram försvinner inte.
 [] Utöka rosa ram så att alla minnesceller som instruktionen kommer läsa markeras
-[] Lägg till utskrift för när sista minnescellen nås
-[] Lägg till bekräftelse dialog innan delete all data!
+[x] Lägg till utskrift för när sista minnescellen nås
+[x] Lägg till bekräftelse dialog innan delete all data!
 [] 
 [] 
 [] 
 
-
-Exception in thread "AWT-EventQueue-0" java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -6 is negative
-        at java.base/java.lang.System.arraycopy(Native Method)
-        at model.ByteStorage.moveCellsUp(ByteStorage.java:205)
-        at view.CellSelecter._moveCellsUpHelper(CellSelecter.java:44)
-        at view.AbstractSelecter.moveCellsUp(AbstractSelecter.java:264)
-        at view.ComputerMenu.lambda$new$12(ComputerMenu.java:86)
-        at util.LazySwing$1.actionPerformed(LazySwing.java:63)
 
 
 Labbinstrutioner

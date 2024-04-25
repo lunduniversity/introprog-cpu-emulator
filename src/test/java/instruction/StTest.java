@@ -46,8 +46,8 @@ class StTest {
     St storeOP1 = new St(Registry.nameToIdx(Registry.REG_OP1));
     St storeOP2 = new St(Registry.nameToIdx(Registry.REG_OP2));
     St storeR2 = new St(Registry.nameToIdx(Registry.REG_R2));
-    assertEquals(InstructionFactory.INST_NAME__ST + " (src: OP1)", storeOP1.toString());
-    assertEquals(InstructionFactory.INST_NAME__ST + " (src: OP2)", storeOP2.toString());
-    assertEquals(InstructionFactory.INST_NAME__ST + " (src: R2)", storeR2.toString());
+    assertEquals(InstructionFactory.INST_NAME_STO + " (src: OP1)", storeOP1.toString());
+    assertEquals(InstructionFactory.INST_NAME_STO + " (src: OP2)", storeOP2.toString());
+    assertEquals(InstructionFactory.INST_NAME_STO + " (src: R2)", storeR2.toString());
   }
 }

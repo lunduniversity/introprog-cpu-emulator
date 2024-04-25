@@ -1,6 +1,8 @@
 package model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -11,15 +13,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
-public class ProgramCounterTest {
+class ProgramCounterTest {
 
   private ProgramCounter pc;
-  private Registry registry;
+  private RegStorage registry;
 
   @BeforeEach
   void setUp() {
-    registry = mock(Registry.class);
-    pc = new ProgramCounter(registry);
+    registry = mock(RegStorage.class);
+    pc = new ProgramCounter(registry, 256);
   }
 
   @Test
@@ -56,16 +58,22 @@ public class ProgramCounterTest {
   }
 
   @Test
-  void testHaltSetPCToNegativeOne() {
-    when(registry.getRegister(Registry.REG_PC)).thenReturn(-1);
+  void testHaltSetsHalted() {
+    assertFalse(pc.isHalted(), "Initially, the program counter should not be halted.");
     pc.halt();
-    verify(registry).setRegister(Registry.REG_PC, -1);
+    assertTrue(pc.isHalted(), "After halting, the program counter should be halted.");
   }
 
   @Test
-  void testIsHaltedReadsPC() {
-    pc.halt();
-    verify(registry).getRegister(Registry.REG_PC);
+  void testIsHaltedReadsRawPC() {
+    pc.isHalted();
+    verify(registry).getRawValue(Registry.REG_PC);
+  }
+
+  @Test
+  void testIsHaltedThrowsExceptionIfOutOfBounds() {
+    when(registry.getRawValue(Registry.REG_PC)).thenReturn(256);
+    assertThrows(IllegalStateException.class, () -> pc.isHalted());
   }
 
   @Test

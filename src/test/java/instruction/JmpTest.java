@@ -9,9 +9,9 @@ import model.ProgramCounter;
 import model.Registry;
 import org.junit.jupiter.api.Test;
 
-public class JmpTest {
+class JmpTest {
   @Test
-  public void testJump() {
+  void testJump() {
     Registry mockRegistry = mock(Registry.class);
     ProgramCounter mockPC = mock(ProgramCounter.class);
 
@@ -30,7 +30,7 @@ public class JmpTest {
   }
 
   @Test
-  public void testToString() {
+  void testToString() {
     Jmp jumpOP1 = new Jmp(Registry.nameToIdx(Registry.REG_OP1));
     Jmp jumpRES = new Jmp(Registry.nameToIdx(Registry.REG_RES));
     Jmp jumpR3 = new Jmp(Registry.nameToIdx(Registry.REG_R3));

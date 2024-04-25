@@ -8,7 +8,7 @@ import model.Registry;
 public class St extends Instruction {
 
   public St(int operand) {
-    super(InstructionFactory.INST_NAME__ST, operand);
+    super(InstructionFactory.INST_NAME_STO, operand);
   }
 
   @Override

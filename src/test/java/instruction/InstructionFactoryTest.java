@@ -11,18 +11,18 @@ import model.ProgramCounter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class InstructionFactoryTest {
+class InstructionFactoryTest {
 
   private InstructionFactory factory;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     // Create a new instance of InstructionFactory
     factory = new InstructionFactory();
   }
 
   @Test
-  public void testIsInstructionWithValidCodes() {
+  void testIsInstructionWithValidCodes() {
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_NOP),
         "INST_NOP should be recognized as an instruction.");
@@ -39,19 +39,19 @@ public class InstructionFactoryTest {
         factory.isInstruction(InstructionFactory.INST_MOV),
         "INST_MOV should be recognized as an instruction.");
     assertTrue(
-        factory.isInstruction(InstructionFactory.INST__LD),
+        factory.isInstruction(InstructionFactory.INST_LOD),
         "INST__LD should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_LDA),
         "INST_LDA should be recognized as an instruction.");
     assertTrue(
-        factory.isInstruction(InstructionFactory.INST__ST),
+        factory.isInstruction(InstructionFactory.INST_STO),
         "INST__ST should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_JMP),
         "INST_JMP should be recognized as an instruction.");
     assertTrue(
-        factory.isInstruction(InstructionFactory.INST__JE),
+        factory.isInstruction(InstructionFactory.INST_JEQ),
         "INST__JE should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_JNE),
@@ -68,7 +68,7 @@ public class InstructionFactoryTest {
   }
 
   @Test
-  public void testIsInstructionWithInvalidCode() {
+  void testIsInstructionWithInvalidCode() {
     int invalidCode = 0xF0; // Assuming 0xF0 is not defined as an instruction
     assertFalse(
         factory.isInstruction(invalidCode),
@@ -76,7 +76,7 @@ public class InstructionFactoryTest {
   }
 
   @Test
-  public void testCreateInstructionForAllValidCodes() {
+  void testCreateInstructionForAllValidCodes() {
     // Test each instruction creation
     assertInstanceOf(
         Nop.class,
@@ -100,7 +100,7 @@ public class InstructionFactoryTest {
         "Should create an instance of Mov.");
     assertInstanceOf(
         Ld.class,
-        factory.createInstruction(InstructionFactory.INST__LD),
+        factory.createInstruction(InstructionFactory.INST_LOD),
         "Should create an instance of Ld.");
     assertInstanceOf(
         LdA.class,
@@ -108,7 +108,7 @@ public class InstructionFactoryTest {
         "Should create an instance of Ld.");
     assertInstanceOf(
         St.class,
-        factory.createInstruction(InstructionFactory.INST__ST),
+        factory.createInstruction(InstructionFactory.INST_STO),
         "Should create an instance of St.");
     assertInstanceOf(
         Jmp.class,
@@ -116,7 +116,7 @@ public class InstructionFactoryTest {
         "Should create an instance of Jmp.");
     assertInstanceOf(
         Je.class,
-        factory.createInstruction(InstructionFactory.INST__JE),
+        factory.createInstruction(InstructionFactory.INST_JEQ),
         "Should create an instance of Je.");
     assertInstanceOf(
         Jne.class,
@@ -137,7 +137,7 @@ public class InstructionFactoryTest {
   }
 
   @Test
-  public void testCreateInstructionWithInvalidCode() {
+  void testCreateInstructionWithInvalidCode() {
     // Factory should return a null-object for invalid codes.
     // The null objects should be printable but have no functionality.
     int invalidCode = 0xF0; // Assuming 0xF0 is not defined as an instruction

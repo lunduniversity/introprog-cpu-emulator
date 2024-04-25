@@ -59,8 +59,8 @@ class JeTest {
     Je jumpOP1 = new Je(Registry.nameToIdx(Registry.REG_OP1));
     Je jumpRES = new Je(Registry.nameToIdx(Registry.REG_RES));
     Je jumpR3 = new Je(Registry.nameToIdx(Registry.REG_R3));
-    assertEquals(InstructionFactory.INST_NAME__JE + " (dst: OP1)", jumpOP1.toString());
-    assertEquals(InstructionFactory.INST_NAME__JE + " (dst: RES)", jumpRES.toString());
-    assertEquals(InstructionFactory.INST_NAME__JE + " (dst: R3)", jumpR3.toString());
+    assertEquals(InstructionFactory.INST_NAME_JEQ + " (dst: OP1)", jumpOP1.toString());
+    assertEquals(InstructionFactory.INST_NAME_JEQ + " (dst: RES)", jumpRES.toString());
+    assertEquals(InstructionFactory.INST_NAME_JEQ + " (dst: R3)", jumpR3.toString());
   }
 }

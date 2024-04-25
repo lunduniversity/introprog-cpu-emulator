@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import util.IntTuple;
 import util.Range;
 
 public class ByteStorage implements Memory {
@@ -51,7 +52,7 @@ public class ByteStorage implements Memory {
 
   @Override
   public int getValueAt(int address) {
-    return store[address & 0xFF];
+    return store[address] & 0xFF;
   }
 
   public int getRawValueAt(int address) {
@@ -133,8 +134,7 @@ public class ByteStorage implements Memory {
       if (store[i] == 0) {
         i += countZeros(i, zeroCounts);
       } else {
-        chunks.add(copyNonZeroBytes(i));
-        i += chunks.get(chunks.size() - 1).length;
+        i += copyNonZeroBytes(i, chunks);
       }
     }
 
@@ -150,7 +150,7 @@ public class ByteStorage implements Memory {
     return count;
   }
 
-  private byte[] copyNonZeroBytes(int startIndex) {
+  private int copyNonZeroBytes(int startIndex, List<byte[]> chunks) {
     int count = 0;
     while (startIndex + count < store.length && store[startIndex + count] != 0) {
       count++;
@@ -159,7 +159,8 @@ public class ByteStorage implements Memory {
     for (int j = 0; j < count; j++) {
       chunk[j] = (byte) store[startIndex + j];
     }
-    return chunk;
+    chunks.add(chunk);
+    return count;
   }
 
   private String formatBase64(List<Integer> zeroCounts, List<byte[]> chunks) {
@@ -181,11 +182,10 @@ public class ByteStorage implements Memory {
     }
 
     // Build the encoded string
-    while (base64It.hasNext()) {
+    base64.append(base64It.next());
+    while (base64It.hasNext() && zeroIt.hasNext()) {
+      base64.append(":").append(zeroIt.next()).append(":");
       base64.append(base64It.next());
-      if (zeroIt.hasNext()) {
-        base64.append(":").append(zeroIt.next()).append(":");
-      }
     }
 
     return base64.toString();
@@ -205,7 +205,9 @@ public class ByteStorage implements Memory {
         offset += parseEmptySpaces(base64, i);
         i = base64.indexOf(":", i + 1) + 1; // Move to the character after the second ':'
       } else {
-        i = decodeAndStore(base64, i, offset, decoder);
+        IntTuple diffs = decodeAndStore(base64, i, offset, decoder);
+        i += diffs.a();
+        offset += diffs.b();
       }
     }
 
@@ -217,13 +219,27 @@ public class ByteStorage implements Memory {
     return Integer.parseInt(base64.substring(start + 1, end));
   }
 
-  private int decodeAndStore(String base64, int start, int offset, Decoder decoder) {
+  /**
+   * Decode a chunk of base64 data and store it in the storage array.
+   *
+   * @param base64
+   * @param start
+   * @param offset
+   * @param decoder
+   * @return A tuple containing the length of the chunk (int the base64 string) and the number of
+   *     decoded bytes stored.
+   */
+  private IntTuple decodeAndStore(String base64, int start, int offset, Decoder decoder) {
     int end = base64.indexOf(":", start);
     if (end == -1) end = base64.length();
     String chunk = base64.substring(start, end);
     byte[] decoded = decoder.decode(chunk);
-    System.arraycopy(decoded, 0, store, offset, decoded.length);
-    return end;
+    for (int j = 0; j < decoded.length; j++) {
+      // Cannot use system.arraycopy because of type mismatch.
+      // Instead, copy manually with implicit cast.
+      store[offset + j] = decoded[j];
+    }
+    return IntTuple.of(end - start, decoded.length);
   }
 
   @Override
