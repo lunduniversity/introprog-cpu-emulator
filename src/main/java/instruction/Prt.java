@@ -22,4 +22,14 @@ public class PrT extends Instruction {
   protected String printOperand() {
     return "";
   }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {pc.getCurrentIndex()};
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {Registry.nameToIdx(Registry.REG_OUT)};
+  }
 }

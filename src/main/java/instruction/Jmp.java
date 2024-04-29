@@ -22,4 +22,15 @@ public class Jmp extends Instruction {
   protected String printOperand() {
     return String.format("(dst: %s)", Registry.idxToName(operand));
   }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    int dst = reg.getValueAt(operand);
+    return new int[] {pc.getCurrentIndex(), dst};
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {operand};
+  }
 }

@@ -1,5 +1,6 @@
 package view;
 
+
 import instruction.InstructionFactory;
 import java.awt.Color;
 import java.awt.Container;
@@ -20,11 +21,11 @@ import net.miginfocom.swing.MigLayout;
 public abstract class AbstractCell {
 
   private static final Border PC_FOCUS_BORDER = BorderFactory.createLineBorder(Color.MAGENTA, 2);
-  private static final Border PC_NO_FOCUS_BORDER =
-      BorderFactory.createEmptyBorder(2, 2, 2, 2); // UIManager.getBorder("TextField.border");
+  private static final Border PC_NO_FOCUS_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
 
   private static final Color DEFAULT_BG_COLOR = UIManager.getColor("TextField.background");
   private static final Color HIGHLIGHT_BG_COLOR = new Color(255, 255, 200);
+  private static final Color HIGHLIGHT_PC_BG_COLOR = new Color(1.0f, 0.1f, 1.0f, 0.2f);
   private static final Color HIGHLIGHT_ERROR_BG_COLOR = new Color(240, 150, 150);
   private static final Color HIGHLIGHT_COMPLETED_BG_COLOR = new Color(150, 240, 150);
   private static final Color SELECT_BG_COLOR = new Color(200, 255, 200);
@@ -265,6 +266,10 @@ public abstract class AbstractCell {
     }
   }
 
+  private void setCellColor(Color color) {
+    bitPanel.setBackground(color);
+  }
+
   public AbstractCell setBits(int start, int end, boolean value) {
     for (int i = start; i < end; i++) {
       bits[i].setText(value ? "1" : "0");
@@ -287,7 +292,12 @@ public abstract class AbstractCell {
     bitPanel.setBorder(PC_FOCUS_BORDER);
   }
 
+  public void setProgramCounterHighlight() {
+    setCellColor(HIGHLIGHT_PC_BG_COLOR);
+  }
+
   public void clearProgramCounterFocus() {
     bitPanel.setBorder(PC_NO_FOCUS_BORDER);
+    setCellColor(DEFAULT_BG_COLOR);
   }
 }

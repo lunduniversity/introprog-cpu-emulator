@@ -29,4 +29,24 @@ public class Je extends Instruction {
   protected String printOperand() {
     return String.format("(dst: %s)", Registry.idxToName(operand));
   }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    int a = reg.getRegister(Registry.REG_OP1);
+    int b = reg.getRegister(Registry.REG_OP2);
+
+    if (a == b) {
+      int dst = reg.getValueAt(operand);
+      return new int[] {pc.getCurrentIndex(), dst};
+    }
+
+    return new int[] {pc.getCurrentIndex()};
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {
+      Registry.nameToIdx(Registry.REG_OP1), Registry.nameToIdx(Registry.REG_OP2), operand
+    };
+  }
 }

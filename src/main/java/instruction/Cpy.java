@@ -1,6 +1,7 @@
 package instruction;
 
 import io.IO;
+import java.util.ArrayList;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
@@ -42,6 +43,10 @@ public class Cpy extends Instruction {
     }
   }
 
+  private int getSrcType(int operand) {
+    return (operand >> 2) & 0x3;
+  }
+
   private int getSrcValue(int srcType, int src, Memory mem, Registry reg) {
     if (srcType == 0b01) {
       return reg.getValueAt(src);
@@ -54,5 +59,48 @@ public class Cpy extends Instruction {
   @Override
   protected String printOperand() {
     return String.format("(%s | %s)", parseAddrMode(operand >> 2), parseAddrMode(operand));
+  }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    int cur = pc.getCurrentIndex();
+    int srcType = (operand >> 2) & 0x3;
+    int destType = (operand) & 0x3;
+
+    ArrayList<Integer> indices = new ArrayList<>();
+    indices.add(cur);
+    indices.add(cur + 1);
+    indices.add(cur + 2);
+
+    if (srcType == 0b10) {
+      indices.add(mem.getValueAt(cur + 1));
+    }
+    if (destType == 0b10) {
+      indices.add(mem.getValueAt(cur + 2));
+    }
+
+    return indices.stream().mapToInt(i -> i).toArray();
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    int cur = pc.getCurrentIndex();
+    int srcType = (operand >> 2) & 0x3;
+    int destType = (operand) & 0x3;
+
+    ArrayList<Integer> indices = new ArrayList<>();
+    if (srcType == 0b01) {
+      int regIdx = mem.getValueAt(cur + 1);
+      if (Registry.isValidIndex(regIdx)) {
+        indices.add(regIdx);
+      }
+    }
+    if (destType == 0b01) {
+      int regIdx = mem.getValueAt(cur + 2);
+      if (Registry.isValidIndex(regIdx)) {
+        indices.add(regIdx);
+      }
+    }
+    return indices.stream().mapToInt(i -> i).toArray();
   }
 }

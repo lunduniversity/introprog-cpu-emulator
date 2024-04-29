@@ -5,6 +5,8 @@ import static util.LazySwing.colorToHex;
 import static util.LazySwing.inv;
 import static util.LazySwing.runSafely;
 
+import instruction.Instruction;
+import instruction.InstructionFactory;
 import io.IOListener;
 import io.ObservableIO;
 import java.awt.AWTKeyStroke;
@@ -17,20 +19,20 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.*;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -41,6 +43,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.text.BadLocationException;
@@ -118,12 +121,17 @@ public class ComputerUI implements FocusRequester {
   private boolean newParagraph = true;
   private JPanel registerPanel;
 
+  private InstructionFactory factory;
+  private JTextArea lblDescription;
+  private JScrollPane outputScroll;
+
   public ComputerUI(Memory memory, CPU cpu, ObservableIO io) {
     this.memory = memory;
     this.cpu = cpu;
     this.pc = cpu.getProgramCounter();
     this.registry = cpu.getRegistry();
     this.io = io;
+    this.factory = new InstructionFactory();
 
     final SelectionPainter cellPainter =
         (address, isSelected, caretPos, active) ->
@@ -148,6 +156,7 @@ public class ComputerUI implements FocusRequester {
     scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     frame.setLocationRelativeTo(null);
     frame.setVisible(true);
+    synchronizeColumnWidths();
 
     // Open the Ascii Table and Instructins Description frame by default.
     // toggleAsciiTable(true);
@@ -172,7 +181,7 @@ public class ComputerUI implements FocusRequester {
           }
         });
     frame.setTitle("SeaPeaEwe");
-    frame.getContentPane().setLayout(new MigLayout("", "[]", "[]"));
+    frame.getContentPane().setLayout(new MigLayout("fillx", "[]", "[]"));
 
     fileHandler =
         new FileHandler(
@@ -185,7 +194,7 @@ public class ComputerUI implements FocusRequester {
     lblComputerHeader.setFocusable(false);
     frame.getContentPane().add(lblComputerHeader, "cell 0 0 3 1");
 
-    JTextArea lblDescription =
+    lblDescription =
         new JTextArea(
             String.format(
                 "A simple emulator of a CPU and memory. This computer has an 8-bit processor,"
@@ -199,7 +208,7 @@ public class ComputerUI implements FocusRequester {
     lblDescription.setBorder(null);
     lblDescription.setBackground(UIManager.getColor("Label.background"));
     lblDescription.setFocusable(false);
-    frame.getContentPane().add(lblDescription, "cell 0 1 3 1, grow");
+    frame.getContentPane().add(lblDescription, "cell 0 1 3 1, grow, shrink");
 
     Component rigidArea = Box.createRigidArea(new Dimension(20, 10));
     frame.getContentPane().add(rigidArea, "cell 0 2");
@@ -211,11 +220,6 @@ public class ComputerUI implements FocusRequester {
     // Memory cells
     {
       memoryCellsPanel = createCellPanel(false);
-      // new JPanel(
-      //     new MigLayout(
-      //         "wrap 6, gap 0 0, insets 0, fill",
-      //         "[sg addr][sg value][sg hex][sg dec][sg ascii][sg instr]",
-      //         "[]"));
       memoryCellsPanel.setFocusable(true);
       scrollPane =
           new JScrollPane(
@@ -257,11 +261,14 @@ public class ComputerUI implements FocusRequester {
       appendHeaderToCellPanel(memoryCellsPanel, null, false);
     }
 
+    // Divider between memory and registers
+    frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 1 3");
+
     // Registers and program counter
     {
       registerPanel = createCellPanel(true);
       appendHeaderToCellPanel(registerPanel, "Registers", true);
-      frame.getContentPane().add(registerPanel, "cell 1 3, top, left, grow, shrink");
+      frame.getContentPane().add(registerPanel, "cell 2 3, top, left, grow, shrink");
 
       // JPanel regCellsPanel =
       //     new JPanel(new MigLayout("flowy, gap 0 0, insets 0, fill", "[grow]", "[grow]"));
@@ -314,35 +321,61 @@ public class ComputerUI implements FocusRequester {
               public void onProgramCounterChanged(int oldIdx, int newIdx) {
                 inv(
                     () -> {
-                      if (oldIdx >= 0 && oldIdx < memory.size()) {
-                        memCells[oldIdx].clearProgramCounterFocus();
+                      for (Cell c : memCells) {
+                        c.clearProgramCounterFocus();
                       }
+                      for (Register r : regCells) {
+                        r.clearProgramCounterFocus();
+                      }
+
                       pcCell.setValue(newIdx, isExecuting.get());
                       programCounterFocusIdx.set(newIdx);
                       if (newIdx >= 0 && newIdx < memory.size()) {
                         memCells[newIdx].setProgramCounterFocus();
+                        memCells[newIdx].setProgramCounterHighlight();
+                        // Same for other rows
+                        Instruction instr =
+                            factory.createInstruction(memory.getValueAt(pc.getCurrentIndex()));
+                        int[] memFocus = instr.getAffectedMemoryCells(memory, registry, pc);
+                        for (int idx : memFocus) {
+                          memCells[idx].setProgramCounterHighlight();
+                        }
+                        int[] regFocus = instr.getAffectedRegisters(memory, registry, pc);
+                        for (int idx : regFocus) {
+                          regCells[idx].setProgramCounterHighlight();
+                        }
+
                       } else {
                         pcCell.highlightError();
                       }
+                      memoryCellsPanel.revalidate();
+                      memoryCellsPanel.repaint();
+                      registerPanel.revalidate();
+                      registerPanel.repaint();
                     });
               }
 
               public void onProgramCounterHalted() {
-                pcCell.highlightCompleted();
-                appendInfo("Program execution completed.");
+                inv(
+                    () -> {
+                      pcCell.highlightCompleted();
+                      registerPanel.revalidate();
+                      registerPanel.repaint();
+                      appendInfo("Program execution completed.");
+                    });
               }
             });
       }
     }
 
     // Divider between registers and controls
-    frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 1 4, top");
+    frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 2 4, top");
 
     // Execution controls
     {
       controlPanel = new JPanel();
       controlPanel.setBorder(BorderFactory.createTitledBorder(null, "Controls", 0, 0, null));
-      frame.getContentPane().add(controlPanel, "cell 1 5, top, grow, shrink");
+      frame.getContentPane().add(controlPanel, "cell 2 5, top, grow, shrink");
       controlPanel.setLayout(new MigLayout("fillx", "[][][][][grow,shrink]", "[]"));
 
       JLabel lblControlHeader = new JLabel("Controls");
@@ -401,20 +434,21 @@ public class ComputerUI implements FocusRequester {
         txtOutput = new JTextPane();
         txtOutput.setContentType("text/html");
         txtOutput.setEditorKit(new HTMLEditorKit());
-        txtOutput.setFocusable(false);
+        txtOutput.setFocusable(true);
         // txtOutput.setOpaque(false);
         txtOutput.setEditable(false);
         txtOutput.setMargin(new Insets(0, 0, 0, 0));
         txtOutput.setFont(lblOutput.getFont());
         txtOutput.setBorder(null);
         txtOutput.setText(EMPTY_HTML);
-        JScrollPane outputScroll =
+        txtOutput.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        outputScroll =
             new JScrollPane(
                 txtOutput,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         outputScroll.setMinimumSize(new Dimension(150, 150));
-        controlPanel.add(outputScroll, "cell 0 4 5 1, grow, shrink, top, left");
+        controlPanel.add(outputScroll, "cell 0 4 5 1, grow, top, left");
 
         io.addListener(
             new IOListener() {
@@ -492,46 +526,65 @@ public class ComputerUI implements FocusRequester {
     Component[] headerComponents =
         Arrays.stream(memoryPanel.getComponents())
             .filter(JLabel.class::isInstance)
+            .skip(1) // Ingore the title
             .toArray(JLabel[]::new);
-    Component[] bodyComponents = new Component[headerComponents.length];
-    int numLabels = 0;
-    for (int i = 0; numLabels < headerComponents.length; i++) {
-      Component c = memoryCellsPanel.getComponent(i);
-      if (c instanceof JLabel || c instanceof JPanel) {
-        bodyComponents[numLabels++] = c;
-      } else {
-        System.out.println("Skipping component: " + c.getClass().getName());
+
+    int[] maxWidths = new int[headerComponents.length];
+    int maxHeight = 0;
+    for (int i = 0; i < memoryCellsPanel.getComponentCount(); i++) {
+      int compWidth = memoryCellsPanel.getComponent(i).getPreferredSize().width;
+      int compHeight = memoryCellsPanel.getComponent(i).getPreferredSize().height;
+      int currentMax = maxWidths[i % maxWidths.length];
+      if (compWidth > currentMax) {
+        maxWidths[i % maxWidths.length] = compWidth;
+      }
+      if (compHeight > maxHeight) {
+        maxHeight = compHeight;
       }
     }
 
     for (int i = 0; i < headerComponents.length; i++) {
-      // System.out.println("Header component: " + headerComponents[i].getText());
-      // System.out.println("Body component: " + bodyComponents[i].getText());
-      headerComponents[i].setPreferredSize(
-          new Dimension(
-              bodyComponents[i].getPreferredSize().width,
-              headerComponents[i].getPreferredSize().height));
-      // headerComponents[i].setSize(bodyComponents[i].getWidth(), headerComponents[i].getHeight());
+      Dimension headerSize = new Dimension(maxWidths[i], maxHeight);
+      headerComponents[i].setMinimumSize(headerSize);
+      headerComponents[i].setPreferredSize(headerSize);
     }
     memoryPanel.revalidate();
     memoryPanel.repaint();
   }
 
-  private void autoResizeFrame() {
+  void autoResizeFrame() {
     Component[] components = {
-      memoryPanel, controlPanel, scrollPane, txtOutput, frame, registerPanel
+      memoryPanel, controlPanel, scrollPane, txtOutput, outputScroll, frame, registerPanel
     };
+
+    // Lock memory to small height and call pack() to adjust the frame size
+    // Lock description to small width and call pack() to adjust the frame size
     scrollPane.setMaximumSize(SCROLLER_SIZE);
+    lblDescription.setMaximumSize(new Dimension(400, Integer.MAX_VALUE));
+    for (Component c : components) {
+      c.revalidate();
+      c.repaint();
+    }
+    frame.pack();
+
+    lblDescription.setMaximumSize(null);
     for (Component c : components) {
       c.revalidate();
       c.repaint();
     }
     frame.pack();
     scrollPane.setMaximumSize(null);
+
+    // Set the maximum size of the control panel to the width of the register panel
+    controlPanel.setMaximumSize(
+        new Dimension(registerPanel.getPreferredSize().width, Integer.MAX_VALUE));
+
     Dimension size = frame.getSize();
-    frame.setMaximumSize(new Dimension(size.width, size.height));
+    frame.setMaximumSize(new Dimension((int) (size.width * 1.1), size.height));
     frame.pack();
     frame.setMaximumSize(null);
+
+    synchronizeColumnWidths();
 
     for (Component c : components) {
       c.revalidate();
@@ -635,42 +688,47 @@ public class ComputerUI implements FocusRequester {
   }
 
   void handleStep() {
-    try {
-      isExecuting.set(true);
-      resetCellColors();
-      cpu.step();
-    } catch (Exception ex) {
-      appendError(ex);
-    } finally {
-      inv(() -> isExecuting.set(false));
-    }
+    isExecuting.set(true);
+    resetCellColors();
+    executor.schedule(
+        () -> {
+          try {
+            cpu.step();
+          } catch (Exception ex) {
+            appendError(ex);
+          } finally {
+            inv(() -> isExecuting.set(false));
+          }
+        },
+        0,
+        TimeUnit.MILLISECONDS);
   }
 
   void handleRun() {
-    try {
-      isExecuting.set(true);
-      resetCellColors();
-      cpu.run();
-    } catch (Exception ex) {
-      appendError(ex);
-    } finally {
-      inv(() -> isExecuting.set(false));
-    }
+    isExecuting.set(true);
+    resetCellColors();
+    executor.schedule(
+        () -> {
+          try {
+            cpu.run();
+          } catch (Exception ex) {
+            inv(() -> appendError(ex));
+          } finally {
+            inv(() -> isExecuting.set(false));
+          }
+        },
+        0,
+        TimeUnit.MILLISECONDS);
   }
 
   void handleResetState() {
-    pc.setCurrentIndex(0);
+    pc.reset();
     registry.reset();
     inv(this::resetCellColors);
   }
 
   void handleClearOutput() {
-    // txtOutput.setContentType("text/plain");
-    // txtOutput.setText("");
-    // txtOutput.setContentType("text/html");
-
     txtOutput.setText("");
-
     controlPanel.revalidate();
     controlPanel.repaint();
   }
@@ -867,7 +925,7 @@ public class ComputerUI implements FocusRequester {
             "[sg addr, right]"
                 + (includeLabel ? "[sg name, right]" : "")
                 + "[sg value, center][sg hex, left][sg dec, left][sg ascii, left]10[sg"
-                + " instr, left, grow, shrink]",
+                + " instr, left, grow, shrink, pref:100lp]10",
             "[]"));
 
     return cellPanel;
@@ -887,7 +945,7 @@ public class ComputerUI implements FocusRequester {
     if (includeLabel) {
       cellPanel.add(header("Name"));
     }
-    cellPanel.add(header("Value"));
+    cellPanel.add(header("Value", SwingConstants.CENTER));
     cellPanel.add(header("Hex"));
     cellPanel.add(header("Dec"));
     cellPanel.add(header("Ascii"));
@@ -897,9 +955,12 @@ public class ComputerUI implements FocusRequester {
   }
 
   private JLabel header(String text) {
-    JLabel label = new JLabel(text);
+    return header(text, SwingConstants.LEADING);
+  }
+
+  private JLabel header(String text, int alignment) {
+    JLabel label = new JLabel(text, alignment);
     label.setFont(HEADER_FONT);
-    label.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
     return label;
   }
 }

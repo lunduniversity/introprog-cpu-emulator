@@ -20,4 +20,15 @@ public class Ld extends Instruction {
   protected String printOperand() {
     return String.format("(dst: %s)", Registry.idxToName(operand));
   }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    int cur = pc.getCurrentIndex();
+    return new int[] {cur, cur + 1};
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {operand};
+  }
 }

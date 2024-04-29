@@ -21,4 +21,14 @@ public class Hlt extends Instruction {
   protected String printOperand() {
     return "";
   }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {pc.getCurrentIndex()};
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[0];
+  }
 }

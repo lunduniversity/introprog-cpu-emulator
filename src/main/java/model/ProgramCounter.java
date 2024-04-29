@@ -50,11 +50,11 @@ public class ProgramCounter {
   }
 
   public boolean isHalted() {
-    int rawPC = registry.getRawValue(Registry.REG_PC);
-    if (rawPC >= memorySize) {
-      notifyChanged(rawPC, rawPC);
-      throw new IllegalStateException("Reached end of memory.");
-    }
+    // int rawPC = registry.getRawValue(Registry.REG_PC);
+    // if (rawPC >= memorySize) {
+    //   notifyChanged(rawPC, rawPC);
+    //   throw new IllegalStateException("Reached end of memory.");
+    // }
     return isHalted;
   }
 

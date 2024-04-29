@@ -53,7 +53,7 @@
   [x] Print Decimal (PRD)  decimal numbers
   [x] Print Loop (PRL)     ascii symbols
 [] 
-[] Bug: Ladda värde till PC, rosa ram försvinner inte.
+[x] Bug: Ladda värde till PC, rosa ram försvinner inte.
 [] Utöka rosa ram så att alla minnesceller som instruktionen kommer läsa markeras
 [x] Lägg till utskrift för när sista minnescellen nås
 [x] Lägg till bekräftelse dialog innan delete all data!

@@ -31,4 +31,8 @@ public interface Registry extends ObservableStorage {
     }
     throw new IllegalArgumentException("Invalid register name: " + name);
   }
+
+  static boolean isValidIndex(int idx) {
+    return idx >= 0 && idx < NUM_REGISTERS;
+  }
 }

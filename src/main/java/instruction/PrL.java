@@ -1,6 +1,7 @@
 package instruction;
 
 import io.IO;
+import java.util.ArrayList;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
@@ -26,7 +27,7 @@ public class PrL extends Instruction {
     reg.setRegister(Registry.REG_OUT, character);
     io.print(character);
 
-    if (start == end) {
+    if (start >= end) {
       pc.next();
     } else {
       reg.setRegister(Registry.REG_OP1, start + 1);
@@ -36,5 +37,29 @@ public class PrL extends Instruction {
   @Override
   protected String printOperand() {
     return "";
+  }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    int cur = pc.getCurrentIndex();
+    int start = reg.getRegister(Registry.REG_OP1);
+    int end = reg.getRegister(Registry.REG_OP2);
+
+    ArrayList<Integer> indices = new ArrayList<>();
+    indices.add(cur);
+    if (start >= end) {
+      indices.add(cur + 1);
+    } else {
+      for (int i = start; i <= end; i++) {
+        indices.add(i);
+      }
+    }
+
+    return new int[] {pc.getCurrentIndex()};
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {Registry.nameToIdx(Registry.REG_OUT)};
   }
 }

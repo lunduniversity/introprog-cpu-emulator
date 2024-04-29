@@ -2,6 +2,7 @@ package view;
 
 import static util.LazySwing.decreaseFontSize;
 import static util.LazySwing.increaseFontSize;
+import static util.LazySwing.inv;
 import static util.LazySwing.resetFontSize;
 import static util.LazySwing.runSafely;
 
@@ -165,10 +166,26 @@ public class ComputerMenu extends JMenuBar {
         mf.item(
             "Increase font size",
             new String[] {"ctrl PLUS", "ctrl ADD", "ctrl shift EQUALS"},
-            e -> increaseFontSize(frame));
+            e -> {
+              increaseFontSize(frame);
+              inv(ui::autoResizeFrame);
+            });
     JMenuItem itmDecFontSize =
-        mf.item("Decrease font size", "ctrl MINUS", e -> decreaseFontSize(frame));
-    JMenuItem itmResetFontSize = mf.item("Reset font size", "ctrl 0", e -> resetFontSize(frame));
+        mf.item(
+            "Decrease font size",
+            "ctrl MINUS",
+            e -> {
+              decreaseFontSize(frame);
+              inv(ui::autoResizeFrame);
+            });
+    JMenuItem itmResetFontSize =
+        mf.item(
+            "Reset font size",
+            "ctrl 0",
+            e -> {
+              resetFontSize(frame);
+              inv(ui::autoResizeFrame);
+            });
     menuView.add(itmIncFontSize);
     menuView.add(itmDecFontSize);
     menuView.add(itmResetFontSize);

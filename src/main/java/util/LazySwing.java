@@ -140,10 +140,9 @@ public class LazySwing {
         updateComponentTreeUI(child, increment);
       }
     }
-    if (comp.getFont() != null) {
-      Font font = comp.getFont();
-      Font newFont = font.deriveFont((float) (font.getSize() + increment));
-      comp.setFont(newFont);
-    }
+
+    Font font = comp.getFont();
+    Font newFont = font.deriveFont((float) (font.getSize() + increment));
+    comp.setFont(newFont);
   }
 }

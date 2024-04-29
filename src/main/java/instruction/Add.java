@@ -23,4 +23,18 @@ public class Add extends Instruction {
   protected String printOperand() {
     return "";
   }
+
+  @Override
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {pc.getCurrentIndex()};
+  }
+
+  @Override
+  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    return new int[] {
+      Registry.nameToIdx(Registry.REG_OP1),
+      Registry.nameToIdx(Registry.REG_OP2),
+      Registry.nameToIdx(Registry.REG_RES)
+    };
+  }
 }

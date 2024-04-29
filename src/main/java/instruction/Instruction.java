@@ -40,6 +40,22 @@ public abstract class Instruction {
   protected abstract String printOperand();
 
   /**
+   * Get the indices of all memory cells affected by this instruction. This is used to highlight the
+   * affected memory cells in the GUI.
+   *
+   * @return an array of memory cell indices, which will always include at least itself.
+   */
+  public abstract int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc);
+
+  /**
+   * Get the indices of all registers affected by this instruction. This is used to highlight the
+   * affected registers in the GUI.
+   *
+   * @return an array of register indices, which may be empty.
+   */
+  public abstract int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc);
+
+  /**
    * Parse the addressing mode of an operand. The mode is a 2-bit value, and must occupy the last
    * two bits of the operand. 00 = VAL (constant), 01 = REG (register), 10 = MEM (memory).
    *
