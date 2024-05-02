@@ -25,7 +25,7 @@ public class PrL extends Instruction {
 
     int character = mem.getValueAt(start);
     reg.setRegister(Registry.REG_OUT, character);
-    io.print(character);
+    io.print((char) character);
 
     if (start >= end) {
       pc.next();

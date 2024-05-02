@@ -9,12 +9,15 @@ import static util.LazySwing.runSafely;
 import java.awt.event.ItemEvent;
 import java.util.List;
 import java.util.stream.IntStream;
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
+import util.ExecutionSpeed;
 import util.FileHandler;
 import util.MenuFactory;
 import util.TemplatesHandler;
@@ -154,12 +157,29 @@ public class ComputerMenu extends JMenuBar {
 
     // Run menu items (include "step" and "run" options)
     JMenuItem itmStep = mf.item("Step", "SPACE", e -> ui.handleStep());
-    JMenuItem itmRun = mf.item("Run", "ctrl SPACE", e -> ui.handleRun());
+    JMenuItem itmRun = mf.item("Run/Stop", "ctrl SPACE", e -> ui.handleRunAndStop());
     JMenuItem itmResetState = mf.item("Reset", "ctrl R", e -> ui.handleResetState());
+    JMenuItem itmClearOutput = mf.item("Clear output", "ctrl T", e -> ui.handleClearOutput());
+    JMenu menuSpeed = mf.menu("Execution speed (step period)", "");
+    ButtonGroup group = new ButtonGroup();
+    ExecutionSpeed[] speeds = ExecutionSpeed.values();
+    for (int i = 0; i < speeds.length; i++) {
+      ExecutionSpeed speed = speeds[i];
+      JRadioButtonMenuItem itmSpeed =
+          mf.rButton(speed.toString(), "ctrl " + (i + 1), e -> ui.setExecutionSpeed(speed));
+      if (ui.getExecutionSpeed().equals(speed)) {
+        itmSpeed.setSelected(true);
+      }
+      menuSpeed.add(itmSpeed);
+      group.add(itmSpeed);
+    }
 
     menuExecute.add(itmStep);
     menuExecute.add(itmRun);
     menuExecute.add(itmResetState);
+    menuExecute.add(itmClearOutput);
+    menuExecute.addSeparator();
+    menuExecute.add(menuSpeed);
 
     // View menu items
     JMenuItem itmIncFontSize =

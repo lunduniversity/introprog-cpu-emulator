@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.ActionMap;
@@ -57,6 +58,7 @@ import model.ProgramCounter;
 import model.ProgramCounterListener;
 import model.Registry;
 import net.miginfocom.swing.MigLayout;
+import util.ExecutionSpeed;
 import util.FileHandler;
 import util.ObservableValue;
 import view.AbstractSelecter.FocusRequester;
@@ -75,8 +77,6 @@ public class ComputerUI implements FocusRequester {
   private static final String INFO_HIGHLIGHT_COLOR_STRING = colorToHex(INFO_HIGHLIGHT_COLOR);
 
   private static final Dimension SCROLLER_SIZE = new Dimension(450, 450);
-  private static final Dimension NO_SIZE_LIMIT =
-      new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
   private static final String EMPTY_HTML =
       String.format(
@@ -124,6 +124,11 @@ public class ComputerUI implements FocusRequester {
   private InstructionFactory factory;
   private JTextArea lblDescription;
   private JScrollPane outputScroll;
+  private JButton btnRun;
+  private ExecutionSpeed executionDelay;
+  private ScheduledFuture<?> executionTask;
+  private JButton btnStep;
+  private JButton btnReset;
 
   public ComputerUI(Memory memory, CPU cpu, ObservableIO io) {
     this.memory = memory;
@@ -132,6 +137,7 @@ public class ComputerUI implements FocusRequester {
     this.registry = cpu.getRegistry();
     this.io = io;
     this.factory = new InstructionFactory();
+    this.executionDelay = ExecutionSpeed.MEDIUM;
 
     final SelectionPainter cellPainter =
         (address, isSelected, caretPos, active) ->
@@ -150,7 +156,6 @@ public class ComputerUI implements FocusRequester {
     memCells[programCounterFocusIdx.get()].setProgramCounterFocus();
 
     frame.pack();
-    // frame.setMinimumSize(frame.getSize());
 
     // Max size is set during initialization, for pack() to work appropriately. Now we remove it.
     scrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
@@ -245,7 +250,6 @@ public class ComputerUI implements FocusRequester {
         final int idx = i;
         memCells[i] =
             new Cell(memoryCellsPanel, i, value -> memory.setValueAt(idx, value), cellSelecter);
-        // memoryCellsPanel.add(memCells[i]);
       }
 
       memory.addListener(
@@ -270,17 +274,9 @@ public class ComputerUI implements FocusRequester {
       appendHeaderToCellPanel(registerPanel, "Registers", true);
       frame.getContentPane().add(registerPanel, "cell 2 3, top, left, grow, shrink");
 
-      // JPanel regCellsPanel =
-      //     new JPanel(new MigLayout("flowy, gap 0 0, insets 0, fill", "[grow]", "[grow]"));
-      // regCellsPanel.setFocusable(true);
-      // regCellsPanel.setBorder(null);
-      // registerPanel.add(regCellsPanel, "cell 0 3 8 1, top, left, grow");
-
       // Computer has 8 registers, OP1-OP3 and R1-R3, plus PRT and PC.
       // R1-R3 are general purpose registers, OP1-OP3 are used for operations.
       regCells = new Register[Registry.NUM_REGISTERS];
-      // int offset = 3;
-      // final String cellFormat = "cell 0 %d";
       for (int i = 0; i < regCells.length - 1; i++) {
         final int idx = i;
         regCells[i] =
@@ -290,9 +286,7 @@ public class ComputerUI implements FocusRequester {
                 Registry.REGISTER_NAMES[i],
                 value -> registry.setValueAt(idx, value),
                 regSelecter);
-        // registerPanel.add(regCells[i], String.format(cellFormat, offset + idx));
         if (idx == 2) {
-          // offset++;
           registerPanel.add(Box.createRigidArea(new Dimension(10, 10)), "wrap");
         }
       }
@@ -302,7 +296,6 @@ public class ComputerUI implements FocusRequester {
       Register pcCell =
           new Register(
               registerPanel, Registry.NUM_REGISTERS - 1, "PC", pc::setCurrentIndex, regSelecter);
-      // regCellsPanel.add(pcCell, String.format(cellFormat, offset + Registry.NUM_REGISTERS + 1));
       regCells[Registry.NUM_REGISTERS - 1] = pcCell;
 
       {
@@ -355,13 +348,19 @@ public class ComputerUI implements FocusRequester {
                     });
               }
 
-              public void onProgramCounterHalted() {
+              public void onProgramCounterHalted(int haltReson) {
                 inv(
                     () -> {
                       pcCell.highlightCompleted();
                       registerPanel.revalidate();
                       registerPanel.repaint();
-                      appendInfo("Program execution completed.");
+                      if (haltReson == ProgramCounter.NORMAL_HALT) {
+                        appendInfo("Program execution completed.");
+                      } else if (haltReson == ProgramCounter.END_OF_MEMORY) {
+                        appendError("Program reached end of memory.");
+                      } else {
+                        appendError("Program halted due to an error.");
+                      }
                     });
               }
             });
@@ -384,7 +383,7 @@ public class ComputerUI implements FocusRequester {
 
       // Step button
       {
-        JButton btnStep = new JButton("Step");
+        btnStep = new JButton("Step");
         btnStep.setFocusable(false);
         btnStep.addActionListener(e -> handleStep());
         controlPanel.add(btnStep, "cell 0 1");
@@ -392,15 +391,15 @@ public class ComputerUI implements FocusRequester {
 
       // Run button
       {
-        JButton btnRun = new JButton("Run");
+        btnRun = new JButton("Run");
         btnRun.setFocusable(false);
-        btnRun.addActionListener(e -> handleRun());
+        btnRun.addActionListener(e -> handleRunAndStop());
         controlPanel.add(btnRun, "cell 1 1");
       }
 
       // Reset button
       {
-        JButton btnReset = new JButton("Reset");
+        btnReset = new JButton("Reset");
         btnReset.setFocusable(false);
         btnReset.addActionListener(e -> handleResetState());
         controlPanel.add(btnReset, "cell 2 1");
@@ -483,10 +482,11 @@ public class ComputerUI implements FocusRequester {
     ActionMap amap = frame.getRootPane().getActionMap();
 
     // Switch between memory and register selecter
-    imap.put(KeyStroke.getKeyStroke("TAB"), "switchSelecter");
-    imap.put(KeyStroke.getKeyStroke("shift TAB"), "switchSelecter");
+    final String tabAction = "switchSelecter";
+    imap.put(KeyStroke.getKeyStroke("TAB"), tabAction);
+    imap.put(KeyStroke.getKeyStroke("shift TAB"), tabAction);
     amap.put(
-        "switchSelecter",
+        tabAction,
         action(
             e -> {
               if (currentSelecter == cellSelecter) {
@@ -688,6 +688,9 @@ public class ComputerUI implements FocusRequester {
   }
 
   void handleStep() {
+    if (isExecuting.get()) {
+      return;
+    }
     isExecuting.set(true);
     resetCellColors();
     executor.schedule(
@@ -704,21 +707,75 @@ public class ComputerUI implements FocusRequester {
         TimeUnit.MILLISECONDS);
   }
 
-  void handleRun() {
-    isExecuting.set(true);
-    resetCellColors();
-    executor.schedule(
+  void handleRunAndStop() {
+    if (!isExecuting.get()) {
+      toggleExecutionControls(true);
+      isExecuting.set(true);
+      resetCellColors();
+
+      if (executionDelay.getDelay() > 0) {
+        executionTask =
+            executor.scheduleAtFixedRate(
+                getStepper(), 0, executionDelay.getDelay(), TimeUnit.MILLISECONDS);
+      } else {
+        executionTask = executor.schedule(getRunner(), 0, TimeUnit.MILLISECONDS);
+      }
+    } else {
+      if (executionTask != null) {
+        executionTask.cancel(true);
+      }
+      isExecuting.set(false);
+      toggleExecutionControls(false);
+    }
+  }
+
+  private Runnable getStepper() {
+    return () -> {
+      try {
+        cpu.step();
+        if (pc.isHalted()) {
+          inv(
+              () -> {
+                isExecuting.set(false);
+                toggleExecutionControls(false);
+              });
+          executionTask.cancel(false);
+        }
+      } catch (Exception ex) {
+        inv(
+            () -> {
+              appendError(ex);
+              isExecuting.set(false);
+              toggleExecutionControls(false);
+            });
+        executionTask.cancel(false);
+      }
+    };
+  }
+
+  private Runnable getRunner() {
+    return () -> {
+      try {
+        cpu.run();
+      } catch (Exception ex) {
+        inv(() -> appendError(ex));
+      } finally {
+        inv(
+            () -> {
+              isExecuting.set(false);
+              toggleExecutionControls(false);
+            });
+      }
+    };
+  }
+
+  private void toggleExecutionControls(boolean isExecuting) {
+    inv(
         () -> {
-          try {
-            cpu.run();
-          } catch (Exception ex) {
-            inv(() -> appendError(ex));
-          } finally {
-            inv(() -> isExecuting.set(false));
-          }
-        },
-        0,
-        TimeUnit.MILLISECONDS);
+          btnStep.setEnabled(!isExecuting);
+          btnReset.setEnabled(!isExecuting);
+          btnRun.setText(isExecuting ? "Stop" : "Run");
+        });
   }
 
   void handleResetState() {
@@ -819,6 +876,7 @@ public class ComputerUI implements FocusRequester {
       return;
     }
     memory.importFromBinary(snapshot);
+    handleResetState();
   }
 
   // Private methods, used internally
@@ -857,6 +915,11 @@ public class ComputerUI implements FocusRequester {
     appendHtmlContent(
         String.format(
             "<p class='error'>%s<br>%s</p>", ex.getClass().getSimpleName(), ex.getMessage()));
+  }
+
+  private void appendError(String msg) {
+    newParagraph = true;
+    appendHtmlContent(String.format("<p class='error'>%s</p>", msg));
   }
 
   private void appendInfo(String msg) {
@@ -962,5 +1025,13 @@ public class ComputerUI implements FocusRequester {
     JLabel label = new JLabel(text, alignment);
     label.setFont(HEADER_FONT);
     return label;
+  }
+
+  public void setExecutionSpeed(ExecutionSpeed speed) {
+    executionDelay = speed;
+  }
+
+  public ExecutionSpeed getExecutionSpeed() {
+    return executionDelay;
   }
 }

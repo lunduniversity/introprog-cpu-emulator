@@ -25,7 +25,7 @@ class HltTest {
     hltInstruction.execute(null, null, mockPC, mockIO);
 
     // Verify that pc.halt() was called exactly once
-    verify(mockPC, times(1)).halt();
+    verify(mockPC, times(1)).halt(ProgramCounter.NORMAL_HALT);
     verify(mockIO, times(1)).print('\n');
   }
 

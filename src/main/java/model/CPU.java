@@ -49,11 +49,6 @@ public class CPU {
       factory.createInstruction(value).execute(memory, registry, pc, io);
       totalStepCounter++;
       modCount = io.modCount();
-      try {
-        Thread.sleep(300);
-      } catch (InterruptedException e) {
-        // ignore
-      }
     }
   }
 

@@ -2,7 +2,6 @@ package model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -60,20 +59,8 @@ class ProgramCounterTest {
   @Test
   void testHaltSetsHalted() {
     assertFalse(pc.isHalted(), "Initially, the program counter should not be halted.");
-    pc.halt();
+    pc.halt(ProgramCounter.NORMAL_HALT);
     assertTrue(pc.isHalted(), "After halting, the program counter should be halted.");
-  }
-
-  @Test
-  void testIsHaltedReadsRawPC() {
-    pc.isHalted();
-    verify(registry).getRawValue(Registry.REG_PC);
-  }
-
-  @Test
-  void testIsHaltedThrowsExceptionIfOutOfBounds() {
-    when(registry.getRawValue(Registry.REG_PC)).thenReturn(256);
-    assertThrows(IllegalStateException.class, () -> pc.isHalted());
   }
 
   @Test
@@ -115,5 +102,21 @@ class ProgramCounterTest {
     inOrder2.verify(listener2).onProgramCounterChanged(0, 10);
     inOrder2.verify(listener2).onProgramCounterChanged(10, 11);
     inOrder2.verify(listener2).onProgramCounterChanged(11, 0);
+  }
+
+  @Test
+  void testListenerIsNotifiedOfNormalHalt() {
+    ProgramCounterListener listener = mock(ProgramCounterListener.class);
+    pc.addListener(listener);
+    pc.halt(ProgramCounter.NORMAL_HALT);
+    verify(listener).onProgramCounterHalted(ProgramCounter.NORMAL_HALT);
+  }
+
+  @Test
+  void testListenerIsNotifiedOfEndOfMemoryHalt() {
+    ProgramCounterListener listener = mock(ProgramCounterListener.class);
+    pc.addListener(listener);
+    pc.halt(ProgramCounter.END_OF_MEMORY);
+    verify(listener).onProgramCounterHalted(ProgramCounter.END_OF_MEMORY);
   }
 }

@@ -9,6 +9,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ComponentListener;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -22,6 +23,7 @@ import javax.swing.border.Border;
 import model.Memory;
 import model.ProgramCounter;
 import model.ProgramCounterListener;
+import model.Registry;
 import net.miginfocom.swing.MigLayout;
 
 public class InstructionTable extends JFrame {
@@ -35,6 +37,8 @@ public class InstructionTable extends JFrame {
 
   private final transient Memory memory;
   private final transient ProgramCounter pc;
+  private JScrollPane scrollPane;
+  private JPanel table;
 
   public InstructionTable(JFrame parent, Memory memory, ProgramCounter pc) {
 
@@ -42,6 +46,41 @@ public class InstructionTable extends JFrame {
     this.pc = pc;
 
     initGUI();
+
+    addComponentListener(
+        new ComponentListener() {
+          @Override
+          public void componentResized(java.awt.event.ComponentEvent e) {
+            updateWidth();
+          }
+
+          @Override
+          public void componentMoved(java.awt.event.ComponentEvent e) {
+            updateWidth();
+          }
+
+          @Override
+          public void componentShown(java.awt.event.ComponentEvent e) {
+            updateWidth();
+          }
+
+          @Override
+          public void componentHidden(java.awt.event.ComponentEvent e) {
+            updateWidth();
+          }
+
+          private void updateWidth() {
+            Dimension tableSize = table.getSize();
+            Dimension frameSize = getSize();
+            Dimension barSize = scrollPane.getVerticalScrollBar().getSize();
+            System.out.println("Table: " + tableSize.width + " -> " + frameSize.width);
+            int newWidth = frameSize.width - barSize.width - 40;
+            table.setPreferredSize(new Dimension(newWidth, 100));
+            table.setMaximumSize(new Dimension(newWidth, Integer.MAX_VALUE));
+            table.revalidate();
+            table.repaint();
+          }
+        });
 
     setSize(new Dimension(600, 850));
     Point parentLocation = parent.getLocation();
@@ -57,8 +96,7 @@ public class InstructionTable extends JFrame {
   private void initGUI() {
     setTitle("Instruction Descriptions");
     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-    getContentPane()
-        .setLayout(new MigLayout("wrap 1,gapy 20", "[grow,shrink,fill]", "[grow,shrink,fill]"));
+    getContentPane().setLayout(new MigLayout("wrap 1,gapy 20"));
 
     // Description
     {
@@ -75,24 +113,27 @@ public class InstructionTable extends JFrame {
       instrDesc.setEditable(false);
       instrDesc.setOpaque(false);
 
-      add(instrDesc, "");
+      add(instrDesc, "top");
     }
 
-    JPanel contentPane =
-        new JPanel(new MigLayout("wrap 1, gap 5", "[grow,shrink,fill]", "[grow,shrink,fill]"));
+    JPanel contentPane = new JPanel(new MigLayout("wrap 1, gap 5, filly"));
     contentPane.setBorder(null);
-    // contentPane.setPreferredSize(new Dimension(600, 800));
-    add(contentPane, "grow");
+    scrollPane =
+        new JScrollPane(
+            contentPane,
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+    scrollPane.setBorder(null);
+    add(scrollPane, "top,left,grow");
 
     // Instruction table
     {
-      JPanel table =
-          new JPanel(new MigLayout("wrap 4, gap 7 0, insets 0", "[][][grow][grow]", "[grow]"));
-      table.setBorder(null);
-      contentPane.add(table, "top,left,grow");
+      table = new JPanel(new MigLayout("wrap 3, gap 7 0, insets 0"));
+      contentPane.add(table, "top, left, wrap,grow");
 
       // Headers
-      for (String header : new String[] {"Instr", "Opcode", "Operand (abcd)", "Description"}) {
+      for (String header : new String[] {"Instr", "Op code", "Description"}) {
         table.add(hdr(header));
       }
 
@@ -101,105 +142,120 @@ public class InstructionTable extends JFrame {
           table,
           InstructionFactory.INST_NAME_NOP,
           InstructionFactory.INST_NOP,
-          "--",
-          "No operation. Does nothing.",
+          "<b>No Operation</b>: Does nothing.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_ADD,
           InstructionFactory.INST_ADD,
-          "--",
-          "Add OP1 and OP2, put result in RES.",
+          "<b>Addition</b>: Reads values from registers OP1 and OP2, sums them, and puts the result"
+              + " in register RES. Operand has no purpose and is ignored.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_SUB,
           InstructionFactory.INST_SUB,
-          "--",
-          "Subtract OP2 from OP1, put result in RES.",
+          "<b>Subtraction</b>: Reads values from registers OP1 and OP2, subtracts OP2 from OP1, and"
+              + " puts the result in register RES. Operand has no purpose and is ignored.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_CPY,
           InstructionFactory.INST_CPY,
-          "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
-          "Reads the next two memory values (src and dst) and copies <u>src</u> to"
-              + " <u>dst</u>.",
+          "<b>Copy</b>: Copies value from source to destination. The first two operand bits are for"
+              + " src (constant, memory, or register), next two bits for dst (memory or register"
+              + " only). See footnote for addressing types.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_MOV,
           InstructionFactory.INST_MOV,
-          "<b>ab</b> is src type*.<br><b>cd</b> is dst type*.",
-          "Reads the next two memory values (src and dst) and moves <u>src</u> to <u>dst</u>."
-              + " Afterwards, <u>src</u> is set to 0.",
+          "<b>Move</b>: Moves value from source to destination. First two operand bits are for src"
+              + " (memory or register), next two bits for dst (memory or register). See footnote"
+              + " for addressing types.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_LOD,
           InstructionFactory.INST_LOD,
-          "Specifies destination register.",
-          "Reads next memory <b>value</b> and loads it into a register.",
+          "<b>Load</b>: Reads next memory values and loads it into a register. Operand is the"
+              + " destination register index (0-"
+              + (Registry.NUM_REGISTERS - 1)
+              + ").",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_LDA,
           InstructionFactory.INST_LDA,
-          "Specifies destination register.",
-          "Reads next memory <b>address</b> and loads the addressed value into a register.",
+          "<b>Load Address</b>: Reads next memory value and interprets it as an address. Then,"
+              + " reads the addressed memory values and loads it into a register. Operand is the"
+              + " destination register index (0-"
+              + (Registry.NUM_REGISTERS - 1)
+              + ").",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_STO,
           InstructionFactory.INST_STO,
-          "Specifies source regsiter.",
-          "Reads next memory <b>address</b> and stores register value at it.",
+          "<b>Store</b>: Stores value from a register into memory. Reads next memory values and"
+              + " interprets it as the destination address, at which the register value is stored."
+              + " Operand is the source register index (0-"
+              + (Registry.NUM_REGISTERS - 1)
+              + ").",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_JMP,
           InstructionFactory.INST_JMP,
-          "Specifies source register.",
-          "Jumps to address given by a register.",
+          "<b>Jump</b>: Jumps to an address specified by a register. The register index (0-"
+              + (Registry.NUM_REGISTERS - 1)
+              + ") is specified by the operand.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_JEQ,
           InstructionFactory.INST_JEQ,
-          "Specifies source register.",
-          "Jumps to address given by a register IF OP1 and OP2 are equal.",
+          "<b>Jump if Equal</b> Works like JMP, but only jumps if OP1 and OP2 are equal. Otherwise,"
+              + " does nothing.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_JNE,
           InstructionFactory.INST_JNE,
-          "Specifies source register.",
-          "Jumps to address given by a register IF OP1 and OP2 are NOT equal.",
+          "<b>Jump if Not Equal</b> Works like JMP, but only jumps if OP1 and OP2 are not equal."
+              + " Otherwise, does nothing.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_PRT,
           InstructionFactory.INST_PRT,
-          "--",
-          "Reads value in PRT and sends to I/O output channel.",
+          "<b>Print Text</b>: Prints the value in the OUT register, as an ASCII character, to the"
+              + " I/O output channel. Operand has no purpose and is ignored.",
+          pc);
+      appendToTable(
+          table,
+          InstructionFactory.INST_NAME_PRD,
+          InstructionFactory.INST_PRD,
+          "<b>Print Decimal</b>: Prints the value in the OUT register as a decimal number to the"
+              + " I/O output channel. Operand has no purpose and is ignored.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_PRL,
           InstructionFactory.INST_PRL,
-          "--",
-          "Reads memory address from OP1, loads value at that address into PRT and sends it to"
-              + " I/O output channel, and increments OP1. Increments PC only if OP1 and OP2 are"
-              + " equal.",
+          "<b>Print Loop</b>: Prints a series of characters from memory. The memory address of the"
+              + " first character to print must be in the OP1 register, and the memory address of"
+              + " the last character to print in the OP2 register. The characters are printed in"
+              + " the order they appear in memory, and the memory address in the OP1 register is"
+              + " incremented by 1 after each character is printed.",
           pc);
       appendToTable(
           table,
           InstructionFactory.INST_NAME_HLT,
           InstructionFactory.INST_HLT,
-          "--",
-          "Halts PC, thus terminating program successfully.",
+          "<b>Halt</b>: Halts the program counter, thus terminating program successfully.",
           pc);
-      table.add(new JSeparator(), "growx, span 4 1, gapy 3");
+      table.add(new JSeparator(), "span 3 1, gapy 3");
 
       // Legend
       {
@@ -210,6 +266,9 @@ public class InstructionTable extends JFrame {
         contentPane.add(lblLegend, "gap 5 5");
       }
     }
+
+    // Add a filler to push the above content to the top
+    contentPane.add(new JPanel(), "growy");
   }
 
   private JLabel lbl(String text) {
@@ -231,7 +290,7 @@ public class InstructionTable extends JFrame {
   }
 
   private void appendToTable(
-      JPanel table, String instr, int opcode, String operand, String desc, ProgramCounter pc) {
+      JPanel table, String instr, int opcode, String desc, ProgramCounter pc) {
     JLabel lblInstr = bold(instr);
     lblInstr.setBorder(INSTR_NO_FOCUS_BORDER);
     pc.addListener(
@@ -250,7 +309,9 @@ public class InstructionTable extends JFrame {
           }
 
           @Override
-          public void onProgramCounterHalted() {}
+          public void onProgramCounterHalted(int haltReson) {
+            // Do nothing
+          }
         });
     memory.addListener(
         (startIdx, values) ->
@@ -268,45 +329,18 @@ public class InstructionTable extends JFrame {
     String codeStr = Instruction.toBinaryString(opcode >> 4, 4);
     JLabel lblOpcode = lbl(codeStr);
 
-    String html = "<html>%s</html>";
-    JEditorPane lblOperand = new JEditorPane();
-    lblOperand.setContentType("text/html");
-    // lblOperand.setLineWrap(true);
-    // lblOperand.setWrapStyleWord(true);
-    lblOperand.setText(String.format(html, operand));
-    lblOperand.setOpaque(false);
-    lblOperand.setEditable(false);
-    lblOperand.setHighlighter(null);
-    // lblOperand.setPreferredSize(new Dimension(0, 10));
-    lblOperand.setMargin(new Insets(0, 0, 0, 0));
-    JScrollPane sc1 =
-        new JScrollPane(
-            lblOperand,
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    sc1.setBorder(null);
+    String html = "<html><body><p style='margin:0;padding:0;'>%s</p></body></html>";
 
     JEditorPane lblDesc = new JEditorPane();
     lblDesc.setContentType("text/html");
-    // lblDesc.setLineWrap(true);
-    // lblDesc.setWrapStyleWord(true);
     lblDesc.setText(String.format(html, desc));
     lblDesc.setOpaque(false);
     lblDesc.setEditable(false);
-    lblDesc.setHighlighter(null);
-    // lblDesc.setPreferredSize(new Dimension(0, 10));
     lblDesc.setMargin(new Insets(0, 0, 0, 0));
-    JScrollPane sc2 =
-        new JScrollPane(
-            lblDesc,
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    sc2.setBorder(null);
 
-    table.add(new JSeparator(), "growx, span 4 1, gapy 3");
-    table.add(lblInstr, "aligny top, gap 0");
-    table.add(lblOpcode, "aligny top, gaptop 2, gapx 2");
-    table.add(sc1, "aligny top, gapx 2");
-    table.add(sc2, "grow,aligny top, gapx 2");
+    table.add(new JSeparator(), "growx, span 3 1, gapy 3");
+    table.add(lblInstr, "top, left, gap 0");
+    table.add(lblOpcode, "top, left, gaptop 2, gapx 2");
+    table.add(lblDesc, "top, left, gapx 2");
   }
 }

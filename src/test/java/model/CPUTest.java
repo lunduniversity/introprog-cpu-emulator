@@ -70,13 +70,13 @@ class CPUTest {
 
   @Test
   void testStepWithCPUHaltedThrowsException() {
-    pc.halt();
+    pc.halt(ProgramCounter.NORMAL_HALT);
     assertThrows(IllegalStateException.class, () -> cpu.step());
   }
 
   @Test
   void testRunWithCPUHaltedThrowsException() {
-    pc.halt();
+    pc.halt(ProgramCounter.NORMAL_HALT);
     assertThrows(IllegalStateException.class, () -> cpu.run());
   }
 

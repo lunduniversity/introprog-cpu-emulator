@@ -3,5 +3,5 @@ package model;
 public interface ProgramCounterListener {
   void onProgramCounterChanged(int oldIdx, int newIdx);
 
-  void onProgramCounterHalted();
+  void onProgramCounterHalted(int haltReson);
 }

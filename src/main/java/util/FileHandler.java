@@ -85,7 +85,12 @@ public class FileHandler {
     if (result == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
       try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
-        String[] lines = reader.lines().map(s -> s.replace(" ", "")).toArray(String[]::new);
+        String[] lines =
+            reader
+                .lines()
+                .map(s -> s.split("(//|#|%)", 2)[0])
+                .map(s -> s.replace(" ", ""))
+                .toArray(String[]::new);
         // verify that each line contains only 0s and 1s, and is 8 characters long
         for (int i = 0; i < lines.length; i++) {
           String line = lines[i];

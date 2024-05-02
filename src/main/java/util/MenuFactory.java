@@ -11,6 +11,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
 public class MenuFactory {
@@ -67,6 +68,17 @@ public class MenuFactory {
   public JCheckBoxMenuItem cBox(String text, String keyStroke, ItemListener listener) {
     KeyStroke ks = KeyStroke.getKeyStroke(keyStroke);
     JCheckBoxMenuItem item = new AcceleratorCheckboxMenuItem(text, ks);
+    item.addItemListener(listener);
+
+    imap.put(ks, text);
+    amap.put(text, action(event -> item.setSelected(!item.isSelected())));
+
+    return item;
+  }
+
+  public JRadioButtonMenuItem rButton(String text, String keyStroke, ItemListener listener) {
+    KeyStroke ks = KeyStroke.getKeyStroke(keyStroke);
+    JRadioButtonMenuItem item = new AcceleratorRadioButtonMenuItem(text, ks);
     item.addItemListener(listener);
 
     imap.put(ks, text);

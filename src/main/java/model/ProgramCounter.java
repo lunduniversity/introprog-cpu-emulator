@@ -5,6 +5,10 @@ import java.util.Set;
 
 public class ProgramCounter {
 
+  // Constants for halt reason
+  public static final int NORMAL_HALT = 0;
+  public static final int END_OF_MEMORY = -1;
+
   private final RegStorage registry;
   private final Set<ProgramCounterListener> listeners;
   private final int memorySize;
@@ -35,6 +39,10 @@ public class ProgramCounter {
     }
     registry.setRegister(Registry.REG_PC, next + 1);
     notifyChanged(next, next + 1);
+
+    if (next == memorySize - 1) {
+      halt(END_OF_MEMORY);
+    }
     return next;
   }
 
@@ -44,17 +52,12 @@ public class ProgramCounter {
     notifyChanged(oldIdx, index);
   }
 
-  public void halt() {
+  public void halt(int reason) {
     isHalted = true;
-    notifyHalted();
+    notifyHalted(reason);
   }
 
   public boolean isHalted() {
-    // int rawPC = registry.getRawValue(Registry.REG_PC);
-    // if (rawPC >= memorySize) {
-    //   notifyChanged(rawPC, rawPC);
-    //   throw new IllegalStateException("Reached end of memory.");
-    // }
     return isHalted;
   }
 
@@ -75,9 +78,9 @@ public class ProgramCounter {
     }
   }
 
-  private void notifyHalted() {
+  private void notifyHalted(int reason) {
     for (ProgramCounterListener listener : listeners) {
-      listener.onProgramCounterHalted();
+      listener.onProgramCounterHalted(reason);
     }
   }
 }

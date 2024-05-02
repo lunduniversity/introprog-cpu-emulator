@@ -13,7 +13,7 @@ public class Hlt extends Instruction {
 
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    pc.halt();
+    pc.halt(ProgramCounter.NORMAL_HALT);
     io.print('\n');
   }
 

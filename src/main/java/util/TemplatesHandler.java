@@ -59,13 +59,16 @@ public class TemplatesHandler {
 
   public static String[] getTemplate(String name) {
     Path path = getTemplateMap().get(name);
-    System.out.println("Reading template: " + name + " from " + path);
     if (path == null) {
-      System.out.println("Template not found: " + name);
       return new String[0];
     }
     try (BufferedReader reader = new BufferedReader(new FileReader(path.toFile()))) {
-      String[] lines = reader.lines().map(s -> s.replace(" ", "")).toArray(String[]::new);
+      String[] lines =
+          reader
+              .lines()
+              .map(s -> s.split("(//|#|%)", 2)[0])
+              .map(s -> s.replace(" ", ""))
+              .toArray(String[]::new);
       // verify that each line contains only 0s and 1s, and is 8 characters long
       for (int i = 0; i < lines.length; i++) {
         String line = lines[i];
