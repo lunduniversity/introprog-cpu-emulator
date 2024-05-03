@@ -1,4 +1,4 @@
-# SeaPeaEwe
+# BitBuilder
 
 ## OBS - Only a template
 
@@ -6,7 +6,7 @@ Most text below is just a AI-generated template. Will be updated soon TM.
 
 ## Overview
 
-Welcome to SeaPeaEwe, a lightweight, simulated computer environment designed to mimic basic computer operations. Our simulator, named for its playful phonetic resemblance to 'CPU', offers a simple interface to understand the core concepts of computing, including memory management, register operations, and basic data processing.
+Welcome to BitBuilder, a lightweight, simulated computer environment designed to mimic basic computer operations. Our simulator, named for its playful phonetic resemblance to 'CPU', offers a simple interface to understand the core concepts of computing, including memory management, register operations, and basic data processing.
 
 ## Features
 
@@ -17,7 +17,7 @@ Welcome to SeaPeaEwe, a lightweight, simulated computer environment designed to 
 
 ## Installation
 
-To install SeaPeaEwe, follow these steps:
+To install BitBuilder, follow these steps:
 
 ```bash
 git clone https://github.com/yourusername/SeaPeaEwe.git
@@ -27,7 +27,7 @@ cd SeaPeaEwe
 
 ## Usage
 
-Here's a quick guide on how to use SeaPeaEwe:
+Here's a quick guide on how to use BitBuilder:
 
 1. Start the simulator.
 2. Load your sample program or use the predefined examples.
@@ -39,7 +39,7 @@ Here's a quick guide on how to use SeaPeaEwe:
 
 ## Contributing
 
-Contributions to SeaPeaEwe are welcome! Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests to us.
+Contributions to BitBuilder are welcome! Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests to us.
 
 ## License
 

@@ -60,6 +60,7 @@ import model.Registry;
 import net.miginfocom.swing.MigLayout;
 import util.ExecutionSpeed;
 import util.FileHandler;
+import util.LazySwing;
 import util.ObservableValue;
 import view.AbstractSelecter.FocusRequester;
 import view.AbstractSelecter.StorageType;
@@ -185,16 +186,17 @@ public class ComputerUI implements FocusRequester {
             handleExit();
           }
         });
-    frame.setTitle("SeaPeaEwe");
+    frame.setTitle("BitBuilder");
     frame.getContentPane().setLayout(new MigLayout("fillx", "[]", "[]"));
 
     fileHandler =
         new FileHandler(
             frame,
-            title -> inv(() -> frame.setTitle("SeaPeaEwe" + (title != null ? " - " + title : ""))));
+            title ->
+                inv(() -> frame.setTitle("BitBuilder" + (title != null ? " - " + title : ""))));
     frame.setJMenuBar(new ComputerMenu(this, fileHandler));
 
-    JLabel lblComputerHeader = new JLabel("SeaPeaEwe 8-bit Computer");
+    JLabel lblComputerHeader = new JLabel("BitBuilder 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
     lblComputerHeader.setFocusable(false);
     frame.getContentPane().add(lblComputerHeader, "cell 0 0 3 1");
@@ -408,7 +410,6 @@ public class ComputerUI implements FocusRequester {
       {
         JButton btnHelp = new JButton("Help (F1)");
         btnHelp.setFocusable(false);
-        // btnHelp.addActionListener(e -> synchronizeColumnWidths());
         btnHelp.addActionListener(
             e -> {
               autoResizeFrame();
@@ -520,6 +521,17 @@ public class ComputerUI implements FocusRequester {
     imap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "scrollDown");
     amap.put("scrollUp", action(e -> vscroll.setValue(vscroll.getValue() - 16 * 4)));
     amap.put("scrollDown", action(e -> vscroll.setValue(vscroll.getValue() + 16 * 4)));
+  }
+
+  void updateGlobalFontSize() {
+    LazySwing.setComponentTreeFontSize(frame);
+    inv(this::autoResizeFrame);
+    if (asciiTable != null) {
+      asciiTable.updateGlobalFontSize();
+    }
+    if (instructionTable != null) {
+      LazySwing.setComponentTreeFontSize(instructionTable);
+    }
   }
 
   private void synchronizeColumnWidths() {

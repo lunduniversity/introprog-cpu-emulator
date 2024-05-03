@@ -1,8 +1,15 @@
 package view;
 
+import static util.LazySwing.inv;
+
 import instruction.Instruction;
-import java.awt.Font;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.ComponentListener;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -10,107 +17,235 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 import net.miginfocom.swing.MigLayout;
+import util.BackgroundLabel;
+import util.LazySwing;
+import util.SizedLabel;
 
 public class AsciiTable extends JFrame {
 
-  private static final Font plain = new Font("Monospaced", Font.PLAIN, 14);
-  private static final Font bold = new Font("Monospaced", Font.BOLD, 14);
+  private static final Border border = BorderFactory.createEmptyBorder(2, 10, 2, 10);
+  private JPanel headerPanel;
+  private JPanel columnPanel;
+  private JEditorPane notice;
+  private JScrollPane scrollPane;
+
+  private JFrame parent;
+  private Component headerFiller;
 
   public AsciiTable(JFrame parent) {
+    this.parent = parent;
+
+    parent.addComponentListener(
+        new ComponentListener() {
+
+          private long lastInvocation = 0;
+
+          @Override
+          public void componentResized(java.awt.event.ComponentEvent e) {
+            doIt(true);
+          }
+
+          @Override
+          public void componentMoved(java.awt.event.ComponentEvent e) {
+            doIt(false);
+          }
+
+          @Override
+          public void componentShown(java.awt.event.ComponentEvent e) {}
+
+          @Override
+          public void componentHidden(java.awt.event.ComponentEvent e) {}
+
+          private void doIt(boolean recalculate) {
+            if (recalculate && System.currentTimeMillis() - lastInvocation < 100) {
+              return;
+            }
+            lastInvocation = System.currentTimeMillis();
+            if (recalculate) {
+              inv(AsciiTable.this::anchorToParent);
+            } else {
+              inv(AsciiTable.this::followParent);
+            }
+          }
+        });
+
     setTitle("ASCII Table");
     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
     JPanel contentPane = new JPanel();
     contentPane.setLayout(
-        new MigLayout("flowy,gap 10 5, insets 0", "[grow,shrink,fill]", "5[grow,shrink,80:]5[]5"));
+        new MigLayout("flowy,gap 10 5, insets 0", "[grow,shrink,fill]", "5[grow,shrink]5[]5"));
     add(contentPane);
 
-    JEditorPane notice = new JEditorPane();
+    notice = new JEditorPane();
     notice.setContentType("text/html");
+    notice.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
     notice.setText(
-        "Note that characters 0-31 and 127 are control characters and thus not printable. 32 is the"
-            + " space character.");
-    // notice.setLineWrap(true);
-    // notice.setWrapStyleWord(true);
+        "Note that characters 0-31 and 127 are control characters and thus not printable. <b>32 is"
+            + " the space character</b>.");
     notice.setOpaque(false);
     notice.setEditable(false);
-    // notice.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-    notice.setFont(new JLabel().getFont().deriveFont(14f));
-    JScrollPane sc =
-        new JScrollPane(
-            notice,
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    sc.setBorder(null);
-    contentPane.add(sc, "grow,gap 5 5");
+    notice.setFont(new JLabel().getFont());
+    contentPane.add(notice, "top,grow,gap 5 5");
 
-    // Add column headers
-    JPanel headerPanel =
+    headerPanel =
         new JPanel(
             new MigLayout(
-                "wrap 4, gap 10 3",
-                "[sg symbol,40:40:][sg hex,30:30][sg dec,30:30][sg bin,70:]",
-                "[grow,fill]"));
+                "wrap 4, gap 10 3, insets 0",
+                "[sg symbol,grow][sg hex,grow][sg dec,grow][sg bin,grow][sg filler]",
+                "[]"));
     headerPanel.add(hdr("Char"), "al c");
     headerPanel.add(hdr("Hex"), "al c");
     headerPanel.add(hdr("Dec"), "al c");
     headerPanel.add(hdr("Bin"), "al c");
-    contentPane.add(headerPanel, "grow 20");
+
+    // The filler compensates for the width of the vertical scrollbar
+    headerFiller = Box.createRigidArea(new Dimension(10, 0));
+    headerPanel.add(headerFiller);
+    contentPane.add(headerPanel, "top,grow");
 
     contentPane.add(new JSeparator(), "");
 
-    // Add table data
-    JPanel columnPanel =
+    columnPanel =
         new JPanel(
             new MigLayout(
-                "wrap 4, gap 10 3",
-                "[sg symbol,40:40:][sg hex,30:30][sg dec,30:30][sg bin,70:]",
-                "[grow,fill]"));
+                "wrap 4, gap 0 2, insets 0",
+                "[sg symbol,grow][sg hex,grow][sg dec,grow][sg bin,grow]",
+                "[]"));
+    columnPanel.setBackground(Color.BLACK);
 
     for (int asciiCode = 0; asciiCode < 128; asciiCode++) {
-      columnPanel.add(lbl(String.valueOf((char) asciiCode), true), "al c");
-      columnPanel.add(lbl(String.format("0x%02X", asciiCode)), "al r");
-      columnPanel.add(lbl(String.valueOf(asciiCode)), "al r");
-      columnPanel.add(lbl(Instruction.toBinaryString(asciiCode, 8, 4)), "al r");
+      Color bgColor = getColorForAscii(asciiCode);
+      String constraints = "growx";
+      columnPanel.add(clbl(String.valueOf((char) asciiCode), true, bgColor), constraints);
+      columnPanel.add(rlbl(String.format("0x%02X", asciiCode), false, bgColor), constraints);
+      columnPanel.add(rlbl(String.valueOf(asciiCode), false, bgColor), constraints);
+      columnPanel.add(
+          rlbl(Instruction.toBinaryString(asciiCode, 8, 4), false, bgColor), constraints);
     }
 
-    JScrollPane scrollPane =
+    scrollPane =
         new JScrollPane(
             columnPanel,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     scrollPane.getVerticalScrollBar().setUnitIncrement(16);
     scrollPane.setBorder(null);
-    contentPane.add(scrollPane, "grow");
+    contentPane.add(scrollPane, "top,grow");
 
+    headerFiller.setPreferredSize(new Dimension(scrollPane.getVerticalScrollBar().getWidth(), 0));
+
+    anchorToParent();
+
+    setVisible(true);
+  }
+
+  private void anchorToParent() {
+    for (int i = 0; i < headerPanel.getComponentCount(); i++) {
+      headerPanel.getComponent(i).setPreferredSize(null);
+    }
+    headerPanel.revalidate();
+
+    notice.setMaximumSize(new Dimension(100, Integer.MAX_VALUE));
     pack(); // Adjusts size to contents
-    setSize(270, parent.getHeight());
+    synchronizeColumnWidths();
+    pack();
+    notice.setMaximumSize(null);
+    setSize(getWidth(), parent.getHeight());
 
     Point parentLocation = parent.getLocation();
     int xCoord = parentLocation.x - getWidth();
     int yCoord = parentLocation.y;
     setLocation(xCoord, yCoord);
 
-    setVisible(true);
+    for (Component c : new Component[] {this}) {
+      c.revalidate();
+      c.repaint();
+    }
   }
 
-  private JLabel lbl(String text) {
-    return lbl(text, false);
+  private void followParent() {
+    Point parentLocation = parent.getLocation();
+    int xCoord = parentLocation.x - getWidth();
+    int yCoord = parentLocation.y;
+    setLocation(xCoord, yCoord);
   }
 
-  private JLabel lbl(String text, boolean bold) {
-    JLabel label = new JLabel(text);
-    label.setFont(bold ? AsciiTable.bold : AsciiTable.plain);
-    label.setOpaque(true);
+  private JLabel clbl(String text, boolean bold, Color bgColor) {
+    JLabel label = new BackgroundLabel(text, 0, bold, SwingConstants.CENTER, bgColor);
+    label.setBorder(border);
+    return label;
+  }
+
+  private JLabel rlbl(String text, boolean bold, Color bgColor) {
+    JLabel label = new BackgroundLabel(text, 0, bold, SwingConstants.TRAILING, bgColor);
+    label.setBorder(border);
     return label;
   }
 
   private JLabel hdr(String text) {
-    JLabel label = new JLabel(text);
-    label.setFont(label.getFont().deriveFont(Font.BOLD, 14.0f));
-    label.setOpaque(true);
-    return label;
+    return new SizedLabel(text, 2, true, SwingConstants.CENTER);
+  }
+
+  private Color getColorForAscii(int asciiCode) {
+    int d = (asciiCode % 2) * 20;
+    // Digits
+    if (asciiCode >= 48 && asciiCode <= 57) {
+      return new Color(150 + d, 160 + d, 230 + d); // Gradient of blue
+    }
+    // Uppercase letters
+    else if (asciiCode >= 65 && asciiCode <= 90) {
+      return new Color(100 + d, 210 + d, 100 + d); // Gradient of green
+    }
+    // Lowercase letters
+    else if (asciiCode >= 97 && asciiCode <= 122) {
+      return new Color(210 + d, 130 + d, 130 + d); // Gradient of red
+    }
+    // Special characters
+    else if ((asciiCode >= 32 && asciiCode <= 47)
+        || (asciiCode >= 58 && asciiCode <= 64)
+        || (asciiCode >= 91 && asciiCode <= 96)
+        || (asciiCode >= 123 && asciiCode <= 126)) {
+      return new Color(210 + d, 210 + d, 100 + d); // Gradient of yellow
+    }
+    // Control characters and others
+    else {
+      return new Color(200 + d, 200 + d, 200 + d); // Shade of gray
+    }
+  }
+
+  void updateGlobalFontSize() {
+    LazySwing.setComponentTreeFontSize(this);
+    inv(
+        this::anchorToParent
+        // () -> {
+        //   Dimension currentSize = getSize();
+        //   notice.setMaximumSize(new Dimension((int) (notice.getWidth() * 0.8),
+        // Integer.MAX_VALUE));
+        //   setMaximumSize(new Dimension(Integer.MAX_VALUE, currentSize.height));
+        //   pack();
+        //   notice.setMaximumSize(null);
+        //   setMaximumSize(null);
+        //   synchronizeColumnWidths();
+        //   for (Component c : new Component[] {this, headerPanel, columnPanel, notice,
+        // scrollPane}) {
+        //     c.revalidate();
+        //   }
+        // }
+        );
+  }
+
+  private void synchronizeColumnWidths() {
+    for (int i = 0; i < headerPanel.getComponentCount() - 1; i++) {
+      Component c = headerPanel.getComponent(i);
+      int newWidth = Math.max(c.getWidth(), columnPanel.getComponent(i).getWidth());
+      c.setPreferredSize(new Dimension(newWidth, c.getPreferredSize().height));
+    }
+    headerPanel.revalidate();
+    headerPanel.repaint();
   }
 }

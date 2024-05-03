@@ -73,7 +73,6 @@ public class InstructionTable extends JFrame {
             Dimension tableSize = table.getSize();
             Dimension frameSize = getSize();
             Dimension barSize = scrollPane.getVerticalScrollBar().getSize();
-            System.out.println("Table: " + tableSize.width + " -> " + frameSize.width);
             int newWidth = frameSize.width - barSize.width - 40;
             table.setPreferredSize(new Dimension(newWidth, 100));
             table.setMaximumSize(new Dimension(newWidth, Integer.MAX_VALUE));
@@ -102,6 +101,7 @@ public class InstructionTable extends JFrame {
     {
       JEditorPane instrDesc = new JEditorPane();
       instrDesc.setContentType("text/html");
+      instrDesc.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
       instrDesc.setText(
           "<html><p>All instructions are made up of 4 + 4 bits. The 4 highest (left-most) bits"
               + " is the opcode, which identifies the instruction. The 4 lowest (right-most)"
@@ -333,6 +333,7 @@ public class InstructionTable extends JFrame {
 
     JEditorPane lblDesc = new JEditorPane();
     lblDesc.setContentType("text/html");
+    lblDesc.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
     lblDesc.setText(String.format(html, desc));
     lblDesc.setOpaque(false);
     lblDesc.setEditable(false);

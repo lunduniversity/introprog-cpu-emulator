@@ -28,7 +28,7 @@
 [] Gör text markerbar
 [x] InstrTable, ankra tabellen till toppen
 [x] Templates. Lägg programfiler i resources, och populera menyn med dem
-  [] Bekräfta template laddning om lokala ändringar gjorts
+  [x] Bekräfta template laddning om lokala ändringar gjorts
 [] F1 och F2 för fokus till fönsterna?
 [x] PgUp och PgDn för att scrolla i minnet och i ascii tabellen
 [] Ctrl F för att söka?
@@ -37,17 +37,18 @@
 [x] Ändra output och error till ett stort textfält. Ha knapparna ovanför: step, run, reset, help
 [x] Döp om Reset program till endast Reset
 [x] Flytta Reset i menyn från Edit till Execute
-[] Bug: Description highlightar fel instruktion, den laggar ett steg efter
+[x] Bug: Description highlightar fel instruktion, den laggar ett steg efter
 [x] Shift+Tab == Tab
 [x] När i "select mode" tillåt inte input för att ändra bitar (caret vs selection)
 [] Använd ytan under execute för info: Var är markören, vad är markerat, etc.
 [] Tillåt text att bli markerad och kopierad
 [] Menyalternativ för View:
-  [] Återställ fönsterpositioner och -storlekar
-  [] Öka och minska textstorlek
+  [x] Återställ fönsterpositioner och -storlekar
+  [x] Öka och minska textstorlek
+  [] Textstorlek ska också gälla i övriga fönster
 [] Menyn Help kan innehålla länkar till kursmaterial
 [x] Döp om registret PRT till OUT
-[] Descriptions, tabellen måste innehålla instruktionens namn, e.g. LD -> Load, ST -> Store, etc. Fetstil.
+[x] Descriptions, tabellen måste innehålla instruktionens namn, e.g. LD -> Load, ST -> Store, etc. Fetstil.
 [x] Ändra print-instruktionerna:
   [x] Print Text (PRT)     ascii symbols
   [x] Print Decimal (PRD)  decimal numbers
@@ -58,6 +59,10 @@
 [x] Lägg till utskrift för när sista minnescellen nås
 [x] Lägg till bekräftelse dialog innan delete all data!
 [x] Change Run button into Stop while executing
+[] Change repo name to BitBuilder, and URLs
+[] Instr table, ankra till huvudfönster som ASCII fönstret
+[] Lägg till Config option för att låta fönster följa huvudfönstret
+[] Använd config option "flytta markör vid input", gör ingenting nu?
 [] 
 [] 
 
