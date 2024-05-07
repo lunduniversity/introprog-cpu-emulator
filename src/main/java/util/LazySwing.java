@@ -20,9 +20,9 @@ import javax.swing.border.Border;
 
 public class LazySwing {
 
-  private static final int DEFAULT_FONT_SIZE = 14;
-  private static final int MIN_FONT_SIZE = 8;
-  private static final int MAX_FONT_SIZE = 30;
+  public static final int DEFAULT_FONT_SIZE = 14;
+  public static final int MIN_FONT_SIZE = 8;
+  public static final int MAX_FONT_SIZE = 30;
   private static int currentFontSize = DEFAULT_FONT_SIZE;
 
   public static final int FONT_SIZE_INCREASE = 1;

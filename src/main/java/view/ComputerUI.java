@@ -62,15 +62,13 @@ import util.ExecutionSpeed;
 import util.FileHandler;
 import util.LazySwing;
 import util.ObservableValue;
+import util.SizedLabel;
 import view.AbstractSelecter.FocusRequester;
 import view.AbstractSelecter.StorageType;
 import view.ComputerMenu.MenuCheckboxSetter;
 import view.SnapshotDialog.Mode;
 
 public class ComputerUI implements FocusRequester {
-
-  private static final Font HEADLINE_FONT = new Font("Tahoma", Font.BOLD, 14);
-  private static final Font HEADER_FONT = new JLabel().getFont().deriveFont(Font.BOLD, 12);
 
   private static final Color ERROR_HIGHLIGHT_COLOR = new Color(200, 55, 40);
   private static final String ERROR_HIGHLIGHT_COLOR_STRING = colorToHex(ERROR_HIGHLIGHT_COLOR);
@@ -139,6 +137,9 @@ public class ComputerUI implements FocusRequester {
     this.io = io;
     this.factory = new InstructionFactory();
     this.executionDelay = ExecutionSpeed.MEDIUM;
+
+    // Set Swings default font size
+    UIManager.put("Label.font", new Font("Tahoma", Font.PLAIN, LazySwing.DEFAULT_FONT_SIZE));
 
     final SelectionPainter cellPainter =
         (address, isSelected, caretPos, active) ->
@@ -379,8 +380,7 @@ public class ComputerUI implements FocusRequester {
       frame.getContentPane().add(controlPanel, "cell 2 5, top, grow, shrink");
       controlPanel.setLayout(new MigLayout("fillx", "[][][][][grow,shrink]", "[]"));
 
-      JLabel lblControlHeader = new JLabel("Controls");
-      lblControlHeader.setFont(HEADLINE_FONT);
+      JLabel lblControlHeader = new SizedLabel("Controls", 2, true);
       controlPanel.add(lblControlHeader, "cell 0 0 5 1, top, left, wrap");
 
       // Step button
@@ -530,7 +530,7 @@ public class ComputerUI implements FocusRequester {
       asciiTable.updateGlobalFontSize();
     }
     if (instructionTable != null) {
-      LazySwing.setComponentTreeFontSize(instructionTable);
+      instructionTable.updateGlobalFontSize();
     }
   }
 
@@ -1009,9 +1009,8 @@ public class ComputerUI implements FocusRequester {
   private JPanel appendHeaderToCellPanel(JPanel cellPanel, String header, boolean includeLabel) {
     int numCols = includeLabel ? 7 : 6;
     if (header != null) {
-      JLabel lblHeader = new JLabel(header);
+      JLabel lblHeader = new SizedLabel(header, 2, true);
       cellPanel.add(lblHeader, "left, wrap, span " + numCols);
-      lblHeader.setFont(HEADLINE_FONT);
 
       cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "wrap");
     }
@@ -1034,8 +1033,7 @@ public class ComputerUI implements FocusRequester {
   }
 
   private JLabel header(String text, int alignment) {
-    JLabel label = new JLabel(text, alignment);
-    label.setFont(HEADER_FONT);
+    JLabel label = new SizedLabel(text, 2, true, alignment);
     return label;
   }
 

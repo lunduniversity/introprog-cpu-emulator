@@ -6,8 +6,6 @@ import instruction.Instruction;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.event.ComponentListener;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JEditorPane;
@@ -18,14 +16,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import net.miginfocom.swing.MigLayout;
 import util.BackgroundLabel;
-import util.LazySwing;
 import util.SizedLabel;
 
-public class AsciiTable extends JFrame {
+public class AsciiTable extends AnchoredFrame {
 
   private static final Border border = BorderFactory.createEmptyBorder(2, 10, 2, 10);
   private JPanel headerPanel;
@@ -33,48 +29,10 @@ public class AsciiTable extends JFrame {
   private JEditorPane notice;
   private JScrollPane scrollPane;
 
-  private JFrame parent;
   private Component headerFiller;
 
   public AsciiTable(JFrame parent) {
-    this.parent = parent;
-
-    parent.addComponentListener(
-        new ComponentListener() {
-
-          private long lastInvocation = 0;
-
-          @Override
-          public void componentResized(java.awt.event.ComponentEvent e) {
-            doIt(true);
-          }
-
-          @Override
-          public void componentMoved(java.awt.event.ComponentEvent e) {
-            doIt(false);
-          }
-
-          @Override
-          public void componentShown(java.awt.event.ComponentEvent e) {}
-
-          @Override
-          public void componentHidden(java.awt.event.ComponentEvent e) {}
-
-          private void doIt(boolean recalculate) {
-            if (recalculate && System.currentTimeMillis() - lastInvocation < 100) {
-              return;
-            }
-            lastInvocation = System.currentTimeMillis();
-            if (recalculate) {
-              inv(AsciiTable.this::anchorToParent);
-            } else {
-              inv(AsciiTable.this::followParent);
-            }
-          }
-        });
-
-    setTitle("ASCII Table");
-    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+    super("ASCII Table", parent, AnchorSide.LEFT);
 
     JPanel contentPane = new JPanel();
     contentPane.setLayout(
@@ -139,12 +97,17 @@ public class AsciiTable extends JFrame {
 
     headerFiller.setPreferredSize(new Dimension(scrollPane.getVerticalScrollBar().getWidth(), 0));
 
-    anchorToParent();
-
     setVisible(true);
+
+    // if (isAnchored) {
+    inv(this::anchorToParent);
+    // } else {
+    //   inv(this::fitToParent);
+    // }
   }
 
-  private void anchorToParent() {
+  @Override
+  protected void fitContent() {
     for (int i = 0; i < headerPanel.getComponentCount(); i++) {
       headerPanel.getComponent(i).setPreferredSize(null);
     }
@@ -155,24 +118,6 @@ public class AsciiTable extends JFrame {
     synchronizeColumnWidths();
     pack();
     notice.setMaximumSize(null);
-    setSize(getWidth(), parent.getHeight());
-
-    Point parentLocation = parent.getLocation();
-    int xCoord = parentLocation.x - getWidth();
-    int yCoord = parentLocation.y;
-    setLocation(xCoord, yCoord);
-
-    for (Component c : new Component[] {this}) {
-      c.revalidate();
-      c.repaint();
-    }
-  }
-
-  private void followParent() {
-    Point parentLocation = parent.getLocation();
-    int xCoord = parentLocation.x - getWidth();
-    int yCoord = parentLocation.y;
-    setLocation(xCoord, yCoord);
   }
 
   private JLabel clbl(String text, boolean bold, Color bgColor) {
@@ -216,27 +161,6 @@ public class AsciiTable extends JFrame {
     else {
       return new Color(200 + d, 200 + d, 200 + d); // Shade of gray
     }
-  }
-
-  void updateGlobalFontSize() {
-    LazySwing.setComponentTreeFontSize(this);
-    inv(
-        this::anchorToParent
-        // () -> {
-        //   Dimension currentSize = getSize();
-        //   notice.setMaximumSize(new Dimension((int) (notice.getWidth() * 0.8),
-        // Integer.MAX_VALUE));
-        //   setMaximumSize(new Dimension(Integer.MAX_VALUE, currentSize.height));
-        //   pack();
-        //   notice.setMaximumSize(null);
-        //   setMaximumSize(null);
-        //   synchronizeColumnWidths();
-        //   for (Component c : new Component[] {this, headerPanel, columnPanel, notice,
-        // scrollPane}) {
-        //     c.revalidate();
-        //   }
-        // }
-        );
   }
 
   private void synchronizeColumnWidths() {
