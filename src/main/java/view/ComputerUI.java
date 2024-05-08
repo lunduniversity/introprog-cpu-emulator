@@ -209,7 +209,7 @@ public class ComputerUI implements FocusRequester {
                     + " with %d bytes of memory and (%d+1) registers (including program counter). "
                     + "Note that all registers have names, but are still addressed using their"
                     + " indices 0\u2014%d.",
-                memory.size(), Registry.NUM_REGISTERS, Registry.NUM_REGISTERS - 1));
+                memory.size(), Registry.NUM_REGISTERS - 1, Registry.NUM_REGISTERS - 1));
     lblDescription.setLineWrap(true);
     lblDescription.setWrapStyleWord(true);
     lblDescription.setEditable(false);
@@ -222,7 +222,7 @@ public class ComputerUI implements FocusRequester {
     frame.getContentPane().add(rigidArea, "cell 0 2");
 
     memoryPanel = createCellPanel(false);
-    appendHeaderToCellPanel(memoryPanel, "Memory", false);
+    appendHeaderToCellPanel(memoryPanel, "Memory", false, false);
     frame.getContentPane().add(memoryPanel, "cell 0 3 1 3, top, left, grow, shrink");
 
     // Memory cells
@@ -265,7 +265,7 @@ public class ComputerUI implements FocusRequester {
                     }
                   }));
 
-      appendHeaderToCellPanel(memoryCellsPanel, null, false);
+      appendHeaderToCellPanel(memoryCellsPanel, null, false, true);
     }
 
     // Divider between memory and registers
@@ -274,7 +274,7 @@ public class ComputerUI implements FocusRequester {
     // Registers and program counter
     {
       registerPanel = createCellPanel(true);
-      appendHeaderToCellPanel(registerPanel, "Registers", true);
+      appendHeaderToCellPanel(registerPanel, "Registers", true, false);
       frame.getContentPane().add(registerPanel, "cell 2 3, top, left, grow, shrink");
 
       // Computer has 8 registers, OP1-OP3 and R1-R3, plus PRT and PC.
@@ -566,13 +566,14 @@ public class ComputerUI implements FocusRequester {
 
   void autoResizeFrame() {
     Component[] components = {
-      memoryPanel, controlPanel, scrollPane, txtOutput, outputScroll, frame, registerPanel
+      frame, memoryPanel, controlPanel, scrollPane, txtOutput, outputScroll, frame, registerPanel
     };
 
     // Lock memory to small height and call pack() to adjust the frame size
     // Lock description to small width and call pack() to adjust the frame size
     scrollPane.setMaximumSize(SCROLLER_SIZE);
     lblDescription.setMaximumSize(new Dimension(400, Integer.MAX_VALUE));
+    outputScroll.setMaximumSize(new Dimension(100, 200));
     for (Component c : components) {
       c.revalidate();
       c.repaint();
@@ -592,8 +593,9 @@ public class ComputerUI implements FocusRequester {
         new Dimension(registerPanel.getPreferredSize().width, Integer.MAX_VALUE));
 
     Dimension size = frame.getSize();
-    frame.setMaximumSize(new Dimension((int) (size.width * 1.1), size.height));
+    frame.setMaximumSize(new Dimension((int) (size.width * 1.2), size.height));
     frame.pack();
+    outputScroll.setMaximumSize(null);
     frame.setMaximumSize(null);
 
     synchronizeColumnWidths();
@@ -992,7 +994,7 @@ public class ComputerUI implements FocusRequester {
     int numCols = includeLabel ? 7 : 6;
     cellPanel.setLayout(
         new MigLayout(
-            "gap 5 0,insets 0,fillx,wrap " + numCols,
+            "gap 10 0,insets 0,fillx,wrap " + numCols,
             // (includeLabel ? "[30px:30px:30px]" : "")
             //     +
             // "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
@@ -1006,7 +1008,8 @@ public class ComputerUI implements FocusRequester {
     return cellPanel;
   }
 
-  private JPanel appendHeaderToCellPanel(JPanel cellPanel, String header, boolean includeLabel) {
+  private JPanel appendHeaderToCellPanel(
+      JPanel cellPanel, String header, boolean includeLabel, boolean hidden) {
     int numCols = includeLabel ? 7 : 6;
     if (header != null) {
       JLabel lblHeader = new SizedLabel(header, 2, true);
@@ -1015,25 +1018,29 @@ public class ComputerUI implements FocusRequester {
       cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "wrap");
     }
 
-    cellPanel.add(header("Addr"));
+    cellPanel.add(header("Addr", hidden));
     if (includeLabel) {
-      cellPanel.add(header("Name"));
+      cellPanel.add(header("Name", hidden));
     }
-    cellPanel.add(header("Value", SwingConstants.CENTER));
-    cellPanel.add(header("Hex"));
-    cellPanel.add(header("Dec"));
-    cellPanel.add(header("Ascii"));
-    cellPanel.add(header("Instr"));
+    cellPanel.add(header("Value", hidden, SwingConstants.CENTER));
+    cellPanel.add(header("Hex", hidden));
+    cellPanel.add(header("Dec", hidden));
+    cellPanel.add(header("Ascii", hidden));
+    cellPanel.add(header("Instr", hidden));
 
     return cellPanel;
   }
 
-  private JLabel header(String text) {
-    return header(text, SwingConstants.LEADING);
+  private JLabel header(String text, boolean hidden) {
+    return header(text, hidden, SwingConstants.LEADING);
   }
 
-  private JLabel header(String text, int alignment) {
+  private JLabel header(String text, boolean hidden, int alignment) {
     JLabel label = new SizedLabel(text, 2, true, alignment);
+    if (hidden) {
+      // Set text color to background color to hide the text
+      label.setForeground(UIManager.getColor("Panel.background"));
+    }
     return label;
   }
 

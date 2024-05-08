@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import model.Memory;
 import model.ProgramCounter;
@@ -27,15 +28,12 @@ import model.Registry;
 import model.StorageListener;
 import net.miginfocom.swing.MigLayout;
 import util.LazySwing;
+import util.SizedLabel;
 
 public class InstructionTable extends AnchoredFrame {
 
   private static final Border INSTR_FOCUS_BORDER = BorderFactory.createLineBorder(Color.MAGENTA, 2);
   private static final Border INSTR_NO_FOCUS_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
-
-  private static final Font plain = new Font("Monospaced", Font.PLAIN, 14);
-  private static final Font bold = new Font("Monospaced", Font.BOLD, 14);
-  private static final Font hdr = new Font("Tahoma", Font.BOLD, 14);
 
   private final transient Memory memory;
   private final transient ProgramCounter pc;
@@ -44,6 +42,8 @@ public class InstructionTable extends AnchoredFrame {
   private JPanel headerPanel;
   private JPanel instructionPanel;
   private JEditorPane instrDesc;
+
+  private final Font fontMono = new Font("Monospaced", Font.PLAIN, LazySwing.DEFAULT_FONT_SIZE);
 
   public InstructionTable(JFrame parent, Memory memory, ProgramCounter pc) {
     super("Instruction Descriptions", parent, AnchorSide.RIGHT);
@@ -88,6 +88,7 @@ public class InstructionTable extends AnchoredFrame {
 
     setVisible(true);
 
+    inv(this::updateGlobalFontSize);
     // if (isAnchored) {
     inv(this::anchorToParent);
     // } else {
@@ -120,19 +121,20 @@ public class InstructionTable extends AnchoredFrame {
     {
       JLabel lblLegend =
           new JLabel(
-              "<html><b>*</b> An addressing <i>type</i> is two bits: 00=constant, 01=register,"
+              "<html><b>*</b> An addressing <i>type</i> is two bits:<br>\t00=constant, 01=register,"
                   + " 10=memory</html>");
       add(lblLegend, "top,gap 5 5");
     }
 
     Component headerFiller = Box.createRigidArea(new Dimension(10, 0));
+    String[] headerNames = new String[] {"Instr", "Op code", "Description"};
     // Header for the instruction table
     {
       headerPanel = new JPanel(new MigLayout("gap 7 0, insets 0"));
       add(headerPanel, "top");
 
       // Headers
-      for (String header : new String[] {"Instr", "Op code", "Description"}) {
+      for (String header : headerNames) {
         headerPanel.add(hdr(header));
       }
       headerPanel.add(headerFiller);
@@ -271,6 +273,11 @@ public class InstructionTable extends AnchoredFrame {
           InstructionFactory.INST_HLT,
           "<b>Halt</b>: Halts the program counter, thus terminating program successfully.",
           pc);
+
+      // Add invisible headers to the bottom, to set appropriate column widths.
+      for (String header : headerNames) {
+        instrTablePanel.add(hidden(header));
+      }
     }
   }
 
@@ -282,7 +289,7 @@ public class InstructionTable extends AnchoredFrame {
     }
     headerPanel.revalidate();
 
-    int newContentWidth = 160 + (LazySwing.getCurrentFontSize() - LazySwing.MIN_FONT_SIZE) * 6;
+    int newContentWidth = 280 + (LazySwing.getCurrentFontSize() - LazySwing.MIN_FONT_SIZE) * 20;
     instrDesc.setMaximumSize(new Dimension(newContentWidth, Integer.MAX_VALUE));
     instrTablePanel.setMaximumSize(new Dimension(newContentWidth, Integer.MAX_VALUE));
     instrDesc.setPreferredSize(new Dimension(newContentWidth, instrDesc.getPreferredSize().height));
@@ -301,21 +308,26 @@ public class InstructionTable extends AnchoredFrame {
   }
 
   private JLabel lbl(String text) {
-    JLabel lbl = new JLabel(text);
-    lbl.setFont(plain);
+    JLabel lbl = new SizedLabel(text);
+    lbl.setFont(fontMono);
     return lbl;
   }
 
   private JLabel bold(String text) {
-    JLabel lbl = new JLabel(text);
-    lbl.setFont(bold);
+    JLabel lbl = new SizedLabel(text, 0, true);
+    lbl.setFont(fontMono);
     return lbl;
   }
 
   private JLabel hdr(String text) {
-    JLabel lbl = new JLabel(text);
-    lbl.setFont(hdr);
-    return lbl;
+    return new SizedLabel(text, 2, true);
+  }
+
+  private JLabel hidden(String text) {
+    JLabel label = new SizedLabel(text, 2, true);
+    // Set text color to background color to hide the text
+    label.setForeground(UIManager.getColor("Panel.background"));
+    return label;
   }
 
   private void appendToTable(

@@ -89,12 +89,8 @@ public abstract class AnchoredFrame extends JFrame {
   }
 
   private void fitToParent() {
-    System.out.println(
-        "fitToParent, frame width: " + getWidth() + ", parent width: " + parentFrame.getWidth());
     fitContent();
     setSize(getWidth(), parentFrame.getHeight());
-    System.out.println(
-        "fitToParent, frame width: " + getWidth() + ", parent width: " + parentFrame.getWidth());
     followParent();
   }
 
