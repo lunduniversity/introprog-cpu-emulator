@@ -60,7 +60,7 @@
 [x] Lägg till bekräftelse dialog innan delete all data!
 [x] Change Run button into Stop while executing
 [] Change repo name to BitBuilder, and URLs
-[] Instr table, ankra till huvudfönster som ASCII fönstret
+[x] Instr table, ankra till huvudfönster som ASCII fönstret
 [] Lägg till Config option för att låta fönster följa huvudfönstret
 [] Använd config option "flytta markör vid input", gör ingenting nu?
 [] 

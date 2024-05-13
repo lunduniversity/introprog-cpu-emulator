@@ -65,10 +65,12 @@ public class MenuFactory {
     return item;
   }
 
-  public JCheckBoxMenuItem cBox(String text, String keyStroke, ItemListener listener) {
+  public JCheckBoxMenuItem cBox(
+      String text, String keyStroke, boolean selected, ItemListener listener) {
     KeyStroke ks = KeyStroke.getKeyStroke(keyStroke);
     JCheckBoxMenuItem item = new AcceleratorCheckboxMenuItem(text, ks);
     item.addItemListener(listener);
+    item.setSelected(selected);
 
     imap.put(ks, text);
     amap.put(text, action(event -> item.setSelected(!item.isSelected())));
@@ -76,10 +78,12 @@ public class MenuFactory {
     return item;
   }
 
-  public JRadioButtonMenuItem rButton(String text, String keyStroke, ItemListener listener) {
+  public JRadioButtonMenuItem rButton(
+      String text, String keyStroke, boolean selected, ItemListener listener) {
     KeyStroke ks = KeyStroke.getKeyStroke(keyStroke);
     JRadioButtonMenuItem item = new AcceleratorRadioButtonMenuItem(text, ks);
     item.addItemListener(listener);
+    item.setSelected(selected);
 
     imap.put(ks, text);
     amap.put(text, action(event -> item.setSelected(!item.isSelected())));

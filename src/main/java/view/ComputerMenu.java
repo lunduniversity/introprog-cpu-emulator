@@ -19,6 +19,7 @@ import javax.swing.JRadioButtonMenuItem;
 import util.ExecutionSpeed;
 import util.FileHandler;
 import util.MenuFactory;
+import util.Settings;
 import util.TemplatesHandler;
 
 public class ComputerMenu extends JMenuBar {
@@ -30,6 +31,7 @@ public class ComputerMenu extends JMenuBar {
   public ComputerMenu(ComputerUI ui, FileHandler fileHandler) {
 
     JFrame frame = ui.getFrame();
+    Settings settings = ui.getSettings();
     MenuFactory mf = new MenuFactory(frame);
 
     JMenu menuFile = mf.menu("<u>F</u>ile", "alt F");
@@ -165,10 +167,11 @@ public class ComputerMenu extends JMenuBar {
     for (int i = 0; i < speeds.length; i++) {
       ExecutionSpeed speed = speeds[i];
       JRadioButtonMenuItem itmSpeed =
-          mf.rButton(speed.toString(), "ctrl " + (i + 1), e -> ui.setExecutionSpeed(speed));
-      if (ui.getExecutionSpeed().equals(speed)) {
-        itmSpeed.setSelected(true);
-      }
+          mf.rButton(
+              speed.toString(),
+              "ctrl " + (i + 1),
+              settings.getExecutionSpeed().equals(speed),
+              e -> settings.setExecutionSpeed(speed));
       menuSpeed.add(itmSpeed);
       group.add(itmSpeed);
     }
@@ -244,28 +247,54 @@ public class ComputerMenu extends JMenuBar {
         mf.cBox(
             "Open Help on startup",
             "",
-            itemEvent -> ui.toggleHelpOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
+            settings.showHelpOnStartup(),
+            itemEvent ->
+                settings.setShowHelpOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
     JCheckBoxMenuItem itmOpenAscii =
         mf.cBox(
             "Open ASCII table on startup",
             "",
+            settings.showAsciiTableOnStartup(),
             itemEvent ->
-                ui.toggleAsciiTableOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
+                settings.setShowAsciiTableOnStartup(
+                    itemEvent.getStateChange() == ItemEvent.SELECTED));
     JCheckBoxMenuItem itmOpenInstr =
         mf.cBox(
             "Open Instructions on startup",
             "",
+            settings.showInstructionsOnStartup(),
             itemEvent ->
-                ui.toggleInstructionsOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
+                settings.setShowInstructionsOnStartup(
+                    itemEvent.getStateChange() == ItemEvent.SELECTED));
+
+    JCheckBoxMenuItem itmAnchorAscii =
+        mf.cBox(
+            "Anchor ASCII table to main window",
+            "",
+            settings.anchorAsciiTable(),
+            itemEvent ->
+                settings.setAnchorAsciiTable(itemEvent.getStateChange() == ItemEvent.SELECTED));
+    JCheckBoxMenuItem itmAnchorInstr =
+        mf.cBox(
+            "Anchor Instructions to main window",
+            "",
+            settings.anchorInstructions(),
+            itemEvent ->
+                settings.setAnchorInstructions(itemEvent.getStateChange() == ItemEvent.SELECTED));
     JCheckBoxMenuItem itmMoveCaret =
         mf.cBox(
             "Move caret after input",
             "",
+            settings.moveCaretAfterInput(),
             itemEvent ->
-                ui.toggleMoveCaretAfterInput(itemEvent.getStateChange() == ItemEvent.SELECTED));
+                settings.setMoveCaretAfterInput(itemEvent.getStateChange() == ItemEvent.SELECTED));
     menuSettings.add(itmOpenHelp);
     menuSettings.add(itmOpenAscii);
     menuSettings.add(itmOpenInstr);
+    menuSettings.addSeparator();
+    menuSettings.add(itmAnchorAscii);
+    menuSettings.add(itmAnchorInstr);
+    menuSettings.addSeparator();
     menuSettings.add(itmMoveCaret);
 
     // Help menu items
@@ -273,6 +302,7 @@ public class ComputerMenu extends JMenuBar {
         mf.cBox(
             "Show help",
             "F1",
+            false,
             itemEvent ->
                 ui.toggleHelp(
                     itemEvent.getStateChange() == ItemEvent.SELECTED,
@@ -281,6 +311,7 @@ public class ComputerMenu extends JMenuBar {
         mf.cBox(
             "Show ASCII Table",
             "F2",
+            false,
             itemEvent ->
                 ui.toggleAsciiTable(
                     itemEvent.getStateChange() == ItemEvent.SELECTED,
@@ -289,6 +320,7 @@ public class ComputerMenu extends JMenuBar {
         mf.cBox(
             "Show Instructions",
             "F3",
+            false,
             itemEvent ->
                 ui.toggleInstructions(
                     itemEvent.getStateChange() == ItemEvent.SELECTED,

@@ -146,6 +146,9 @@ public class LazySwing {
     }
 
     Font font = comp.getFont();
+    if (font == null) {
+      return;
+    }
     Font newFont = font.deriveFont((float) (currentFontSize));
     comp.setFont(newFont);
   }

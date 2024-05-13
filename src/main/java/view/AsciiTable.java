@@ -19,6 +19,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import net.miginfocom.swing.MigLayout;
 import util.BackgroundLabel;
+import util.Settings;
 import util.SizedLabel;
 
 public class AsciiTable extends AnchoredFrame {
@@ -31,7 +32,7 @@ public class AsciiTable extends AnchoredFrame {
 
   private Component headerFiller;
 
-  public AsciiTable(JFrame parent) {
+  public AsciiTable(JFrame parent, Settings settings) {
     super("ASCII Table", parent, AnchorSide.LEFT);
 
     JPanel contentPane = new JPanel();
@@ -97,13 +98,14 @@ public class AsciiTable extends AnchoredFrame {
 
     headerFiller.setPreferredSize(new Dimension(scrollPane.getVerticalScrollBar().getWidth(), 0));
 
-    setVisible(true);
-
-    // if (isAnchored) {
-    inv(this::anchorToParent);
-    // } else {
-    //   inv(this::fitToParent);
-    // }
+    inv(
+        () -> {
+          if (settings.anchorAsciiTable()) {
+            anchorToParent();
+          }
+          updateGlobalFontSize();
+          setVisible(true);
+        });
   }
 
   @Override

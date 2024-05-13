@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Application Help</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
+      }
+      h1 {
+        color: #233b56;
+        margin: 0 0;
+        padding: 0 0 5px;
+      }
+      h2 {
+        color: #255e8d;
+        margin: 0 0 0;
+        padding: 0 0 0;
+      }
+      h3 {
+        color: #358dc7;
+        margin: 0 0 0;
+        padding: 0 0 0;
+      }
+      ul {
+        margin: 0;
+        padding: 0;
+        padding-left: 30px;
+      }
+      li {
+        margin: 5px 0;
+        padding: 0;
+      }
+      hr {
+        margin: 20px 0;
+        border: 0;
+        border-top: 2px solid #2a2e35;
+        border-bottom: 1px solid #94b4c9;
+      }
+      .figure {
+        margin: 20px 0;
+        text-align: center;
+      }
+      .figcaption {
+        font-style: italic;
+        font-size: 90%;
+        text-align: center;
+      }
+      .section {
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>BitBuilder - User guide</h1>
+
+    <div class="section">
+      <h2>TLDR: Quickstart</h2>
+      <p>
+        For those eager to dive right in, here's how to start using BitBuilder
+        immediately. A more detailed guide follows below for additional features
+        and explanations.
+      </p>
+      <ul>
+        <li>
+          <b>Navigate:</b> Use the <b>arrow keys</b> to move the cursor,
+          <b>Tab</b> to toggle focus between memory and registers.
+        </li>
+        <li>
+          <b>Edit:</b> Press <b>F</b> to change the current bit value,
+          <b>Enter</b> to jump down to the next cell.
+        </li>
+        <li>
+          <b>Mouse:</b> Mouse can be used to navigate and edit, see details
+          below.
+        </li>
+        <li>
+          <b>Execute:</b> <b>Space bar</b> steps through your program,
+          <b>Ctrl+Space</b> runs it fully.
+        </li>
+        <li>
+          <b>Help and Info:</b> Press <b>F1</b> for this help, <b>F2</b> for
+          ASCII table, <b>F3</b> for CPU instructions.
+        </li>
+        <li><b>UI Adjustments:</b> Adjust font size with <b>Ctrl +/-</b>.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h3>Common Questions and Known Issues</h3>
+      <p>
+        For any discovered issue not listed here, please report to me
+        (mail@example.com) or create an Gitlab issue (URL goes here).
+      </p>
+      <ul>
+        <li>Keyboard shortcuts require the main window in focus.</li>
+        <li>
+          Some shortcuts might work differently on different operating systems.
+        </li>
+        <li>Automatic resizing does not take screen size into account.</li>
+      </ul>
+    </div>
+
+    <hr />
+
+    <div class="section">
+      <h2>About the Application</h2>
+      <p>
+        This application emulates a simple computer system, allowing users to
+        interact with memory cells and registers and execute basic instructions.
+        It aims to demystify how computers operate at a fundamental level by
+        demonstrating how binary data can represent both information and
+        commands.
+      </p>
+      <p>
+        Note, however, that this emulator simplifies certain aspects, such as
+        memory size and instruction set, to make the core concepts more
+        accessible.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Main Window Components</h2>
+      <p>
+        The main window displays the computer memory on the left and the
+        processor's registers at the top right, with execution controls at the
+        bottom right for running your programs. See figure below for reference.
+      </p>
+      <div class="figure">
+        <div>
+          <img
+            src="figures/main-window-marked-60.png"
+            alt="Main window layout"
+            width="60%"
+          />
+        </div>
+        <p class="figcaption">Figure: Main window layout</p>
+      </div>
+      <p>
+        Memory and registers are displayed as a table with columns for address
+        (Addr), name (only for registers), binary value (Value), hexadecimal
+        (Hex), decimal (Dec), ASCII representation, and instructions (Instr).
+        This table format helps visualize the data and its various
+        interpretations.
+      </p>
+      <ul>
+        <li>
+          <strong>Addr:</strong> The address or index of the memory/register
+          cell.
+        </li>
+        <li><strong>Name:</strong> The identifier for the register.</li>
+        <li>
+          <strong>Value:</strong> The current binary value of the cell, editable
+          by users.
+        </li>
+        <li>
+          <strong>Hex:</strong> Hexadecimal representation of the cell's value.
+        </li>
+        <li>
+          <strong>Dec:</strong> Decimal representation of the cell's value.
+        </li>
+        <li><strong>ASCII:</strong> ASCII character equivalent of the data.</li>
+        <li>
+          <strong>Instr:</strong> The instruction and operand, if applicable,
+          represented by the cell's value.
+        </li>
+      </ul>
+      <p>
+        Execution controls allow you to run your program step-by-step or
+        entirely, and to reset it, setting all registers to zero while leaving
+        memory unchanged. Program output and error messages appear in a text
+        area below the controls.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Navigation and basic editing</h2>
+      <p>
+        Memory and register cells (or bytes) consists of 8 bits, and can be
+        edited similar to regular text editors. Both the memory and registers
+        has a highlighted bit that indicates a cursor - initially the top left
+        bit. Their cursurs are separate and can be moved independently, but only
+        one is active at a time. Move the active cursor through its grid using
+        the keyboard arrow keys or the mouse (left click). Switch focus between
+        memory and register cursors using the Tab key, or with the mouse by
+        simply clicking on the desired cell. The memory can be scrolled
+        vertically with the mouse wheel or the Page Up/Down keys.
+      </p>
+
+      <p>
+        Pressing the F key ("flip") will toggle the value of the current cell,
+        alternating between 0 and 1. You can also press the 0 and 1 keys to set
+        the value directly. By default, the cursor will move to the next bit of
+        the cell after editing - although, this can be disabled in the Configure
+        menu - and you can press Enter to jump down to the next cell.
+      </p>
+
+      <p>
+        The mouse can be used to navigate and edit the memory and registers as
+        well. Clicking on a cell will move the cursor there, and you can change
+        bit values by double or right clicking on the bit you want to change.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Executing Programs</h2>
+      <p>
+        Programs are sequences of instructions stored in memory cells. These
+        instructions are executed by the processor, which reads the memory cells
+        sequentially and performs the corresponding operations. To run a
+        program, you can either step through it one instruction at a time or run
+        it continuously until completion.
+      </p>
+      <p>
+        To step through a program, press the Space bar. This will execute the
+        current instruction and move the program counter - which points to the
+        next memory cell to execute - to the next cell. To run the program
+        continuously, press Ctrl+Space. This will execute instructions until the
+        program reaches a halt instruction or an error occurs. You can pause the
+        execution at any time by pressing the Space bar again. Note that the
+        execution speed can be adjusted in the Configure menu.
+      </p>
+      <p>
+        The program's output and any error messages will be displayed in the
+        text area below the execution controls. You can also reset the program
+        by pressing the Reset button, which sets all registers to zero while
+        leaving memory unchanged.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>ASCII Table and Instruction Descriptions</h2>
+      <p>
+        Writing programs on this low-level system can be challenging. The
+        additional columns in the memory and register tables shows different
+        ways to interpret the binary data, but it is ultimately up to the user
+        to understand what the data represents. In addition to this help window,
+        there are two additional windows that can provide valuable information
+        to assist you in writing programs: the ASCII Table and the Instruction
+        Descriptions.
+      </p>
+      <p>
+        The ASCII Table window displays the ASCII character set, showing the
+        decimal, hexadecimal, and binary representations of each character. This
+        is useful when working with text data in your programs, e.g. in order to
+        print text output. See the Print instruction and its variants.
+      </p>
+      <p>
+        The Instruction Descriptions window provides detailed information about
+        each instruction that the processor can execute. It explains the
+        operation performed by the instruction and any operands it requires.
+        This can help you understand how to write programs that utilize the full
+        capabilities of the processor.
+      </p>
+      <p>
+        You can access all additional windows through the Help menu or by using
+        the keyboard shortcuts: F1 for this help, F2 for the ASCII Table and F3
+        for the Instruction Descriptions.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Selecting, Editing and Moving Cells</h2>
+      <p>
+        The application allows you to select and move cells within the memory
+        and register tables. You can select one or more cells by clicking and
+        dragging the mouse over the cells you want to select, or by holding the
+        Shift key and pressing the up or down arrow keys to extend the
+        selection. Selected cells are highlighted to indicate that they are
+        active. Only whole cells can be selected, not individual bits, and
+        selected cells cannot be directly edited. They can, however, be copied,
+        pasted, or moved.
+      </p>
+      <p>
+        When a selection is active, you can change the selection itself without
+        chainging the values. Holding Shift and using the arrow keys will extend
+        or shrink the selection, while Ctrl+Arrow will move the selection.
+        Pressing the Escape key or moving the cursor without holding any
+        modifier key will clear the selection. Browse the Selection menu for all
+        available options.
+      </p>
+      <p>
+        with an active selection, you can also edit the cell values in several
+        ways. Values can be copied and pasted between cells using the key
+        combinations Ctrl+C and Ctrl+V, respectively. You can also move the
+        selected cells up or down by holding the Alt key and pressing the up or
+        down arrow keys. This will shift the cells in the direction of the arrow
+        key, moving the other cells accordingly. To clear the selected cells,
+        press the Delete key. This will set the values of the selected cells to
+        zero. Alternatively, you can press Ctrl+Delete to completely remove the
+        selected cells, shifting all lower cells up to fill the gap.
+      </p>
+
+      <h3>Note on copy and paste</h3>
+      <p>
+        Copying cells will copy the binary values of the cells, e.g. "1010
+        1010", to the operating system's default clipboard. For pasting to work,
+        the clipboard content must adhere to this format (although, extra spaces
+        are ignored). Pasting will overwrite the values of the selected cells
+        with the copied values. If the copied values are longer than the
+        selection, the values will still be pasted, outside the range of the
+        selection. If the copied values are shorter, the additional selected
+        cells will remain unchanged. If the pasted values would exceed the
+        memory or register size, the excess values will be ignored.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Template Programs</h2>
+      <p>
+        To help you get started with writing programs, the application provides
+        a set of template programs that demonstrate various features and
+        capabilities of the system. You can access these templates through the
+        Template menu, which lists different programs you can load into memory.
+        These templates include simple programs that perform arithmetic
+        operations, manipulate data, and control program flow.
+      </p>
+      <p>
+        By loading a template program, you can study its structure and
+        instructions to understand how to write similar programs. You can also
+        modify the template to experiment with different instructions and
+        operations. This can be a valuable learning tool to explore the
+        capabilities of the system and deepen your understanding of computer
+        architecture.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Configuration Options</h2>
+      <p>
+        The Configure menu offers several options to customize the application
+        to your preferences. You can adjust the font size of the memory and
+        register tables, change the execution speed of programs, and enable or
+        disable the automatic cursor movement after editing a cell. You can also
+        reset the application to its default settings if needed.
+      </p>
+      <p>
+        The Configure menu also provides options to show or hide the ASCII Table
+        and Instruction Descriptions windows, as well as the memory and register
+        tables. This allows you to focus on the main window when needed or
+        access the additional information quickly.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Menu Options</h2>
+      <p>Explore additional features through the menu bar:</p>
+      <ul>
+        <li><strong>File Menu:</strong> Save and load programs.</li>
+        <li>
+          <strong>Edit Menu:</strong> Offers options for copy/pasting and moving
+          cells.
+        </li>
+        <li>
+          <strong>Template Menu:</strong> Access example programs to get started
+          quickly.
+        </li>
+        <li>
+          <strong>Help Menu:</strong> You are here! View help for software
+          usage.
+        </li>
+        <li>
+          <strong>ASCII Table Window:</strong> Refer to this for ASCII character
+          references.
+        </li>
+        <li>
+          <strong>Instruction Descriptions Window:</strong> Detailed guide on
+          each instruction your application can execute.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

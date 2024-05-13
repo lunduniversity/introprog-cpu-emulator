@@ -16,6 +16,7 @@ public abstract class AnchoredFrame extends JFrame {
   }
 
   protected JFrame parentFrame;
+
   private boolean isAnchored;
   private AnchorSide anchorSide;
   private transient ComponentListener parentListener;
@@ -53,6 +54,9 @@ public abstract class AnchoredFrame extends JFrame {
           }
 
           private void doIt(boolean recalculate) {
+            if (!isAnchored) {
+              return;
+            }
             if (recalculate && System.currentTimeMillis() - lastInvocation < 100) {
               return;
             }
@@ -85,10 +89,12 @@ public abstract class AnchoredFrame extends JFrame {
 
   public void updateGlobalFontSize() {
     LazySwing.setComponentTreeFontSize(this);
-    inv(this::fitToParent);
+    if (isAnchored) {
+      inv(this::fitToParent);
+    }
   }
 
-  private void fitToParent() {
+  protected void fitToParent() {
     fitContent();
     setSize(getWidth(), parentFrame.getHeight());
     followParent();
@@ -96,7 +102,7 @@ public abstract class AnchoredFrame extends JFrame {
 
   protected abstract void fitContent();
 
-  private void followParent() {
+  protected void followParent() {
     Point parentLocation = parentFrame.getLocation();
     int xCoord;
     int yCoord = parentLocation.y;

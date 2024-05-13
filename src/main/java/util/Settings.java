@@ -5,24 +5,38 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
-public class Settings {
+public class Settings implements java.io.Serializable {
+
   private static final transient String SETTINGS_FILE = "settings.json";
   private static final transient Gson gson = new Gson(); // Shared Gson instance
 
   private transient File settingsFile = null;
 
+  private ExecutionSpeed executionSpeed;
+
   private boolean showHelpOnStartup;
   private boolean showAsciiTableOnStartup;
   private boolean showInstructionsOnStartup;
+
+  private boolean anchorAsciiTable;
+  private boolean anchorInstructions;
+
   private boolean moveCaretAfterInput;
 
   // Private constructor to prevent instantiation without loading from file
   private Settings() {
+    executionSpeed = ExecutionSpeed.MEDIUM;
+
     showHelpOnStartup = true;
     showAsciiTableOnStartup = true;
     showInstructionsOnStartup = true;
+
+    anchorAsciiTable = true;
+    anchorInstructions = true;
+
     moveCaretAfterInput = true;
   }
 
@@ -36,13 +50,14 @@ public class Settings {
       File settingsFile = createSettingsFile();
       try (FileReader reader = new FileReader(settingsFile)) {
         Settings settings = gson.fromJson(reader, Settings.class);
+        if (settings == null) {
+          settings = new Settings();
+        }
         settings.setSettingsFile(settingsFile);
 
         return settings;
-      } catch (IOException e) {
-        return new Settings();
       }
-    } catch (Exception e) {
+    } catch (IOException | URISyntaxException e) {
       // Return a new instance with default settings if the file does not exist or an error occurs
       return new Settings();
     }
@@ -61,7 +76,7 @@ public class Settings {
     }
   }
 
-  private static File createSettingsFile() throws Exception {
+  private static File createSettingsFile() throws IOException, URISyntaxException {
     // Get the path to the directory containing the JAR file
     String jarDir =
         new File(
@@ -78,14 +93,24 @@ public class Settings {
 
     // Create the file if it does not exist
     File settingsFile = new File(settingsFilePath);
-    settingsFile.createNewFile();
+    if (!settingsFile.createNewFile()) {
+      // If the file already exists, still return it
+    }
 
     return settingsFile;
   }
 
   // Below are the getters and setters for the settings attributes
 
-  public boolean isShowHelpOnStartup() {
+  public ExecutionSpeed getExecutionSpeed() {
+    return executionSpeed;
+  }
+
+  public void setExecutionSpeed(ExecutionSpeed executionSpeed) {
+    this.executionSpeed = executionSpeed;
+  }
+
+  public boolean showHelpOnStartup() {
     return showHelpOnStartup;
   }
 
@@ -93,7 +118,7 @@ public class Settings {
     this.showHelpOnStartup = showHelpOnStartup;
   }
 
-  public boolean isShowAsciiTableOnStartup() {
+  public boolean showAsciiTableOnStartup() {
     return showAsciiTableOnStartup;
   }
 
@@ -101,7 +126,7 @@ public class Settings {
     this.showAsciiTableOnStartup = showAsciiTableOnStartup;
   }
 
-  public boolean isShowInstructionsOnStartup() {
+  public boolean showInstructionsOnStartup() {
     return showInstructionsOnStartup;
   }
 
@@ -109,7 +134,23 @@ public class Settings {
     this.showInstructionsOnStartup = showInstructionsOnStartup;
   }
 
-  public boolean isMoveCaretAfterInput() {
+  public boolean anchorAsciiTable() {
+    return anchorAsciiTable;
+  }
+
+  public void setAnchorAsciiTable(boolean anchorAsciiTable) {
+    this.anchorAsciiTable = anchorAsciiTable;
+  }
+
+  public boolean anchorInstructions() {
+    return anchorInstructions;
+  }
+
+  public void setAnchorInstructions(boolean anchorInstructions) {
+    this.anchorInstructions = anchorInstructions;
+  }
+
+  public boolean moveCaretAfterInput() {
     return moveCaretAfterInput;
   }
 

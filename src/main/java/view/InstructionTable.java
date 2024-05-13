@@ -28,6 +28,7 @@ import model.Registry;
 import model.StorageListener;
 import net.miginfocom.swing.MigLayout;
 import util.LazySwing;
+import util.Settings;
 import util.SizedLabel;
 
 public class InstructionTable extends AnchoredFrame {
@@ -45,7 +46,7 @@ public class InstructionTable extends AnchoredFrame {
 
   private final Font fontMono = new Font("Monospaced", Font.PLAIN, LazySwing.DEFAULT_FONT_SIZE);
 
-  public InstructionTable(JFrame parent, Memory memory, ProgramCounter pc) {
+  public InstructionTable(JFrame parent, Memory memory, ProgramCounter pc, Settings settings) {
     super("Instruction Descriptions", parent, AnchorSide.RIGHT);
     this.memory = memory;
     this.pc = pc;
@@ -86,14 +87,14 @@ public class InstructionTable extends AnchoredFrame {
           }
         });
 
-    setVisible(true);
-
-    inv(this::updateGlobalFontSize);
-    // if (isAnchored) {
-    inv(this::anchorToParent);
-    // } else {
-    //   inv(this::fitToParent);
-    // }
+    inv(
+        () -> {
+          if (settings.anchorInstructions()) {
+            anchorToParent();
+          }
+          updateGlobalFontSize();
+          setVisible(true);
+        });
 
     // showBorders(this);
   }
