@@ -5,16 +5,31 @@ import util.Range;
 
 public class CellSelecter extends AbstractSelecter {
 
-  private final Memory memory;
+  interface CarretScroller {
+    void scrollToCarret(int index);
+  }
 
-  public CellSelecter(Memory memory, SelectionPainter painter, FocusRequester focusRequester) {
+  private final Memory memory;
+  private final CarretScroller carretScroller;
+
+  public CellSelecter(
+      Memory memory,
+      SelectionPainter painter,
+      FocusRequester focusRequester,
+      CarretScroller carretScroller) {
     super(memory.size(), painter, focusRequester);
     this.memory = memory;
+    this.carretScroller = carretScroller;
   }
 
   @Override
   public StorageType getStorageType() {
     return StorageType.MEMORY;
+  }
+
+  @Override
+  public void caretMoved() {
+    carretScroller.scrollToCarret(getCaretRow());
   }
 
   // Below are methods that are action rather than selection related, they might be moved to a

@@ -7,7 +7,12 @@ import model.Registry;
 
 public abstract class Instruction {
 
-  static final String INVALID_ADDR_TYPE = "\u2013";
+  static final String INVALID_ADDR_CHAR = "\u2013";
+
+  static final byte ADDR_TYPE_CONSTANT = 0b00;
+  static final byte ADDR_TYPE_REGISTER = 0b01;
+  static final byte ADDR_TYPE_MEMORY = 0b10;
+  static final byte ADDR_TYPE_INVALID = 0b11;
 
   protected final String name;
   protected final int operand;
@@ -72,7 +77,7 @@ public abstract class Instruction {
       case 2:
         return "MEM";
       default:
-        return INVALID_ADDR_TYPE;
+        return INVALID_ADDR_CHAR;
     }
   }
 

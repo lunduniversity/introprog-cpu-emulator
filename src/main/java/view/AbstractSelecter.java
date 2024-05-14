@@ -75,11 +75,15 @@ public abstract class AbstractSelecter {
     paint();
   }
 
+  // Empty so that subclasses can override
+  public void caretMoved() {}
+
   public void setCaretPosition(int row, int col) {
     caretPosRow = row;
     caretPosCol = col;
     clearSelection();
     paint();
+    caretMoved();
   }
 
   public void moveCaretUp() {
@@ -87,8 +91,8 @@ public abstract class AbstractSelecter {
       caretPosRow--;
     }
     clearSelection();
-    clearSelection();
     paintRange(new Range(caretPosRow, caretPosRow + 2));
+    caretMoved();
   }
 
   public void moveCaretDown() {
@@ -97,6 +101,7 @@ public abstract class AbstractSelecter {
     }
     clearSelection();
     paintRange(new Range(caretPosRow - 1, caretPosRow + 1));
+    caretMoved();
   }
 
   public void moveCaretLeft() {
@@ -105,6 +110,7 @@ public abstract class AbstractSelecter {
     }
     clearSelection();
     paintRange(new Range(caretPosRow, caretPosRow + 1));
+    caretMoved();
   }
 
   public void moveCaretRight() {
@@ -113,6 +119,7 @@ public abstract class AbstractSelecter {
     }
     clearSelection();
     paintRange(new Range(caretPosRow, caretPosRow + 1));
+    caretMoved();
   }
 
   public void moveCaretToNextCell() {
@@ -122,6 +129,7 @@ public abstract class AbstractSelecter {
     }
     clearSelection();
     paintRange(new Range(caretPosRow - 1, caretPosRow + 1));
+    caretMoved();
   }
 
   public void expandSelectionUp() {
@@ -191,6 +199,7 @@ public abstract class AbstractSelecter {
     caretPosRow = selectedCell;
     caretPosCol = 0;
     paint();
+    caretMoved();
   }
 
   public void addSelectedCell(int selectedCell) {

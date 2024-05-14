@@ -1,8 +1,5 @@
 package view;
 
-import static util.LazySwing.decreaseFontSize;
-import static util.LazySwing.increaseFontSize;
-import static util.LazySwing.resetFontSize;
 import static util.LazySwing.runSafely;
 
 import java.awt.event.ItemEvent;
@@ -23,6 +20,10 @@ import util.Settings;
 import util.TemplatesHandler;
 
 public class ComputerMenu extends JMenuBar {
+
+  private JCheckBoxMenuItem itmShowHelp;
+  private JCheckBoxMenuItem itmShowAsciiTable;
+  private JCheckBoxMenuItem itmShowInstructions;
 
   public interface MenuCheckboxSetter {
     void setCheckbox(boolean selected);
@@ -189,7 +190,7 @@ public class ComputerMenu extends JMenuBar {
             "Increase font size",
             new String[] {"ctrl PLUS", "ctrl ADD", "ctrl shift EQUALS"},
             e -> {
-              increaseFontSize();
+              settings.increaseFontSize();
               ui.updateGlobalFontSize();
             });
     JMenuItem itmDecFontSize =
@@ -197,7 +198,7 @@ public class ComputerMenu extends JMenuBar {
             "Decrease font size",
             "ctrl MINUS",
             e -> {
-              decreaseFontSize();
+              settings.decreaseFontSize();
               ui.updateGlobalFontSize();
             });
     JMenuItem itmResetFontSize =
@@ -205,7 +206,7 @@ public class ComputerMenu extends JMenuBar {
             "Reset font size",
             "ctrl 0",
             e -> {
-              resetFontSize();
+              settings.resetFontSize();
               ui.updateGlobalFontSize();
             });
     menuView.add(itmIncFontSize);
@@ -247,14 +248,14 @@ public class ComputerMenu extends JMenuBar {
         mf.cBox(
             "Open Help on startup",
             "",
-            settings.showHelpOnStartup(),
+            settings.getShowHelpOnStartup(),
             itemEvent ->
                 settings.setShowHelpOnStartup(itemEvent.getStateChange() == ItemEvent.SELECTED));
     JCheckBoxMenuItem itmOpenAscii =
         mf.cBox(
             "Open ASCII table on startup",
             "",
-            settings.showAsciiTableOnStartup(),
+            settings.getShowAsciiTableOnStartup(),
             itemEvent ->
                 settings.setShowAsciiTableOnStartup(
                     itemEvent.getStateChange() == ItemEvent.SELECTED));
@@ -262,7 +263,7 @@ public class ComputerMenu extends JMenuBar {
         mf.cBox(
             "Open Instructions on startup",
             "",
-            settings.showInstructionsOnStartup(),
+            settings.getShowInstructionsOnStartup(),
             itemEvent ->
                 settings.setShowInstructionsOnStartup(
                     itemEvent.getStateChange() == ItemEvent.SELECTED));
@@ -271,21 +272,21 @@ public class ComputerMenu extends JMenuBar {
         mf.cBox(
             "Anchor ASCII table to main window",
             "",
-            settings.anchorAsciiTable(),
+            settings.getAnchorAsciiTable(),
             itemEvent ->
                 settings.setAnchorAsciiTable(itemEvent.getStateChange() == ItemEvent.SELECTED));
     JCheckBoxMenuItem itmAnchorInstr =
         mf.cBox(
             "Anchor Instructions to main window",
             "",
-            settings.anchorInstructions(),
+            settings.getAnchorInstructions(),
             itemEvent ->
                 settings.setAnchorInstructions(itemEvent.getStateChange() == ItemEvent.SELECTED));
     JCheckBoxMenuItem itmMoveCaret =
         mf.cBox(
             "Move caret after input",
             "",
-            settings.moveCaretAfterInput(),
+            settings.getMoveCaretAfterInput(),
             itemEvent ->
                 settings.setMoveCaretAfterInput(itemEvent.getStateChange() == ItemEvent.SELECTED));
     menuSettings.add(itmOpenHelp);
@@ -297,8 +298,7 @@ public class ComputerMenu extends JMenuBar {
     menuSettings.addSeparator();
     menuSettings.add(itmMoveCaret);
 
-    // Help menu items
-    JCheckBoxMenuItem itmShowHelp =
+    itmShowHelp =
         mf.cBox(
             "Show help",
             "F1",
@@ -307,7 +307,7 @@ public class ComputerMenu extends JMenuBar {
                 ui.toggleHelp(
                     itemEvent.getStateChange() == ItemEvent.SELECTED,
                     ((JCheckBoxMenuItem) itemEvent.getItem())::setSelected));
-    JCheckBoxMenuItem itmShowAsciiTable =
+    itmShowAsciiTable =
         mf.cBox(
             "Show ASCII Table",
             "F2",
@@ -316,7 +316,7 @@ public class ComputerMenu extends JMenuBar {
                 ui.toggleAsciiTable(
                     itemEvent.getStateChange() == ItemEvent.SELECTED,
                     ((JCheckBoxMenuItem) itemEvent.getItem())::setSelected));
-    JCheckBoxMenuItem itmShowInstructions =
+    itmShowInstructions =
         mf.cBox(
             "Show Instructions",
             "F3",
@@ -328,5 +328,17 @@ public class ComputerMenu extends JMenuBar {
     menuHelp.add(itmShowHelp);
     menuHelp.add(itmShowAsciiTable);
     menuHelp.add(itmShowInstructions);
+  }
+
+  void triggerManuallyAsciiTable() {
+    itmShowAsciiTable.doClick();
+  }
+
+  void triggerManuallyInstructions() {
+    itmShowInstructions.doClick();
+  }
+
+  void triggerManuallyHelp() {
+    itmShowHelp.doClick();
   }
 }

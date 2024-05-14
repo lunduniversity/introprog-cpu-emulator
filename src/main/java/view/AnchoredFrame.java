@@ -4,11 +4,11 @@ import static util.LazySwing.inv;
 
 import java.awt.Point;
 import java.awt.event.ComponentListener;
-import javax.swing.JFrame;
+import javax.swing.*;
 import javax.swing.WindowConstants;
 import util.LazySwing;
 
-public abstract class AnchoredFrame extends JFrame {
+public abstract class AnchoredFrame extends JDialog {
 
   public enum AnchorSide {
     LEFT,
@@ -22,7 +22,7 @@ public abstract class AnchoredFrame extends JFrame {
   private transient ComponentListener parentListener;
 
   protected AnchoredFrame(String title, JFrame parent, AnchorSide anchorSide) {
-    super(title);
+    super(parent, title, false);
     this.parentFrame = parent;
     this.anchorSide = anchorSide;
 
@@ -76,7 +76,7 @@ public abstract class AnchoredFrame extends JFrame {
     }
     this.isAnchored = true;
     parentFrame.addComponentListener(parentListener);
-    fitToParent();
+    inv(this::fitToParent);
   }
 
   public void releaseFromParent() {
@@ -87,8 +87,8 @@ public abstract class AnchoredFrame extends JFrame {
     parentFrame.removeComponentListener(parentListener);
   }
 
-  public void updateGlobalFontSize() {
-    LazySwing.setComponentTreeFontSize(this);
+  public void updateGlobalFontSize(int newFontSize) {
+    LazySwing.setComponentTreeFontSize(this, newFontSize);
     if (isAnchored) {
       inv(this::fitToParent);
     }

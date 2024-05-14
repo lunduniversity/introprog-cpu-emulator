@@ -1,11 +1,11 @@
 package view;
 
-
 import instruction.InstructionFactory;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HexFormat;
@@ -299,5 +299,9 @@ public abstract class AbstractCell {
   public void clearProgramCounterFocus() {
     bitPanel.setBorder(PC_NO_FOCUS_BORDER);
     setCellColor(DEFAULT_BG_COLOR);
+  }
+
+  public void scrollTo() {
+    bitPanel.scrollRectToVisible(new Rectangle(bitPanel.getSize()));
   }
 }

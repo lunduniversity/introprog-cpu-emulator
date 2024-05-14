@@ -111,6 +111,7 @@ public class ComputerUI implements FocusRequester {
   private final CellSelecter cellSelecter;
   private final RegisterSelecter regSelecter;
 
+  private HelpWindow helpWindow;
   private AsciiTable asciiTable;
   private InstructionTable instructionTable;
 
@@ -129,6 +130,7 @@ public class ComputerUI implements FocusRequester {
   private JButton btnStep;
   private JButton btnReset;
   private Settings settings;
+  private ComputerMenu menu;
 
   public ComputerUI(Memory memory, CPU cpu, ObservableIO io) {
     this.memory = memory;
@@ -140,7 +142,7 @@ public class ComputerUI implements FocusRequester {
     this.settings = Settings.loadFromFile();
 
     // Set Swings default font size
-    UIManager.put("Label.font", new Font("Tahoma", Font.PLAIN, LazySwing.DEFAULT_FONT_SIZE));
+    UIManager.put("Label.font", new Font("Tahoma", Font.PLAIN, Settings.DEFAULT_FONT_SIZE));
 
     final SelectionPainter cellPainter =
         (address, isSelected, caretPos, active) ->
@@ -148,28 +150,36 @@ public class ComputerUI implements FocusRequester {
     final SelectionPainter regPainter =
         (address, isSelected, caretPos, active) ->
             regCells[address].setSelected(isSelected, caretPos, active);
-    this.cellSelecter = new CellSelecter(memory, cellPainter, this);
+    this.cellSelecter =
+        new CellSelecter(memory, cellPainter, this, idx -> memCells[idx].scrollTo());
     this.regSelecter = new RegisterSelecter(registry, regPainter, this);
 
     this.programCounterFocusIdx = new ObservableValue<>(pc.getCurrentIndex());
-    initialize();
+    initializeUI();
     requestFocus(StorageType.MEMORY);
     configureKeyBindings();
+    setupSettingsListeners();
 
     memCells[programCounterFocusIdx.get()].setProgramCounterFocus();
 
     updateGlobalFontSize();
 
-    frame.setLocationRelativeTo(null);
-    frame.setVisible(true);
+    inv(
+        () -> {
+          frame.setLocationRelativeTo(null);
+          frame.setVisible(true);
 
-    if (settings.showHelpOnStartup()) {
-      toggleHelp(true, null);
-    }
-
-    // Open the Ascii Table and Instructins Description frame by default.
-    // toggleAsciiTable(true);
-    // toggleInstructions(true);
+          // Open additional windows if needed
+          if (settings.getShowAsciiTableOnStartup()) {
+            menu.triggerManuallyAsciiTable();
+          }
+          if (settings.getShowInstructionsOnStartup()) {
+            menu.triggerManuallyInstructions();
+          }
+          if (settings.getShowHelpOnStartup()) {
+            menu.triggerManuallyHelp();
+          }
+        });
 
     // showBorders(frame);
 
@@ -179,7 +189,7 @@ public class ComputerUI implements FocusRequester {
   }
 
   /** Initialize the contents of the frame. */
-  private void initialize() {
+  private void initializeUI() {
     frame = new JFrame();
     frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     frame.addWindowListener(
@@ -197,7 +207,8 @@ public class ComputerUI implements FocusRequester {
             frame,
             title ->
                 inv(() -> frame.setTitle("BitBuilder" + (title != null ? " - " + title : ""))));
-    frame.setJMenuBar(new ComputerMenu(this, fileHandler));
+    menu = new ComputerMenu(this, fileHandler);
+    frame.setJMenuBar(menu);
 
     JLabel lblComputerHeader = new JLabel("BitBuilder 8-bit Computer");
     lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -239,7 +250,6 @@ public class ComputerUI implements FocusRequester {
       memoryCellsPanel.setBorder(null);
       scrollPane.setBorder(null);
       scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-      // scrollPane.setMaximumSize(SCROLLER_SIZE);
 
       // Remove arrow key bindings for vertical and horizontal scroll bars
       InputMap im = scrollPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -437,7 +447,6 @@ public class ComputerUI implements FocusRequester {
         txtOutput.setContentType("text/html");
         txtOutput.setEditorKit(new HTMLEditorKit());
         txtOutput.setFocusable(true);
-        // txtOutput.setOpaque(false);
         txtOutput.setEditable(false);
         txtOutput.setMargin(new Insets(0, 0, 0, 0));
         txtOutput.setFont(lblOutput.getFont());
@@ -521,19 +530,55 @@ public class ComputerUI implements FocusRequester {
     final JScrollBar vscroll = scrollPane.getVerticalScrollBar();
     imap.put(KeyStroke.getKeyStroke("PAGE_UP"), "scrollUp");
     imap.put(KeyStroke.getKeyStroke("PAGE_DOWN"), "scrollDown");
-    amap.put("scrollUp", action(e -> vscroll.setValue(vscroll.getValue() - 16 * 4)));
-    amap.put("scrollDown", action(e -> vscroll.setValue(vscroll.getValue() + 16 * 4)));
+    amap.put(
+        "scrollUp",
+        action(
+            e ->
+                vscroll.setValue(
+                    vscroll.getValue() - (20 + settings.getCurrentFontSize() / 2) * 10)));
+    amap.put(
+        "scrollDown",
+        action(
+            e ->
+                vscroll.setValue(
+                    vscroll.getValue() + (20 + settings.getCurrentFontSize() / 2) * 10)));
   }
 
   void updateGlobalFontSize() {
-    LazySwing.setComponentTreeFontSize(frame);
+    int currentFontSize = settings.getCurrentFontSize();
+    LazySwing.setComponentTreeFontSize(frame, currentFontSize);
     inv(this::autoResizeFrame);
     if (asciiTable != null) {
-      asciiTable.updateGlobalFontSize();
+      asciiTable.updateGlobalFontSize(currentFontSize);
     }
     if (instructionTable != null) {
-      instructionTable.updateGlobalFontSize();
+      instructionTable.updateGlobalFontSize(currentFontSize);
     }
+  }
+
+  private void setupSettingsListeners() {
+    settings.addPropertyChangeListener(
+        Settings.ANCHOR_ASCII_TABLE,
+        evt -> {
+          if (asciiTable != null) {
+            if (((boolean) evt.getNewValue())) {
+              asciiTable.anchorToParent();
+            } else {
+              asciiTable.releaseFromParent();
+            }
+          }
+        });
+    settings.addPropertyChangeListener(
+        Settings.ANCHOR_INSTRUCTIONS,
+        evt -> {
+          if (instructionTable != null) {
+            if (((boolean) evt.getNewValue())) {
+              instructionTable.anchorToParent();
+            } else {
+              instructionTable.releaseFromParent();
+            }
+          }
+        });
   }
 
   Settings getSettings() {
@@ -637,12 +682,33 @@ public class ComputerUI implements FocusRequester {
     return currentSelecter;
   }
 
-  void toggleHelp(boolean display, MenuCheckboxSetter setter) {}
+  void toggleHelp(boolean display, MenuCheckboxSetter setter) {
+    if (display) {
+      if (helpWindow == null) {
+        helpWindow = new HelpWindow(frame);
+        helpWindow.addWindowListener(
+            new WindowAdapter() {
+              @Override
+              public void windowClosed(WindowEvent e) {
+                setter.setCheckbox(false);
+              }
+            });
+      }
+    } else {
+      if (helpWindow != null) {
+        helpWindow.dispose();
+        helpWindow = null;
+      }
+    }
+  }
 
   void toggleAsciiTable(boolean display, MenuCheckboxSetter setter) {
     if (display) {
       if (asciiTable == null) {
         asciiTable = new AsciiTable(frame, settings);
+        if (settings.getAnchorAsciiTable()) {
+          asciiTable.anchorToParent();
+        }
         asciiTable.addWindowListener(
             new WindowAdapter() {
               @Override
@@ -664,6 +730,9 @@ public class ComputerUI implements FocusRequester {
     if (display) {
       if (instructionTable == null) {
         instructionTable = new InstructionTable(frame, memory, pc, settings);
+        if (settings.getAnchorInstructions()) {
+          instructionTable.anchorToParent();
+        }
         instructionTable.addWindowListener(
             new WindowAdapter() {
               @Override
@@ -686,7 +755,7 @@ public class ComputerUI implements FocusRequester {
       return; // Do not allow editing during selection
     }
     currentCells[currentSelecter.getCaretRow()].flipBit(currentSelecter.getCaretCol());
-    if (settings.moveCaretAfterInput()) {
+    if (settings.getMoveCaretAfterInput()) {
       currentSelecter.moveCaretRight();
     }
     fileHandler.setIsModified(true);
@@ -697,7 +766,7 @@ public class ComputerUI implements FocusRequester {
       return; // Do not allow editing during selection
     }
     currentCells[currentSelecter.getCaretRow()].setBit(currentSelecter.getCaretCol(), value);
-    if (settings.moveCaretAfterInput()) {
+    if (settings.getMoveCaretAfterInput()) {
       currentSelecter.moveCaretRight();
     }
     fileHandler.setIsModified(true);

@@ -23,11 +23,13 @@ public class Cpy extends Instruction {
     int destType = (operand) & 0x3;
 
     // check for errors first
-    if (srcType != 0b00 && srcType != 0b01 && srcType != 0b10) {
+    if (srcType != ADDR_TYPE_CONSTANT
+        && srcType != ADDR_TYPE_REGISTER
+        && srcType != ADDR_TYPE_MEMORY) {
       throw new IllegalArgumentException(
           String.format("Invalid source type: %s", toBinaryString(srcType, 2)));
     }
-    if (destType != 0b10 && destType != 0b01) {
+    if (destType != ADDR_TYPE_MEMORY && destType != ADDR_TYPE_REGISTER) {
       throw new IllegalArgumentException(
           String.format("Invalid destination type: %s", toBinaryString(destType, 2)));
     }
@@ -36,7 +38,7 @@ public class Cpy extends Instruction {
     int dst = mem.getValueAt(pc.next());
     int value = getSrcValue(srcType, src, mem, reg);
 
-    if (destType == 0b10) {
+    if (destType == ADDR_TYPE_MEMORY) {
       mem.setValueAt(dst, value);
     } else {
       reg.setValueAt(dst, value);
@@ -48,9 +50,9 @@ public class Cpy extends Instruction {
   }
 
   private int getSrcValue(int srcType, int src, Memory mem, Registry reg) {
-    if (srcType == 0b01) {
+    if (srcType == ADDR_TYPE_REGISTER) {
       return reg.getValueAt(src);
-    } else if (srcType == 0b10) {
+    } else if (srcType == ADDR_TYPE_MEMORY) {
       return mem.getValueAt(src);
     }
     return src;
@@ -72,10 +74,10 @@ public class Cpy extends Instruction {
     indices.add(cur + 1);
     indices.add(cur + 2);
 
-    if (srcType == 0b10) {
+    if (srcType == ADDR_TYPE_MEMORY) {
       indices.add(mem.getValueAt(cur + 1));
     }
-    if (destType == 0b10) {
+    if (destType == ADDR_TYPE_MEMORY) {
       indices.add(mem.getValueAt(cur + 2));
     }
 
@@ -89,13 +91,13 @@ public class Cpy extends Instruction {
     int destType = (operand) & 0x3;
 
     ArrayList<Integer> indices = new ArrayList<>();
-    if (srcType == 0b01) {
+    if (srcType == ADDR_TYPE_REGISTER) {
       int regIdx = mem.getValueAt(cur + 1);
       if (Registry.isValidIndex(regIdx)) {
         indices.add(regIdx);
       }
     }
-    if (destType == 0b01) {
+    if (destType == ADDR_TYPE_REGISTER) {
       int regIdx = mem.getValueAt(cur + 2);
       if (Registry.isValidIndex(regIdx)) {
         indices.add(regIdx);

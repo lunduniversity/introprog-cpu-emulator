@@ -100,10 +100,8 @@ public class AsciiTable extends AnchoredFrame {
 
     inv(
         () -> {
-          if (settings.anchorAsciiTable()) {
-            anchorToParent();
-          }
-          updateGlobalFontSize();
+          updateGlobalFontSize(settings.getCurrentFontSize());
+          fitToParent();
           setVisible(true);
         });
   }

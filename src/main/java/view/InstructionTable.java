@@ -44,12 +44,15 @@ public class InstructionTable extends AnchoredFrame {
   private JPanel instructionPanel;
   private JEditorPane instrDesc;
 
-  private final Font fontMono = new Font("Monospaced", Font.PLAIN, LazySwing.DEFAULT_FONT_SIZE);
+  private Settings settings;
+
+  private final Font fontMono = new Font("Monospaced", Font.PLAIN, Settings.DEFAULT_FONT_SIZE);
 
   public InstructionTable(JFrame parent, Memory memory, ProgramCounter pc, Settings settings) {
     super("Instruction Descriptions", parent, AnchorSide.RIGHT);
     this.memory = memory;
     this.pc = pc;
+    this.settings = settings;
 
     initUIContent();
 
@@ -89,10 +92,8 @@ public class InstructionTable extends AnchoredFrame {
 
     inv(
         () -> {
-          if (settings.anchorInstructions()) {
-            anchorToParent();
-          }
-          updateGlobalFontSize();
+          updateGlobalFontSize(settings.getCurrentFontSize());
+          fitToParent();
           setVisible(true);
         });
 
@@ -181,17 +182,17 @@ public class InstructionTable extends AnchoredFrame {
           instrTablePanel,
           InstructionFactory.INST_NAME_CPY,
           InstructionFactory.INST_CPY,
-          "<b>Copy</b>: Copies value from source to destination. The first two operand bits are for"
-              + " src (constant, memory, or register), next two bits for dst (memory or register"
-              + " only). See footnote for addressing types.",
+          "<b>Copy</b>: Copies value from source to destination. The first two operand bits are the"
+              + " addressing type<b>*</b> for the source, next two bits are the addressing"
+              + " type<b>*</b> for the destination. The destination cannot be a constant.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_MOV,
           InstructionFactory.INST_MOV,
-          "<b>Move</b>: Moves value from source to destination. First two operand bits are for src"
-              + " (memory or register), next two bits for dst (memory or register). See footnote"
-              + " for addressing types.",
+          "<b>Move</b>: Moves value from source to destination. The first two operand bits are the"
+              + " addressing type<b>*</b> for the source, next two bits are the addressing"
+              + " type<b>*</b> for the destination. The destination cannot be a constant.",
           pc);
       appendToTable(
           instrTablePanel,
@@ -290,7 +291,7 @@ public class InstructionTable extends AnchoredFrame {
     }
     headerPanel.revalidate();
 
-    int newContentWidth = 280 + (LazySwing.getCurrentFontSize() - LazySwing.MIN_FONT_SIZE) * 20;
+    int newContentWidth = 280 + (settings.getCurrentFontSize() - Settings.MIN_FONT_SIZE) * 20;
     instrDesc.setMaximumSize(new Dimension(newContentWidth, Integer.MAX_VALUE));
     instrTablePanel.setMaximumSize(new Dimension(newContentWidth, Integer.MAX_VALUE));
     instrDesc.setPreferredSize(new Dimension(newContentWidth, instrDesc.getPreferredSize().height));

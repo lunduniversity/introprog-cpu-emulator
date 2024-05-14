@@ -64,7 +64,7 @@ class PrLTest {
         count++;
         i++;
       }
-      inOrder.verify(mockIO, times(count)).print((int) message.charAt(i));
+      inOrder.verify(mockIO, times(count)).print(message.charAt(i));
     }
 
     // Verify that next() is called on the program counter after the last character is printed

@@ -20,15 +20,6 @@ import javax.swing.border.Border;
 
 public class LazySwing {
 
-  public static final int DEFAULT_FONT_SIZE = 14;
-  public static final int MIN_FONT_SIZE = 8;
-  public static final int MAX_FONT_SIZE = 30;
-  private static int currentFontSize = DEFAULT_FONT_SIZE;
-
-  public static final int FONT_SIZE_INCREASE = 1;
-  public static final int FONT_SIZE_DECREASE = -1;
-  public static final int FONT_SIZE_RESET = 0;
-
   public static void inv(Runnable runnable) {
     inv(runnable, true);
   }
@@ -118,30 +109,10 @@ public class LazySwing {
     }
   }
 
-  public static int getCurrentFontSize() {
-    return currentFontSize;
-  }
-
-  public static void increaseFontSize() {
-    if (currentFontSize < MAX_FONT_SIZE) {
-      currentFontSize += 2;
-    }
-  }
-
-  public static void decreaseFontSize() {
-    if (currentFontSize > MIN_FONT_SIZE) {
-      currentFontSize -= 2;
-    }
-  }
-
-  public static void resetFontSize() {
-    currentFontSize = DEFAULT_FONT_SIZE;
-  }
-
-  public static void setComponentTreeFontSize(Component comp) {
+  public static void setComponentTreeFontSize(Component comp, int currentFontSize) {
     if (comp instanceof Container) {
       for (Component child : ((Container) comp).getComponents()) {
-        setComponentTreeFontSize(child);
+        setComponentTreeFontSize(child, currentFontSize);
       }
     }
 

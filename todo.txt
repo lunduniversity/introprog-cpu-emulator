@@ -21,11 +21,11 @@
 
 [x] WindowListener för extra fönster, för att återställa meny checkbox
 [x] Bug: När InstrDesc-fönstret öppnat, IndexOutOfBounds när man ändrar minnesceller
-[] Skapa nytt infofönster, med allmän info. Piltangenter, mus för att flytta och sätta värden, referera till menyn, etc.
+[x] Skapa nytt infofönster, med allmän info. Piltangenter, mus för att flytta och sätta värden, referera till menyn, etc.
 [x] Flytta markören när nytt värde sätts
 [x] Ändra markering upp/ner. Sätt begin index och flytta end index.
 [] Lägg till shift-klick igen, metod finns redan i selecter (addSelectedCell)
-[] Gör text markerbar
+[x] Gör text markerbar
 [x] InstrTable, ankra tabellen till toppen
 [x] Templates. Lägg programfiler i resources, och populera menyn med dem
   [x] Bekräfta template laddning om lokala ändringar gjorts
@@ -41,11 +41,11 @@
 [x] Shift+Tab == Tab
 [x] När i "select mode" tillåt inte input för att ändra bitar (caret vs selection)
 [] Använd ytan under execute för info: Var är markören, vad är markerat, etc.
-[] Tillåt text att bli markerad och kopierad
-[] Menyalternativ för View:
+[x] Tillåt text att bli markerad och kopierad
+[x] Menyalternativ för View:
   [x] Återställ fönsterpositioner och -storlekar
   [x] Öka och minska textstorlek
-  [] Textstorlek ska också gälla i övriga fönster
+  [x] Textstorlek ska också gälla i övriga fönster
 [] Menyn Help kan innehålla länkar till kursmaterial
 [x] Döp om registret PRT till OUT
 [x] Descriptions, tabellen måste innehålla instruktionens namn, e.g. LD -> Load, ST -> Store, etc. Fetstil.
@@ -61,8 +61,11 @@
 [x] Change Run button into Stop while executing
 [] Change repo name to BitBuilder, and URLs
 [x] Instr table, ankra till huvudfönster som ASCII fönstret
-[] Lägg till Config option för att låta fönster följa huvudfönstret
-[] Använd config option "flytta markör vid input", gör ingenting nu?
+[x] Lägg till Config option för att låta fönster följa huvudfönstret
+[x] Använd config option "flytta markör vid input", gör ingenting nu?
+[x] Scrolla automatiskt så att markören kommer i bild
+[] 
+[] 
 [] 
 [] 
 

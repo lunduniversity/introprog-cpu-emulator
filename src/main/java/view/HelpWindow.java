@@ -5,16 +5,15 @@ import java.net.URL;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 public class HelpWindow extends JFrame {
 
-  public HelpWindow() {
+  public HelpWindow(JFrame parent) {
     setTitle("Help");
-    setSize(500, 400);
-    setLocationRelativeTo(null); // Center the window
+    setSize(800, 600);
+    setLocationRelativeTo(parent);
     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
     // Set up the layout manager
@@ -31,7 +30,6 @@ public class HelpWindow extends JFrame {
       helpContent.setPage(helpURL);
     } catch (IOException e) {
       helpContent.setText("<html><body><h2>Failed to load Help content!</h2></body></html>");
-      System.err.println("Failed to load help content: " + e.getMessage());
     }
 
     // Add a scroll pane to allow scrolling
@@ -39,9 +37,5 @@ public class HelpWindow extends JFrame {
     add(scrollPane, "grow"); // Use "grow" to make the scroll pane fill the window
 
     setVisible(true);
-  }
-
-  public static void main(String[] args) {
-    SwingUtilities.invokeLater(() -> new HelpWindow());
   }
 }

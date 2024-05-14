@@ -24,11 +24,11 @@ public class Mov extends Instruction {
     int destType = (operand) & 0x3;
 
     // check for errors first
-    if (srcType != 0b00 && srcType != 0b01 && srcType != 0b10) {
+    if (srcType == ADDR_TYPE_INVALID) {
       throw new IllegalArgumentException(
           String.format("Invalid source type: %s", toBinaryString(srcType, 2)));
     }
-    if (destType != 0b10 && destType != 0b01) {
+    if (destType == ADDR_TYPE_INVALID || destType == ADDR_TYPE_CONSTANT) {
       throw new IllegalArgumentException(
           String.format("Invalid destination type: %s", toBinaryString(destType, 2)));
     }
@@ -36,7 +36,7 @@ public class Mov extends Instruction {
     int value = getSrcValue(srcType, mem, reg, pc);
     int dst = mem.getValueAt(pc.next());
 
-    if (destType == 0b10) {
+    if (destType == ADDR_TYPE_MEMORY) {
       mem.setValueAt(dst, value);
     } else {
       reg.setValueAt(dst, value);
@@ -46,11 +46,11 @@ public class Mov extends Instruction {
   private int getSrcValue(int srcType, Memory mem, Registry reg, ProgramCounter pc) {
     int srcIdx = pc.next();
     int src = mem.getValueAt(srcIdx);
-    if (srcType == 0b01) {
+    if (srcType == ADDR_TYPE_REGISTER) {
       int value = reg.getValueAt(src);
       reg.setValueAt(src, 0);
       return value;
-    } else if (srcType == 0b10) {
+    } else if (srcType == ADDR_TYPE_MEMORY) {
       int value = mem.getValueAt(src);
       mem.setValueAt(src, 0);
       return value;
@@ -75,10 +75,10 @@ public class Mov extends Instruction {
     indices.add(cur + 1);
     indices.add(cur + 2);
 
-    if (srcType == 0b10) {
+    if (srcType == ADDR_TYPE_MEMORY) {
       indices.add(mem.getValueAt(cur + 1));
     }
-    if (destType == 0b10) {
+    if (destType == ADDR_TYPE_MEMORY) {
       indices.add(mem.getValueAt(cur + 2));
     }
 
@@ -92,13 +92,13 @@ public class Mov extends Instruction {
     int destType = (operand) & 0x3;
 
     ArrayList<Integer> indices = new ArrayList<>();
-    if (srcType == 0b01) {
+    if (srcType == ADDR_TYPE_REGISTER) {
       int regIdx = mem.getValueAt(cur + 1);
       if (Registry.isValidIndex(regIdx)) {
         indices.add(regIdx);
       }
     }
-    if (destType == 0b01) {
+    if (destType == ADDR_TYPE_REGISTER) {
       int regIdx = mem.getValueAt(cur + 2);
       if (Registry.isValidIndex(regIdx)) {
         indices.add(regIdx);

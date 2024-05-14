@@ -1,5 +1,9 @@
 package instruction;
 
+import static instruction.Instruction.ADDR_TYPE_CONSTANT;
+import static instruction.Instruction.ADDR_TYPE_INVALID;
+import static instruction.Instruction.ADDR_TYPE_MEMORY;
+import static instruction.Instruction.ADDR_TYPE_REGISTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -28,7 +32,7 @@ class CpyTest {
   @Test
   void testCopyRegisterToRegister() {
     // Setup operand for copying from register to register (R1 to R2)
-    int operand = (0b01 << 2) | 0b01;
+    int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_REGISTER;
     int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
     int destRegister = Registry.nameToIdx(Registry.REG_R2); // Destination register index
     int value = 123; // Value to be copied
@@ -51,7 +55,7 @@ class CpyTest {
   @Test
   void testCopyMemoryToRegister() {
     // Similar to previous test, but with operand encoding for memory to register (10 to 01)
-    int operand = (0b10 << 2) | 0b01;
+    int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_REGISTER;
     int memoryAddress = 16; // Example memory address
     int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
     int value = 456; // Value at the memory address to be copied
@@ -72,7 +76,7 @@ class CpyTest {
   @Test
   void testCopyConstantToRegister() {
     // Similar to previous test, but with operand encoding for constant to register (00 to 01)
-    int operand = (0b00 << 2) | 0b01;
+    int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_REGISTER;
     int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
     int value = 89; // Constant value to be copied
 
@@ -91,7 +95,7 @@ class CpyTest {
   @Test
   void testCopyRegisterToMemory() {
     // Setup operand for copying from register to memory (R1 to memory address)
-    int operand = (0b01 << 2) | 0b10;
+    int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_MEMORY;
     int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
     int memoryAddress = 10; // Destination memory address
     int value = 123; // Value to be copied
@@ -113,7 +117,7 @@ class CpyTest {
   @Test
   void testCopyMemoryToMemory() {
     // Setup operand for copying from memory to memory (memory address to memory address)
-    int operand = (0b10 << 2) | 0b10;
+    int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_MEMORY;
     int srcMemoryAddress = 5; // Source memory address
     int destMemoryAddress = 15; // Destination memory address
     int value = 456; // Value to be copied
@@ -135,7 +139,7 @@ class CpyTest {
   @Test
   void testCopyConstantToMemory() {
     // Setup operand for copying from constant to memory (constant value to memory address)
-    int operand = (0b00 << 2) | 0b10;
+    int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_MEMORY;
     int memoryAddress = 20; // Destination memory address
     int value = 89; // Constant value to be copied
 
@@ -154,7 +158,7 @@ class CpyTest {
   @Test
   void testInvalidSourceTypeThrowsException() {
     // Setup operand with an invalid source type
-    int operand = (0b11 << 2) | 0b01; // Invalid source type (11)
+    int operand = (ADDR_TYPE_INVALID << 2) | ADDR_TYPE_REGISTER; // Invalid source type (11)
 
     Cpy cpyInstruction = new Cpy(operand);
     assertThrows(
@@ -165,8 +169,12 @@ class CpyTest {
   @Test
   void testInvalidDestinationTypeThrowsException() {
     // Setup operand with an invalid destination type
-    int operand1 = (0b00 << 2) | 0b00; // Invalid destination type (00, constant value)
-    int operand2 = (0b00 << 2) | 0b11; // Invalid destination type (11, illegal value)
+    int operand1 =
+        (ADDR_TYPE_CONSTANT << 2)
+            | ADDR_TYPE_CONSTANT; // Invalid destination type (00, constant value)
+    int operand2 =
+        (ADDR_TYPE_CONSTANT << 2)
+            | ADDR_TYPE_INVALID; // Invalid destination type (11, illegal value)
 
     Cpy cpyInstruction1 = new Cpy(operand1);
     assertThrows(
@@ -181,7 +189,7 @@ class CpyTest {
   @Test
   void testToString() {
     // Test all possible operands
-    int[] bits = {0b00, 0b01, 0b10, 0b11};
+    int[] bits = {ADDR_TYPE_CONSTANT, ADDR_TYPE_REGISTER, ADDR_TYPE_MEMORY, ADDR_TYPE_INVALID};
     for (int src : bits) {
       for (int dst : bits) {
         Cpy cpy = new Cpy((src << 2) | dst);
