@@ -548,6 +548,9 @@ public class ComputerUI implements FocusRequester {
     int currentFontSize = settings.getCurrentFontSize();
     LazySwing.setComponentTreeFontSize(frame, currentFontSize);
     inv(this::autoResizeFrame);
+    if (helpWindow != null) {
+      helpWindow.updateGlobalFontSize(currentFontSize);
+    }
     if (asciiTable != null) {
       asciiTable.updateGlobalFontSize(currentFontSize);
     }
@@ -685,7 +688,7 @@ public class ComputerUI implements FocusRequester {
   void toggleHelp(boolean display, MenuCheckboxSetter setter) {
     if (display) {
       if (helpWindow == null) {
-        helpWindow = new HelpWindow(frame);
+        helpWindow = new HelpWindow(frame, settings);
         helpWindow.addWindowListener(
             new WindowAdapter() {
               @Override

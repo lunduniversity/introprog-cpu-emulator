@@ -198,76 +198,79 @@ public class InstructionTable extends AnchoredFrame {
           instrTablePanel,
           InstructionFactory.INST_NAME_LOD,
           InstructionFactory.INST_LOD,
-          "<b>Load</b>: Reads next memory values and loads it into a register. Operand is the"
-              + " destination register index (0-"
-              + (Registry.NUM_REGISTERS - 1)
-              + ").",
+          String.format(
+              "<b>Load</b>: Reads the next memory value and loads it into a register. The 4-bit"
+                  + " operand is the destination register index (0-%d).",
+              (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_LDA,
           InstructionFactory.INST_LDA,
-          "<b>Load Address</b>: Reads next memory value and interprets it as an address. Then,"
-              + " reads the addressed memory values and loads it into a register. Operand is the"
-              + " destination register index (0-"
-              + (Registry.NUM_REGISTERS - 1)
-              + ").",
+          String.format(
+              "<b>Load Address</b>: Reads the next memory value and interprets it as a memory"
+                  + " address. Then, reads the addressed value and loads it into a register. The"
+                  + " 4-bit operand is the destination register index (0-%d).",
+              (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_STO,
           InstructionFactory.INST_STO,
-          "<b>Store</b>: Stores value from a register into memory. Reads next memory values and"
-              + " interprets it as the destination address, at which the register value is stored."
-              + " Operand is the source register index (0-"
-              + (Registry.NUM_REGISTERS - 1)
-              + ").",
+          String.format(
+              "<b>Store</b>: Stores a value from a register into memory. Reads the next memory"
+                  + " value and interprets it as the memory destination address, at which the"
+                  + " register value is stored. The 4-bit operand is the source register index"
+                  + " (0-%d).",
+              (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_JMP,
           InstructionFactory.INST_JMP,
-          "<b>Jump</b>: Jumps to an address specified by a register. The register index (0-"
-              + (Registry.NUM_REGISTERS - 1)
-              + ") is specified by the operand.",
+          String.format(
+              "<b>Jump</b>: Jumps (moves program counter) to an address specified by a register."
+                  + " The register index (0-%d) is specified by the operand.",
+              (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_JEQ,
           InstructionFactory.INST_JEQ,
-          "<b>Jump if Equal</b> Works like JMP, but only jumps if OP1 and OP2 are equal. Otherwise,"
-              + " does nothing.",
+          "<b>Jump if Equal</b>: Works like JMP, but only jumps if OP1 and OP2 are equal."
+              + " Otherwise, does nothing.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_JNE,
           InstructionFactory.INST_JNE,
-          "<b>Jump if Not Equal</b> Works like JMP, but only jumps if OP1 and OP2 are not equal."
+          "<b>Jump if Not Equal</b>: Works like JMP, but only jumps if OP1 and OP2 are not equal."
               + " Otherwise, does nothing.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRT,
           InstructionFactory.INST_PRT,
-          "<b>Print Text</b>: Prints the value in the OUT register, as an ASCII character, to the"
+          "<b>Print Text</b>: Sends the value in the OUT register, as an ASCII character, to the"
               + " I/O output channel. Operand has no purpose and is ignored.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRD,
           InstructionFactory.INST_PRD,
-          "<b>Print Decimal</b>: Prints the value in the OUT register as a decimal number to the"
+          "<b>Print Decimal</b>: Sends the value in the OUT register, as a decimal number, to the"
               + " I/O output channel. Operand has no purpose and is ignored.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRL,
           InstructionFactory.INST_PRL,
-          "<b>Print Loop</b>: Prints a series of characters from memory. The memory address of the"
-              + " first character to print must be in the OP1 register, and the memory address of"
-              + " the last character to print in the OP2 register. The characters are printed in"
-              + " the order they appear in memory, and the memory address in the OP1 register is"
-              + " incremented by 1 after each character is printed.",
+          "<b>Print Loop</b>: Sends a series of values from memory to the I/O output channel, as"
+              + " ASCII characters. The memory address of the first and last character to print"
+              + " must be in the OP1 and OP2 registers, respectively. In each CPU cycle, the value"
+              + " addressed by OP1 is loaded into OUT and printed, and OP1 is incremented. Once OP1"
+              + " is equal to OP2 all characters have been printed and the program counter is"
+              + " incremented.",
           pc);
       appendToTable(
           instrTablePanel,
