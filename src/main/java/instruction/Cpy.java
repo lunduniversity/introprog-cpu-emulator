@@ -45,10 +45,6 @@ public class Cpy extends Instruction {
     }
   }
 
-  private int getSrcType(int operand) {
-    return (operand >> 2) & 0x3;
-  }
-
   private int getSrcValue(int srcType, int src, Memory mem, Registry reg) {
     if (srcType == ADDR_TYPE_REGISTER) {
       return reg.getValueAt(src);

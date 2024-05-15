@@ -292,12 +292,15 @@ public abstract class AbstractCell {
     bitPanel.setBorder(PC_FOCUS_BORDER);
   }
 
+  public void clearProgramCounterFocus() {
+    bitPanel.setBorder(PC_NO_FOCUS_BORDER);
+  }
+
   public void setProgramCounterHighlight() {
     setCellColor(HIGHLIGHT_PC_BG_COLOR);
   }
 
-  public void clearProgramCounterFocus() {
-    bitPanel.setBorder(PC_NO_FOCUS_BORDER);
+  public void clearProgramCounterHighlight() {
     setCellColor(DEFAULT_BG_COLOR);
   }
 

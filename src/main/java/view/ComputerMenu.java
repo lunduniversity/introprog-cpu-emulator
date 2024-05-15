@@ -189,29 +189,17 @@ public class ComputerMenu extends JMenuBar {
         mf.item(
             "Increase font size",
             new String[] {"ctrl PLUS", "ctrl ADD", "ctrl shift EQUALS"},
-            e -> {
-              settings.increaseFontSize();
-              ui.updateGlobalFontSize();
-            });
+            e -> settings.increaseFontSize());
     JMenuItem itmDecFontSize =
-        mf.item(
-            "Decrease font size",
-            "ctrl MINUS",
-            e -> {
-              settings.decreaseFontSize();
-              ui.updateGlobalFontSize();
-            });
+        mf.item("Decrease font size", "ctrl MINUS", e -> settings.decreaseFontSize());
     JMenuItem itmResetFontSize =
-        mf.item(
-            "Reset font size",
-            "ctrl 0",
-            e -> {
-              settings.resetFontSize();
-              ui.updateGlobalFontSize();
-            });
+        mf.item("Reset font size", "ctrl 0", e -> settings.resetFontSize());
+    JMenuItem itmAutoResize = mf.item("Auto resize window", "F5", e -> ui.autoResizeFrame());
     menuView.add(itmIncFontSize);
     menuView.add(itmDecFontSize);
     menuView.add(itmResetFontSize);
+    menuView.addSeparator();
+    menuView.add(itmAutoResize);
 
     // Templates menu items
     List<String> templateNames = TemplatesHandler.getTemplateNames();

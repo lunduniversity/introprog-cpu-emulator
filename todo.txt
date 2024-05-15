@@ -64,10 +64,13 @@
 [x] Lägg till Config option för att låta fönster följa huvudfönstret
 [x] Använd config option "flytta markör vid input", gör ingenting nu?
 [x] Scrolla automatiskt så att markören kommer i bild
+[] I memory, lägg till extra kolumn längst till vänster där man kan klicka för att markera celltyp "instr", "ascii", "dec" etc., med bg färg
+[x] Uppdatera lila markering direkt vid editering
+[x] Fixa konstig fönsterstorlek vid auto-resize
 [] 
-[] 
-[] 
-[] 
+0100 1010
+0001 0000
+0001 0001
 
 
 

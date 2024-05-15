@@ -61,7 +61,6 @@ import net.miginfocom.swing.MigLayout;
 import util.ExecutionSpeed;
 import util.FileHandler;
 import util.LazySwing;
-import util.ObservableValue;
 import util.Settings;
 import util.SizedLabel;
 import view.AbstractSelecter.FocusRequester;
@@ -76,7 +75,7 @@ public class ComputerUI implements FocusRequester {
   private static final Color INFO_HIGHLIGHT_COLOR = new Color(40, 55, 200);
   private static final String INFO_HIGHLIGHT_COLOR_STRING = colorToHex(INFO_HIGHLIGHT_COLOR);
 
-  private static final Dimension SCROLLER_SIZE = new Dimension(450, 450);
+  private static final Dimension SCROLLER_SIZE = new Dimension(4500, 450);
 
   private static final String EMPTY_HTML =
       String.format(
@@ -100,7 +99,7 @@ public class ComputerUI implements FocusRequester {
   private JScrollPane scrollPane;
   private JPanel controlPanel;
 
-  private ObservableValue<Integer> programCounterFocusIdx;
+  private InstructionHighlighter instructionHighlighter;
   private AtomicBoolean isExecuting = new AtomicBoolean(false);
 
   private final Memory memory;
@@ -154,13 +153,18 @@ public class ComputerUI implements FocusRequester {
         new CellSelecter(memory, cellPainter, this, idx -> memCells[idx].scrollTo());
     this.regSelecter = new RegisterSelecter(registry, regPainter, this);
 
-    this.programCounterFocusIdx = new ObservableValue<>(pc.getCurrentIndex());
+    this.instructionHighlighter =
+        new InstructionHighlighter(
+            AbstractCell::setProgramCounterFocus, // PC cell focus
+            AbstractCell::clearProgramCounterFocus, // PC cell unfocus
+            AbstractCell::setProgramCounterHighlight, // Highlight cell
+            AbstractCell::clearProgramCounterHighlight); // Unhighlight cell
     initializeUI();
     requestFocus(StorageType.MEMORY);
     configureKeyBindings();
     setupSettingsListeners();
 
-    memCells[programCounterFocusIdx.get()].setProgramCounterFocus();
+    instructionHighlighter.switchCells(memCells[0], memCells[0]);
 
     updateGlobalFontSize();
 
@@ -200,7 +204,7 @@ public class ComputerUI implements FocusRequester {
           }
         });
     frame.setTitle("BitBuilder");
-    frame.getContentPane().setLayout(new MigLayout("fillx", "[]", "[]"));
+    frame.getContentPane().setLayout(new MigLayout("fillx", "[][][]", "[]"));
 
     fileHandler =
         new FileHandler(
@@ -210,10 +214,10 @@ public class ComputerUI implements FocusRequester {
     menu = new ComputerMenu(this, fileHandler);
     frame.setJMenuBar(menu);
 
-    JLabel lblComputerHeader = new JLabel("BitBuilder 8-bit Computer");
-    lblComputerHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
-    lblComputerHeader.setFocusable(false);
-    frame.getContentPane().add(lblComputerHeader, "cell 0 0 3 1");
+    JLabel lblApplicationHeader = new JLabel("BitBuilder 8-bit Computer");
+    lblApplicationHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
+    lblApplicationHeader.setFocusable(false);
+    frame.getContentPane().add(lblApplicationHeader, "cell 0 0 3 1");
 
     lblDescription =
         new JTextArea(
@@ -236,7 +240,7 @@ public class ComputerUI implements FocusRequester {
 
     memoryPanel = createCellPanel(false);
     appendHeaderToCellPanel(memoryPanel, "Memory", false, false);
-    frame.getContentPane().add(memoryPanel, "cell 0 3 1 3, top, left, grow, shrink");
+    frame.getContentPane().add(memoryPanel, "cell 0 3 1 3, top, left, grow");
 
     // Memory cells
     {
@@ -274,6 +278,12 @@ public class ComputerUI implements FocusRequester {
                     boolean executing = isExecuting.get();
                     for (int i = 0; i < values.length; i++) {
                       memCells[startIdx + i].setValue(values[i], executing);
+                    }
+                    // If any of the changed cells are highlighted, redo highlighting
+                    AbstractCell[] cells =
+                        Arrays.copyOfRange(memCells, startIdx, startIdx + values.length);
+                    if (instructionHighlighter.isAffected(cells)) {
+                      highlightInstructions();
                     }
                   }));
 
@@ -322,6 +332,12 @@ public class ComputerUI implements FocusRequester {
                       for (int i = 0; i < values.length; i++) {
                         regCells[startIdx + i].setValue(values[i], executing);
                       }
+                      // If any of the changed cells are highlighted, redo highlighting
+                      AbstractCell[] cells =
+                          Arrays.copyOfRange(regCells, startIdx, startIdx + values.length);
+                      if (instructionHighlighter.isAffected(cells)) {
+                        highlightInstructions();
+                      }
                     }));
         pc.addListener(
             new ProgramCounterListener() {
@@ -337,23 +353,8 @@ public class ComputerUI implements FocusRequester {
                       }
 
                       pcCell.setValue(newIdx, isExecuting.get());
-                      programCounterFocusIdx.set(newIdx);
-                      if (newIdx >= 0 && newIdx < memory.size()) {
-                        memCells[newIdx].setProgramCounterFocus();
-                        memCells[newIdx].setProgramCounterHighlight();
-                        // Same for other rows
-                        Instruction instr =
-                            factory.createInstruction(memory.getValueAt(pc.getCurrentIndex()));
-                        int[] memFocus = instr.getAffectedMemoryCells(memory, registry, pc);
-                        for (int idx : memFocus) {
-                          memCells[idx].setProgramCounterHighlight();
-                        }
-                        int[] regFocus = instr.getAffectedRegisters(memory, registry, pc);
-                        for (int idx : regFocus) {
-                          regCells[idx].setProgramCounterHighlight();
-                        }
-
-                      } else {
+                      if (!highlightInstructions()) {
+                        instructionHighlighter.clearCells();
                         pcCell.highlightError();
                       }
                       memoryCellsPanel.revalidate();
@@ -389,7 +390,7 @@ public class ComputerUI implements FocusRequester {
     {
       controlPanel = new JPanel();
       controlPanel.setBorder(BorderFactory.createTitledBorder(null, "Controls", 0, 0, null));
-      frame.getContentPane().add(controlPanel, "cell 2 5, top, grow, shrink");
+      frame.getContentPane().add(controlPanel, "cell 2 5, top, left, grow, shrink");
       controlPanel.setLayout(new MigLayout("fillx", "[][][][][grow,shrink]", "[]"));
 
       JLabel lblControlHeader = new SizedLabel("Controls", 2, true);
@@ -422,11 +423,7 @@ public class ComputerUI implements FocusRequester {
       {
         JButton btnHelp = new JButton("Help (F1)");
         btnHelp.setFocusable(false);
-        btnHelp.addActionListener(
-            e -> {
-              autoResizeFrame();
-              synchronizeColumnWidths();
-            });
+        btnHelp.addActionListener(e -> menu.triggerManuallyHelp());
         controlPanel.add(btnHelp, "cell 3 1");
       }
 
@@ -547,7 +544,14 @@ public class ComputerUI implements FocusRequester {
   void updateGlobalFontSize() {
     int currentFontSize = settings.getCurrentFontSize();
     LazySwing.setComponentTreeFontSize(frame, currentFontSize);
-    inv(this::autoResizeFrame);
+    inv(
+        () -> {
+          // Not sure why this is needed, but it is. When changing multiple font sizes at once, i.e.
+          // going from large to default, the frame size is not updated correctly. But the second
+          // call to autoResizeFrame() fixes it. Delaying the call further does not work.
+          autoResizeFrame();
+          autoResizeFrame();
+        });
     if (helpWindow != null) {
       helpWindow.updateGlobalFontSize(currentFontSize);
     }
@@ -582,6 +586,7 @@ public class ComputerUI implements FocusRequester {
             }
           }
         });
+    settings.addPropertyChangeListener(Settings.CURRENT_FONT_SIZE, evt -> updateGlobalFontSize());
   }
 
   Settings getSettings() {
@@ -620,13 +625,13 @@ public class ComputerUI implements FocusRequester {
 
   void autoResizeFrame() {
     Component[] components = {
-      frame, memoryPanel, controlPanel, scrollPane, txtOutput, outputScroll, frame, registerPanel
+      frame, memoryPanel, controlPanel, scrollPane, txtOutput, outputScroll, registerPanel
     };
 
     // Lock memory to small height and call pack() to adjust the frame size
     // Lock description to small width and call pack() to adjust the frame size
     scrollPane.setMaximumSize(SCROLLER_SIZE);
-    lblDescription.setMaximumSize(new Dimension(400, Integer.MAX_VALUE));
+    lblDescription.setMaximumSize(new Dimension(200, Integer.MAX_VALUE));
     outputScroll.setMaximumSize(new Dimension(100, 200));
     for (Component c : components) {
       c.revalidate();
@@ -647,7 +652,7 @@ public class ComputerUI implements FocusRequester {
         new Dimension(registerPanel.getPreferredSize().width, Integer.MAX_VALUE));
 
     Dimension size = frame.getSize();
-    frame.setMaximumSize(new Dimension((int) (size.width * 1.2), size.height));
+    frame.setMaximumSize(new Dimension(size.width, size.height));
     frame.pack();
     outputScroll.setMaximumSize(null);
     frame.setMaximumSize(null);
@@ -969,6 +974,25 @@ public class ComputerUI implements FocusRequester {
 
   // Private methods, used internally
 
+  private boolean highlightInstructions() {
+    if (pc.getCurrentIndex() < 0 || pc.getCurrentIndex() >= memory.size()) {
+      return false;
+    }
+    Instruction instr = factory.createInstruction(memory.getValueAt(pc.getCurrentIndex()));
+    int[] cellIndices = instr.getAffectedMemoryCells(memory, registry, pc);
+    Cell[] cells = Arrays.stream(cellIndices).mapToObj(i -> this.memCells[i]).toArray(Cell[]::new);
+    Cell pcCell = this.memCells[pc.getCurrentIndex()];
+    instructionHighlighter.switchCells(pcCell, cells);
+    inv(
+        () -> {
+          memoryCellsPanel.revalidate();
+          memoryCellsPanel.repaint();
+          registerPanel.revalidate();
+          registerPanel.repaint();
+        });
+    return true;
+  }
+
   private void resetCellColors() {
     for (Cell c : memCells) {
       c.unhighlight();
@@ -1076,7 +1100,7 @@ public class ComputerUI implements FocusRequester {
             "[sg addr, right]"
                 + (includeLabel ? "[sg name, right]" : "")
                 + "[sg value, center][sg hex, left][sg dec, left][sg ascii, left]10[sg"
-                + " instr, left, grow, shrink, pref:100lp]10",
+                + " instr, left, grow, shrink]10",
             "[]"));
 
     return cellPanel;
@@ -1100,7 +1124,7 @@ public class ComputerUI implements FocusRequester {
     cellPanel.add(header("Hex", hidden));
     cellPanel.add(header("Dec", hidden));
     cellPanel.add(header("Ascii", hidden));
-    cellPanel.add(header("Instr", hidden));
+    cellPanel.add(header("Instr             ", hidden));
 
     return cellPanel;
   }
