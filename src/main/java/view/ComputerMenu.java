@@ -161,7 +161,7 @@ public class ComputerMenu extends JMenuBar {
     JMenuItem itmStep = mf.item("Step", "SPACE", e -> ui.handleStep());
     JMenuItem itmRun = mf.item("Run/Stop", "ctrl SPACE", e -> ui.handleRunAndStop());
     JMenuItem itmResetState = mf.item("Reset", "ctrl R", e -> ui.handleResetState());
-    JMenuItem itmClearOutput = mf.item("Clear output", "ctrl T", e -> ui.handleClearOutput());
+    JMenuItem itmClearOutput = mf.item("Clear output", "ctrl L", e -> ui.handleClearOutput());
     JMenu menuSpeed = mf.menu("Execution speed (step period)", "");
     ButtonGroup group = new ButtonGroup();
     ExecutionSpeed[] speeds = ExecutionSpeed.values();

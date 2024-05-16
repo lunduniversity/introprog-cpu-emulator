@@ -95,6 +95,7 @@ public class InstructionTable extends AnchoredFrame {
           updateGlobalFontSize(settings.getCurrentFontSize());
           fitToParent();
           setVisible(true);
+          inv(parent::requestFocus);
         });
 
     // showBorders(this);

@@ -77,11 +77,8 @@ public class TemplatesHandler {
               String.format("Invalid file format at line %d: '%s'", (i + 1), line));
         }
       }
-      System.out.println("Template read successfully: " + name + " (" + lines.length + " lines");
       return lines;
     } catch (Exception e) {
-      System.out.println("Error reading template: " + name);
-      e.printStackTrace();
       return new String[0];
     }
   }

@@ -103,6 +103,7 @@ public class AsciiTable extends AnchoredFrame {
           updateGlobalFontSize(settings.getCurrentFontSize());
           fitToParent();
           setVisible(true);
+          inv(parent::requestFocus);
         });
   }
 

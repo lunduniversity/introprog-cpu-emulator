@@ -28,7 +28,7 @@ public class InstructionHighlighter {
     this.memoryCells = new Cell[0];
   }
 
-  public void switchCells(AbstractCell newFocus, Cell... newCells) {
+  public void switchCells(AbstractCell newFocus, AbstractCell... newCells) {
     // Clear the previous focus cell and highlights
     if (pcFocusCell != null) {
       loseFocusConsumer.accept(pcFocusCell);

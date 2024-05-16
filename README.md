@@ -6,7 +6,11 @@ Most text below is just a AI-generated template. Will be updated soon TM.
 
 ## Overview
 
-Welcome to BitBuilder, a lightweight, simulated computer environment designed to mimic basic computer operations. Our simulator, named for its playful phonetic resemblance to 'CPU', offers a simple interface to understand the core concepts of computing, including memory management, register operations, and basic data processing.
+Welcome to BitBuilder, a lightweight, simulated computer environment designed to
+mimic basic computer operations. Our simulator, named for its playful phonetic
+resemblance to 'CPU', offers a simple interface to understand the core concepts
+of computing, including memory management, register operations, and basic data
+processing.
 
 ## Features
 
@@ -20,8 +24,8 @@ Welcome to BitBuilder, a lightweight, simulated computer environment designed to
 To install BitBuilder, follow these steps:
 
 ```bash
-git clone https://github.com/yourusername/SeaPeaEwe.git
-cd SeaPeaEwe
+git clone git@git.cs.lth.se:courses/dod/bitbuilder.git
+cd bitbuilder
 # Further installation steps here
 ```
 
@@ -39,12 +43,17 @@ Here's a quick guide on how to use BitBuilder:
 
 ## Contributing
 
-Contributions to BitBuilder are welcome! Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests to us.
+Contributions to BitBuilder are welcome! Please read CONTRIBUTING.md for details
+on our code of conduct and the process for submitting pull requests to us.
 
 ## License
 
-This project is licensed under the [Your Choice of License] - see the LICENSE.md file for details.
+This project is licensed under the [Your Choice of License] - see the LICENSE.md
+file for details.
 
 ## Acknowledgments
 
-Mention any inspirations, code snippets, etc. Remember to replace placeholders like https://github.com/yourusername/SeaPeaEwe.git and the license information with your specific details. Also, you can add or modify sections as your project evolves!
+Mention any inspirations, code snippets, etc. Remember to replace placeholders
+like git@git.cs.lth.se:courses/dod/bitbuilder.git and the license information
+with your specific details. Also, you can add or modify sections as your project
+evolves!

@@ -27,6 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -435,7 +436,7 @@ public class ComputerUI implements FocusRequester {
         JLabel lblOutput = new JLabel("Output:");
         controlPanel.add(lblOutput, "cell 0 3 2 1, top, left");
 
-        JButton btnClearOutput = new JButton("Clear output");
+        JButton btnClearOutput = new JButton("Clear output (Ctrl + L)");
         btnClearOutput.setFocusable(false);
         btnClearOutput.addActionListener(e -> handleClearOutput());
         controlPanel.add(btnClearOutput, "cell 2 3 3 1, right");
@@ -979,9 +980,14 @@ public class ComputerUI implements FocusRequester {
       return false;
     }
     Instruction instr = factory.createInstruction(memory.getValueAt(pc.getCurrentIndex()));
-    int[] cellIndices = instr.getAffectedMemoryCells(memory, registry, pc);
-    Cell[] cells = Arrays.stream(cellIndices).mapToObj(i -> this.memCells[i]).toArray(Cell[]::new);
-    Cell pcCell = this.memCells[pc.getCurrentIndex()];
+    int[] affectedMemory = instr.getAffectedMemoryCells(memory, registry, pc);
+    int[] affectedRegisters = instr.getAffectedRegisters(memory, registry, pc);
+    AbstractCell[] cells =
+        Stream.concat(
+                Arrays.stream(affectedMemory).mapToObj(i -> this.memCells[i]),
+                Arrays.stream(affectedRegisters).mapToObj(i -> this.regCells[i]))
+            .toArray(AbstractCell[]::new);
+    AbstractCell pcCell = this.memCells[pc.getCurrentIndex()];
     instructionHighlighter.switchCells(pcCell, cells);
     inv(
         () -> {

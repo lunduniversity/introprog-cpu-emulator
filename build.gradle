@@ -4,7 +4,7 @@ plugins {
     id 'application'
 }
 
-group 'dod-seapeaewe'
+group 'dod-bitbuilder'
 version '0.2'
 
 repositories {
