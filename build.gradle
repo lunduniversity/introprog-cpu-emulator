@@ -38,7 +38,7 @@ java {
 }
 
 application {
-    mainClassName = 'view.Main'
+    application.mainClass.set('view.Main')
 }
 
 test {

@@ -19,6 +19,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 public class LazySwing {
+  private static final Random r = new Random();
 
   public static void inv(Runnable runnable) {
     inv(runnable, true);
@@ -33,8 +34,17 @@ public class LazySwing {
   }
 
   public static void checkEDT() {
+    checkEDT(false);
+  }
+
+  public static void checkEDT(boolean throwException) {
     if (!SwingUtilities.isEventDispatchThread()) {
-      new IllegalStateException("This method must be called on the EDT").printStackTrace();
+      IllegalStateException e = new IllegalStateException("This method must be called on the EDT");
+      if (throwException) {
+        throw e;
+      } else {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -78,7 +88,6 @@ public class LazySwing {
   public static void showBorders(Component component) {
     // Define a simple border
     Border border = BorderFactory.createLineBorder(Color.BLACK, 1);
-    Random r = new Random();
 
     // Set the border on JComponents
     if (component instanceof JComponent) {

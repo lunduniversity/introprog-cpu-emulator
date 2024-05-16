@@ -17,6 +17,8 @@ public class ThreadConfinementChecker extends RepaintManager {
     RepaintManager.setCurrentManager(new ThreadConfinementChecker());
   }
 
+  private static String[] safeThreadNames = {"Image Fetcher"};
+
   @Override
   public synchronized void addInvalidComponent(JComponent component) {
     check();
@@ -35,6 +37,13 @@ public class ThreadConfinementChecker extends RepaintManager {
     // Otherwise, we need to check more carefully.
 
     if (!SwingUtilities.isEventDispatchThread()) {
+      // Allow certain system threads like which are known to be safe
+      for (String safeThreadName : safeThreadNames) {
+        if (Thread.currentThread().getName().contains(safeThreadName)) {
+          return;
+        }
+      }
+
       boolean repaintInvoked = false;
       StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
       for (int i = 0; i < stackTrace.length; i++) {
@@ -67,7 +76,6 @@ public class ThreadConfinementChecker extends RepaintManager {
 
 // ===========================================================================
 
-@SuppressWarnings("serial")
 class SwingThreadingError extends Error {
   public SwingThreadingError() {
     super("Swing accessed from thread '" + Thread.currentThread().getName() + "'");

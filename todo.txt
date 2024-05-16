@@ -68,6 +68,11 @@
   [] Utöka filformat för templates. Inled rad med [I] för instruction, [A] för ascii etc.
 [x] Uppdatera lila markering direkt vid editering
 [x] Fixa konstig fönsterstorlek vid auto-resize
+[x] Stoppa exekvering med space (nu endast med Ctrl+Space)
+[x] Scroll automatiskt för att följa PC vid exekvering 
+[] 
+[] 
+[] 
 [] 
 0100 1010
 0001 0000

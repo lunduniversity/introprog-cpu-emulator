@@ -54,6 +54,10 @@ public class Settings implements java.io.Serializable {
     pcs = new PropertyChangeSupport(this);
   }
 
+  public static Settings getDefault() {
+    return new Settings();
+  }
+
   /**
    * Add a PropertyChangeListener for a specific property.
    *

@@ -47,11 +47,11 @@ public abstract class AbstractCell {
   private JLabel lblAscii;
   private JLabel lblInstruction;
 
-  private transient InstructionFactory factory = new InstructionFactory();
+  private InstructionFactory factory = new InstructionFactory();
 
   private int currentValue = 0;
 
-  private transient CellValueListener valueListener;
+  private CellValueListener valueListener;
 
   protected AbstractCell(
       Container parent,
@@ -305,6 +305,11 @@ public abstract class AbstractCell {
   }
 
   public void scrollTo() {
-    bitPanel.scrollRectToVisible(new Rectangle(bitPanel.getSize()));
+    scrollTo(0);
+  }
+
+  public void scrollTo(int additionalCells) {
+    bitPanel.scrollRectToVisible(
+        new Rectangle(bitPanel.getSize().width, bitPanel.getSize().height * (1 + additionalCells)));
   }
 }

@@ -694,13 +694,16 @@ public class ComputerUI implements FocusRequester {
   void toggleHelp(boolean display, MenuCheckboxSetter setter) {
     if (display) {
       if (helpWindow == null) {
-        helpWindow = new HelpWindow(frame, settings);
-        helpWindow.addWindowListener(
-            new WindowAdapter() {
-              @Override
-              public void windowClosed(WindowEvent e) {
-                setter.setCheckbox(false);
-              }
+        inv(
+            () -> {
+              helpWindow = new HelpWindow(frame, settings);
+              helpWindow.addWindowListener(
+                  new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                      setter.setCheckbox(false);
+                    }
+                  });
             });
       }
     } else {
@@ -783,6 +786,11 @@ public class ComputerUI implements FocusRequester {
 
   void handleStep() {
     if (isExecuting.get()) {
+      if (executionTask != null) {
+        executionTask.cancel(true);
+        isExecuting.set(false);
+        toggleExecutionControls(false);
+      }
       return;
     }
     isExecuting.set(true);
@@ -991,6 +999,18 @@ public class ComputerUI implements FocusRequester {
     instructionHighlighter.switchCells(pcCell, cells);
     inv(
         () -> {
+          int scrollToIdx = affectedMemory[0];
+          int additionalCells = affectedMemory.length - 1;
+          if (scrollToIdx > 0) {
+            scrollToIdx--;
+            additionalCells += 2;
+          } else {
+            additionalCells++;
+          }
+          if (scrollToIdx + additionalCells >= memory.size()) {
+            additionalCells = memory.size() - scrollToIdx - 1;
+          }
+          memCells[scrollToIdx].scrollTo(additionalCells);
           memoryCellsPanel.revalidate();
           memoryCellsPanel.repaint();
           registerPanel.revalidate();
