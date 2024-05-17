@@ -26,10 +26,17 @@
         padding: 0 0 0;
       }
       h3 {
-        color: #358dc7;
-        margin: 0 0 0;
-        padding: 0 0 0;
+        color: #0b1c27;
+        font-size: 110%;
+        margin: 10px 0 -10px 0;
+        padding: 0;
       }
+      .code {
+        font-family: "Consolas", "Menlo", "DejaVu Sans Mono", "Courier New",
+          monospace;
+        background-color: #f0f0f0;
+      }
+
       ul {
         margin: 0;
         padding: 0;
@@ -188,15 +195,16 @@
     <div class="section">
       <h2>Navigation and basic editing</h2>
       <p>
-        Memory and register cells (or bytes) consists of 8 bits, and can be
-        edited similar to regular text editors. Both the memory and registers
-        has a highlighted bit that indicates a cursor - initially the top left
-        bit. Their cursurs are separate and can be moved independently, but only
-        one is active at a time. Move the active cursor through its grid using
-        the keyboard arrow keys or the mouse (left click). Switch focus between
-        memory and register cursors using the Tab key, or with the mouse by
-        simply clicking on the desired cell. The memory can be scrolled
-        vertically with the mouse wheel or the Page Up/Down keys.
+        Memory and register cells consists of 8 bits (i.e. one byte), and can be
+        edited using your keyboard, quite similar to regular text editors. Both
+        the memory and registers has a highlighted bit that indicates a cursor -
+        initially the top left bit. Their cursors are separate and can be moved
+        independently, but only one is active at a time. Move the active cursor
+        through its grid using the keyboard arrow keys or the mouse (left
+        click). Switch focus between memory and register cursors using the Tab
+        key, or with the mouse by simply clicking on the desired cell. The
+        memory can be scrolled vertically with the mouse wheel or the Page
+        Up/Down keys.
       </p>
 
       <p>
@@ -224,16 +232,38 @@
         it continuously until completion.
       </p>
       <p>
-        To step through a program, press the Space bar. This will execute the
-        current instruction and move the program counter - which points to the
-        next memory cell to execute - to the next cell. To run the program
-        continuously, press Ctrl+Space. This will execute instructions until the
-        program reaches a halt instruction or an error occurs. You can pause the
-        execution at any time by pressing the Space bar again. Note that the
-        execution speed can be adjusted in the Configure menu.
+        Computers use a special register called the program counter to keep
+        track of the current instruction being executed. The program counter
+        points to the memory cell that contains the next instruction to be
+        executed. When an instruction is executed, the program counter is
+        updated to point to the next instruction in memory. BitBuilder
+        highlights the memory cell pointed to by the program counter with a
+        <span style="border: 2px solid magenta; padding: 0 2px"
+          >magenta border</span
+        >
+        to indicate the current instruction. In addition, all memory and
+        register cells that would be affected by the current instruction are
+        highlighted with a
+        <span style="background-color: #ffd1ff; padding: 0 2px"
+          >light magenta shade</span
+        >, to show which cells will be read from or written to. After an
+        instruction is executed, cells that were modified will be highlighted
+        with a
+        <span style="background-color: #ffffc8; padding: 0 2px"
+          >light yellow shade</span
+        >
       </p>
       <p>
-        The program's output and any error messages will be displayed in the
+        To step through a program, press the Space bar. This will execute the
+        current instruction and move the program counter to the next cell. To
+        run the program continuously, press Ctrl+Space. This will continue to
+        execute instructions until the program reaches a halt instruction or an
+        error occurs. You can pause the execution at any time by pressing the
+        Space bar again. Note that the execution speed can be adjusted in the
+        Configure menu.
+      </p>
+      <p>
+        The program's output, and any error messages, will be displayed in the
         text area below the execution controls. You can also reset the program
         by pressing the Reset button, which sets all registers to zero while
         leaving memory unchanged.
@@ -243,8 +273,8 @@
     <div class="section">
       <h2>ASCII Table and Instruction Descriptions</h2>
       <p>
-        Writing programs on this low-level system can be challenging. The
-        additional columns in the memory and register tables shows different
+        Writing programs on a low-level system such as this can be challenging.
+        The additional columns in the memory and register tables shows different
         ways to interpret the binary data, but it is ultimately up to the user
         to understand what the data represents. In addition to this help window,
         there are two additional windows that can provide valuable information
@@ -252,14 +282,33 @@
         Descriptions.
       </p>
       <p>
-        The ASCII Table window displays the ASCII character set, showing the
-        decimal, hexadecimal, and binary representations of each character. This
-        is useful when working with text data in your programs, e.g. in order to
-        print text output. See the Print instruction and its variants.
+        The <i>ASCII Table window</i> displays the ASCII character set, which is
+        a set of 128 characters that can be represented by 7-bit binary numbers.
+        The table shows the characters and their corresponding decimal,
+        hexadecimal, and binary values. You can use this window to look up the
+        binary values of characters and vice versa, when working with text data
+        in your programs. The characters are color-coded to indicate their
+        category:
+        <span style="background-color: #dcdcdc; padding: 0 2px"
+          >gray for control characters</span
+        >
+        that are not meant to be printed,
+        <span style="background-color: #aab4fa; padding: 0 2px"
+          >blue for digits</span
+        >,
+        <span style="background-color: #78e678; padding: 0 2px"
+          >green for capital letters</span
+        >,
+        <span style="background-color: #e69696; padding: 0 2px"
+          >red for lowercase letters</span
+        >, and
+        <span style="background-color: #e6e678; padding: 0 2px"
+          >yellow for special characters</span
+        >.
       </p>
       <p>
-        The Instruction Descriptions window provides detailed information about
-        each instruction that the processor can execute. It explains the
+        The <i>Instruction Descriptions window</i> provides detailed information
+        about each instruction that the processor can execute. It explains the
         operation performed by the instruction and any operands it requires.
         This can help you understand how to write programs that utilize the full
         capabilities of the processor.
@@ -278,21 +327,25 @@
         and register tables. You can select one or more cells by clicking and
         dragging the mouse over the cells you want to select, or by holding the
         Shift key and pressing the up or down arrow keys to extend the
-        selection. Selected cells are highlighted to indicate that they are
-        active. Only whole cells can be selected, not individual bits, and
-        selected cells cannot be directly edited. They can, however, be copied,
+        selection. Selected cells are
+        <span style="background-color: #c8ffc8; padding: 0 2px"
+          >highlighted in light green</span
+        >
+        to indicate that they are active. Note that only whole cells can be
+        selected, not individual bits, and selected cells cannot be toggled
+        (changed between 0 and 1) collectively. They can, however, be copied,
         pasted, or moved.
       </p>
       <p>
         When a selection is active, you can change the selection itself without
-        chainging the values. Holding Shift and using the arrow keys will extend
-        or shrink the selection, while Ctrl+Arrow will move the selection.
-        Pressing the Escape key or moving the cursor without holding any
-        modifier key will clear the selection. Browse the Selection menu for all
-        available options.
+        changing the values. Holding Shift and using the arrow keys will extend
+        or shrink the selection, while holding Ctrl and using arrow keys will
+        move the selection box. Pressing the Escape key or moving the cursor
+        without holding any modifier key will clear the selection. Browse the
+        Selection menu for all available options.
       </p>
       <p>
-        with an active selection, you can also edit the cell values in several
+        With an active selection, you can also modify the cell values in a few
         ways. Values can be copied and pasted between cells using the key
         combinations Ctrl+C and Ctrl+V, respectively. You can also move the
         selected cells up or down by holding the Alt key and pressing the up or
@@ -300,20 +353,36 @@
         key, moving the other cells accordingly. To clear the selected cells,
         press the Delete key. This will set the values of the selected cells to
         zero. Alternatively, you can press Ctrl+Delete to completely remove the
-        selected cells, shifting all lower cells up to fill the gap.
+        selected cells, shifting all lower cells up to fill the gap. Browse the
+        Edit menu for all available options.
       </p>
 
       <h3>Note on copy and paste</h3>
       <p>
-        Copying cells will copy the binary values of the cells, e.g. "1010
-        1010", to the operating system's default clipboard. For pasting to work,
-        the clipboard content must adhere to this format (although, extra spaces
-        are ignored). Pasting will overwrite the values of the selected cells
-        with the copied values. If the copied values are longer than the
+        Copying cells will copy the binary values of the cells, e.g.
+        <span class="code">1010 1010</span>, to the clipboard. For pasting to
+        work, the clipboard content must adhere to this format (although, extra
+        spaces are ignored). Pasting will overwrite the values of the selected
+        cells with the copied values. If the copied values are longer than the
         selection, the values will still be pasted, outside the range of the
         selection. If the copied values are shorter, the additional selected
         cells will remain unchanged. If the pasted values would exceed the
         memory or register size, the excess values will be ignored.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Viewing options</h2>
+      <p>
+        From the View menu you can toggle the display of the Help, ASCII Table
+        and Instruction Descriptions windows. You can also adjust the font size
+        used in the application. Pressing Ctrl and Plus, Minus or 0 will
+        increase, decrease or reset the font size, respectively. When the font
+        size is changed, the application will automatically adjust the main
+        window size to fit the content. If the ASCII Table or Instruction
+        Descriptions windows are open and anchored (see Configuration options
+        below), they will also be resized accordingly. The automatic resizing
+        can be triggered manually from the View menu as well, or by pressing F5.
       </p>
     </div>
 
@@ -340,46 +409,39 @@
     <div class="section">
       <h2>Configuration Options</h2>
       <p>
-        The Configure menu offers several options to customize the application
-        to your preferences. You can adjust the font size of the memory and
-        register tables, change the execution speed of programs, and enable or
-        disable the automatic cursor movement after editing a cell. You can also
-        reset the application to its default settings if needed.
-      </p>
-      <p>
-        The Configure menu also provides options to show or hide the ASCII Table
-        and Instruction Descriptions windows, as well as the memory and register
-        tables. This allows you to focus on the main window when needed or
-        access the additional information quickly.
+        The Configure menu offers some options to customize the application to
+        your preferences. You can toggle the display of the Help, ASCII Table
+        and Instruction Descriptions windows on startup. The ASCII Table and the
+        Instruction Descriptions windows can be anchored to the main window, so
+        they will move and resize together with the main window. You can also
+        enable or disable the automatic cursor movement after editing a cell.
       </p>
     </div>
 
     <div class="section">
-      <h2>Menu Options</h2>
-      <p>Explore additional features through the menu bar:</p>
-      <ul>
-        <li><strong>File Menu:</strong> Save and load programs.</li>
-        <li>
-          <strong>Edit Menu:</strong> Offers options for copy/pasting and moving
-          cells.
-        </li>
-        <li>
-          <strong>Template Menu:</strong> Access example programs to get started
-          quickly.
-        </li>
-        <li>
-          <strong>Help Menu:</strong> You are here! View help for software
-          usage.
-        </li>
-        <li>
-          <strong>ASCII Table Window:</strong> Refer to this for ASCII character
-          references.
-        </li>
-        <li>
-          <strong>Instruction Descriptions Window:</strong> Detailed guide on
-          each instruction your application can execute.
-        </li>
-      </ul>
+      <h2>Help, Feedback and Support</h2>
+      <p>
+        If you need help while using the application, you can access this help
+        window at any time by pressing the F1 key or via the Help menu. The help
+        menu also links to other course resources and the Gitlab repository for
+        the application.
+      </p>
+      <p>
+        If you have any further questions, feedback, or suggestions for
+        improving the application, please feel free to contact me at
+        <a href="mailto:mattias.nordahl@cs.lth.se">mattias.nordahl@cs.lth.se</a
+        >, via Discord or by creating an issue on the Gitlab repository at
+        <a href="https://git.cs.lth.se/courses/dod/bitbuilder/-/issues"
+          >https://git.cs.lth.se/courses/dod/bitbuilder/-/issues</a
+        >. If you want to contribute to the development of the application, you
+        are welcome to submit a merge request on the repository. Look at the
+        Gitlab repository for more information.
+      </p>
+      <p>
+        I hope you find this application useful and informative in your journey
+        to understand computer architecture and programming. Thank you for using
+        BitBuilder!
+      </p>
     </div>
   </body>
 </html>

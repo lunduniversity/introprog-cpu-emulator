@@ -24,6 +24,18 @@ import util.SizedLabel;
 
 public class AsciiTable extends AnchoredFrame {
 
+  private static final Color GRAY_DARK = new Color(200, 200, 200); // #C8C8C8
+  private static final Color BLUE_DARK = new Color(150, 160, 230); // #96A0E6
+  private static final Color GREEN_DARK = new Color(100, 210, 100); // #64D264
+  private static final Color RED_DARK = new Color(210, 130, 130); // #D28282
+  private static final Color YELLOW_DARK = new Color(210, 210, 100); // #D2D264
+
+  private static final Color GRAY_LIGHT = new Color(220, 220, 220); // #DCDCDC
+  private static final Color BLUE_LIGHT = new Color(170, 180, 250); // #AAB4FA
+  private static final Color GREEN_LIGHT = new Color(120, 230, 120); // #78E678
+  private static final Color RED_LIGHT = new Color(230, 150, 150); // #E69696
+  private static final Color YELLOW_LIGHT = new Color(230, 230, 120); // #E6E678
+
   private static final Border border = BorderFactory.createEmptyBorder(2, 10, 2, 10);
   private JPanel headerPanel;
   private JPanel columnPanel;
@@ -138,30 +150,28 @@ public class AsciiTable extends AnchoredFrame {
   }
 
   private Color getColorForAscii(int asciiCode) {
-    int d = (asciiCode % 2) * 20;
+    boolean dark = asciiCode % 2 == 0;
     // Digits
     if (asciiCode >= 48 && asciiCode <= 57) {
-      return new Color(150 + d, 160 + d, 230 + d); // Gradient of blue
+      return dark ? BLUE_DARK : BLUE_LIGHT;
     }
     // Uppercase letters
-    else if (asciiCode >= 65 && asciiCode <= 90) {
-      return new Color(100 + d, 210 + d, 100 + d); // Gradient of green
+    if (asciiCode >= 65 && asciiCode <= 90) {
+      return dark ? GREEN_DARK : GREEN_LIGHT;
     }
     // Lowercase letters
-    else if (asciiCode >= 97 && asciiCode <= 122) {
-      return new Color(210 + d, 130 + d, 130 + d); // Gradient of red
+    if (asciiCode >= 97 && asciiCode <= 122) {
+      return dark ? RED_DARK : RED_LIGHT;
     }
     // Special characters
-    else if ((asciiCode >= 32 && asciiCode <= 47)
+    if ((asciiCode >= 32 && asciiCode <= 47)
         || (asciiCode >= 58 && asciiCode <= 64)
         || (asciiCode >= 91 && asciiCode <= 96)
         || (asciiCode >= 123 && asciiCode <= 126)) {
-      return new Color(210 + d, 210 + d, 100 + d); // Gradient of yellow
+      return dark ? YELLOW_DARK : YELLOW_LIGHT;
     }
     // Control characters and others
-    else {
-      return new Color(200 + d, 200 + d, 200 + d); // Shade of gray
-    }
+    return dark ? GRAY_DARK : GRAY_LIGHT;
   }
 
   private void synchronizeColumnWidths() {

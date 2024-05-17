@@ -1,5 +1,5 @@
 [x] NOP är bra för då kan man "deleta" logik
-[] Kanske instr i listan ska kunna klickas på så att denna fylls i 
+[-] Kanske instr i listan ska kunna klickas på så att denna fylls i 
 [x] Kanske skriva bredvid reg vilket binärt ordningsnummer det har
 [x] Lägg in alla knappar i meny och lägg till kortkommando på alla menyval
 [x] Kanske göra instr uppsättn som ett eget resizable fönster med scorllbars V H
@@ -14,7 +14,7 @@
   [x] Visa vilken fil som är öppen
   [x] Visa när öppen fil har osparade ändringar
   [x] Varna när osparade ändringar kan försvinna (load, close, exit...)
-[] viewmenyn ev fullscreen; om underförster eller egna fönster, condense or verbose; 
+[-] viewmenyn ev fullscreen; om underförster eller egna fönster, condense or verbose; 
 [x] scrolla output och error
 [x] highlighta markerad instr i instrbeskr
 
@@ -29,9 +29,9 @@
 [x] InstrTable, ankra tabellen till toppen
 [x] Templates. Lägg programfiler i resources, och populera menyn med dem
   [x] Bekräfta template laddning om lokala ändringar gjorts
-[] F1 och F2 för fokus till fönsterna?
+[-] F1 och F2 för fokus till fönsterna?
 [x] PgUp och PgDn för att scrolla i minnet och i ascii tabellen
-[] Ctrl F för att söka?
+[-] Ctrl F för att söka?
 [x] Swing Look and Feel, för sitt respektive OS
 [x] Rödmarkera PC om utanför minnesrymden. (Och markera inte i Description)
 [x] Ändra output och error till ett stort textfält. Ha knapparna ovanför: step, run, reset, help
@@ -40,7 +40,7 @@
 [x] Bug: Description highlightar fel instruktion, den laggar ett steg efter
 [x] Shift+Tab == Tab
 [x] När i "select mode" tillåt inte input för att ändra bitar (caret vs selection)
-[] Använd ytan under execute för info: Var är markören, vad är markerat, etc.
+[-] Använd ytan under execute för info: Var är markören, vad är markerat, etc.
 [x] Tillåt text att bli markerad och kopierad
 [x] Menyalternativ för View:
   [x] Återställ fönsterpositioner och -storlekar
@@ -59,7 +59,7 @@
 [x] Lägg till utskrift för när sista minnescellen nås
 [x] Lägg till bekräftelse dialog innan delete all data!
 [x] Change Run button into Stop while executing
-[] Change repo name to BitBuilder, and URLs
+[x] Change repo name to BitBuilder, and URLs
 [x] Instr table, ankra till huvudfönster som ASCII fönstret
 [x] Lägg till Config option för att låta fönster följa huvudfönstret
 [x] Använd config option "flytta markör vid input", gör ingenting nu?
