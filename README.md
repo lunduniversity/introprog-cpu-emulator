@@ -1,4 +1,8 @@
-# BitBuilder
+# introprog-cpu-emulator
+
+CPU emulator for teaching machine-level coding concepts.
+
+# c3pu (formerly BitBuilder, name change pending)
 
 ## OBS - Only a template
 
