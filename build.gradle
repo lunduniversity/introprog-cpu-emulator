@@ -4,7 +4,7 @@ plugins {
     id 'application'
 }
 
-group 'dod-bitbuilder'
+group 'dod-c3pu'
 version '0.2'
 
 repositories {

@@ -59,7 +59,7 @@
 [x] Lägg till utskrift för när sista minnescellen nås
 [x] Lägg till bekräftelse dialog innan delete all data!
 [x] Change Run button into Stop while executing
-[x] Change repo name to BitBuilder, and URLs
+[x] Change repo name to c3pu, and URLs
 [x] Instr table, ankra till huvudfönster som ASCII fönstret
 [x] Lägg till Config option för att låta fönster följa huvudfönstret
 [x] Använd config option "flytta markör vid input", gör ingenting nu?

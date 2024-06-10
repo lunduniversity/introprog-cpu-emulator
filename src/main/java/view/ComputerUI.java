@@ -204,18 +204,17 @@ public class ComputerUI implements FocusRequester {
             handleExit();
           }
         });
-    frame.setTitle("BitBuilder");
+    frame.setTitle("c3pu");
     frame.getContentPane().setLayout(new MigLayout("fillx", "[][][]", "[]"));
 
     fileHandler =
         new FileHandler(
             frame,
-            title ->
-                inv(() -> frame.setTitle("BitBuilder" + (title != null ? " - " + title : ""))));
+            title -> inv(() -> frame.setTitle("c3pu" + (title != null ? " - " + title : ""))));
     menu = new ComputerMenu(this, fileHandler);
     frame.setJMenuBar(menu);
 
-    JLabel lblApplicationHeader = new JLabel("BitBuilder 8-bit Computer");
+    JLabel lblApplicationHeader = new JLabel("c3pu 8-bit Computer");
     lblApplicationHeader.setFont(new Font("Tahoma", Font.BOLD, 20));
     lblApplicationHeader.setFocusable(false);
     frame.getContentPane().add(lblApplicationHeader, "cell 0 0 3 1");
