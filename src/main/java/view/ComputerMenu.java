@@ -63,14 +63,9 @@ public class ComputerMenu extends JMenuBar {
             "Save As ...",
             "ctrl shift S",
             e -> runSafely(() -> fileHandler.saveFileAs(ui.getMemorySnapshot())));
-    JMenuItem itmClose =
-        mf.item(
-            "Close opened file",
-            "ctrl W",
-            e -> {
-              ui.handleDeleteAllData();
-              runSafely(fileHandler::closeOpenedFile);
-            });
+    JMenuItem itmClose = mf.item("Close opened file", "ctrl W", e -> ui.handleDeleteAllData());
+    itmClose.setEnabled(fileHandler.isFileOpened());
+    fileHandler.addPropertyChangeListener(evt -> itmClose.setEnabled(fileHandler.isFileOpened()));
     JMenuItem itmExport = mf.item("Export base64", "ctrl E", e -> ui.exportAsBase64());
     JMenuItem itmImport = mf.item("Import base64", "ctrl I", e -> ui.importFromBase64());
     JMenuItem itmExit = mf.item("Exit", "ctrl Q", e -> ui.handleExit());

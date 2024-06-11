@@ -3,10 +3,10 @@ package util;
 public enum ExecutionSpeed {
   INSTANT(0),
   VERY_FAST(10),
-  FAST(100),
-  MEDIUM(300),
-  SLOW(500),
-  VERY_SLOW(1000);
+  FAST(150),
+  MEDIUM(500),
+  SLOW(1000),
+  VERY_SLOW(2000);
 
   private final int delay;
 

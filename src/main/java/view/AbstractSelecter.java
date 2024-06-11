@@ -75,6 +75,11 @@ public abstract class AbstractSelecter {
     paint();
   }
 
+  public void reset() {
+    clearSelection();
+    clearCaret();
+  }
+
   // Empty so that subclasses can override
   public void caretMoved() {}
 

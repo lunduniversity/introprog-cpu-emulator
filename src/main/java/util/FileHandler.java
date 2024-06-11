@@ -56,7 +56,7 @@ public class FileHandler {
       if (isModified) {
         titleSetter.setTitle(openedFile.getName() + " (unsaved changes)");
       } else {
-        titleSetter.setTitle(openedFile.getName() + " (up to date)");
+        titleSetter.setTitle(openedFile.getName());
       }
     } else {
       titleSetter.setTitle("");
@@ -154,6 +154,7 @@ public class FileHandler {
           writer.println(line);
         }
       }
+      isModified = false;
       _updateTitle();
     }
     return null;

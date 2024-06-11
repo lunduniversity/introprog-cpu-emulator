@@ -903,6 +903,9 @@ public class ComputerUI implements FocusRequester {
     if (result == JOptionPane.OK_OPTION) {
       cpu.reset();
       memory.reset();
+      runSafely(fileHandler::closeOpenedFile);
+      cellSelecter.reset();
+      regSelecter.reset();
       executor.schedule(() -> inv(this::resetCellColors), 700, TimeUnit.MILLISECONDS);
     }
   }
