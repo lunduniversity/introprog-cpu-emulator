@@ -26,7 +26,7 @@ class JeTest {
     when(mockRegistry.getRegister(Registry.REG_OP2)).thenReturn(5);
     when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
-    Je jeInstruction = new Je(operand);
+    Jeq jeInstruction = new Jeq(operand);
     jeInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is called with the correct destination address
@@ -47,7 +47,7 @@ class JeTest {
     // Even though this call happens, it should not lead to a jump since OP1 != OP2
     when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
 
-    Je jeInstruction = new Je(operand);
+    Jeq jeInstruction = new Jeq(operand);
     jeInstruction.execute(null, mockRegistry, mockPC, null);
 
     // Verify jumpTo is never called since the conditions for jumping are not met
@@ -56,9 +56,9 @@ class JeTest {
 
   @Test
   void testToString() {
-    Je jumpOP1 = new Je(Registry.nameToIdx(Registry.REG_OP1));
-    Je jumpRES = new Je(Registry.nameToIdx(Registry.REG_RES));
-    Je jumpR3 = new Je(Registry.nameToIdx(Registry.REG_R3));
+    Jeq jumpOP1 = new Jeq(Registry.nameToIdx(Registry.REG_OP1));
+    Jeq jumpRES = new Jeq(Registry.nameToIdx(Registry.REG_RES));
+    Jeq jumpR3 = new Jeq(Registry.nameToIdx(Registry.REG_R3));
     assertEquals(InstructionFactory.INST_NAME_JEQ + " (dst: OP1)", jumpOP1.toString());
     assertEquals(InstructionFactory.INST_NAME_JEQ + " (dst: RES)", jumpRES.toString());
     assertEquals(InstructionFactory.INST_NAME_JEQ + " (dst: R3)", jumpR3.toString());

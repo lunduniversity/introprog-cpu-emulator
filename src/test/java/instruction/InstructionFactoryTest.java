@@ -115,7 +115,7 @@ class InstructionFactoryTest {
         factory.createInstruction(InstructionFactory.INST_JMP),
         "Should create an instance of Jmp.");
     assertInstanceOf(
-        Je.class,
+        Jeq.class,
         factory.createInstruction(InstructionFactory.INST_JEQ),
         "Should create an instance of Je.");
     assertInstanceOf(

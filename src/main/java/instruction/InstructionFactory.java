@@ -9,18 +9,19 @@ public class InstructionFactory {
   public static final int INST_NOP = 000; // No-op
   public static final int INST_ADD = 0x10; // Addition
   public static final int INST_SUB = 0x20; // Subtraction
-  public static final int INST_CPY = 0x30; // Copy value from one cell to another
-  public static final int INST_MOV = 0x40; // Move value from one cell to another
-  public static final int INST_LOD = 0x50; // Load the next value from memory into registry
-  public static final int INST_LDA = 0x60; // Load address (resolve first) into registry
-  public static final int INST_STO = 0x70; // Store register value in memory
-  public static final int INST_JMP = 0x80; // Jump to address
-  public static final int INST_JEQ = 0x90; // Jump if equal
-  public static final int INST_JNE = 0xA0; // Jump if not equal
-  public static final int INST_PRT = 0xB0; // Print
-  public static final int INST_PRD = 0xC0; // Print
-  public static final int INST_PRL = 0xD0; // Print Loop
-  public static final int INST_HLT = 0xE0; // Halt
+  public static final int INST_INC = 0x30; // Subtraction
+  public static final int INST_CPY = 0x40; // Copy value from one cell to another
+  public static final int INST_MOV = 0x50; // Move value from one cell to another
+  public static final int INST_LOD = 0x60; // Load the next value from memory into registry
+  public static final int INST_LDA = 0x70; // Load address (resolve first) into registry
+  public static final int INST_STO = 0x80; // Store register value in memory
+  public static final int INST_JMP = 0x90; // Jump to address
+  public static final int INST_JEQ = 0xA0; // Jump if equal
+  public static final int INST_JNE = 0xB0; // Jump if not equal
+  public static final int INST_PRT = 0xC0; // Print
+  public static final int INST_PRD = 0xD0; // Print
+  public static final int INST_PRL = 0xE0; // Print Loop
+  public static final int INST_HLT = 0xF0; // Halt
 
   // PRT
   // Add 2 columns: Instr, Char
@@ -28,6 +29,7 @@ public class InstructionFactory {
   public static final String INST_NAME_NOP = "NOP";
   public static final String INST_NAME_ADD = "ADD";
   public static final String INST_NAME_SUB = "SUB";
+  public static final String INST_NAME_INC = "INC";
   public static final String INST_NAME_CPY = "CPY";
   public static final String INST_NAME_MOV = "MOV";
   public static final String INST_NAME_LOD = "LD";
@@ -45,6 +47,7 @@ public class InstructionFactory {
     return code == INST_NOP
         || code == INST_ADD
         || code == INST_SUB
+        || code == INST_INC
         || code == INST_CPY
         || code == INST_MOV
         || code == INST_LOD
@@ -70,6 +73,8 @@ public class InstructionFactory {
         return new Add(operand);
       case INST_SUB:
         return new Sub(operand);
+      case INST_INC:
+        return new Inc(operand);
       case INST_CPY:
         return new Cpy(operand);
       case INST_MOV:
@@ -83,7 +88,7 @@ public class InstructionFactory {
       case INST_JMP:
         return new Jmp(operand);
       case INST_JEQ:
-        return new Je(operand);
+        return new Jeq(operand);
       case INST_JNE:
         return new Jne(operand);
       case INST_PRT:

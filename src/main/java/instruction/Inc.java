@@ -5,33 +5,30 @@ import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
 
-public class Jmp extends Instruction {
+public class Inc extends Instruction {
 
-  public Jmp(int operand) {
-    super(InstructionFactory.INST_NAME_JMP, operand);
+  public Inc(int operand) {
+    super(InstructionFactory.INST_NAME_INC, operand);
   }
 
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    // Read the next value, use as the destination address.
-    int dst = mem.getValueAt(pc.next());
-    pc.jumpTo(dst);
+    // Operand is a register index, to be incremented.
+    reg.setValueAt(operand, reg.getValueAt(operand) + 1);
   }
 
   @Override
   protected String printOperand() {
-    return "";
+    return String.format("(%s)", Registry.idxToName(operand));
   }
 
   @Override
   public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
-    int dst = mem.getValueAt(cur + 1);
-    return new int[] {cur, cur + 1, dst};
+    return new int[] {pc.getCurrentIndex()};
   }
 
   @Override
   public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
-    return new int[0];
+    return new int[] {operand};
   }
 }

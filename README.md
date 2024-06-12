@@ -74,8 +74,8 @@ our code of conduct and the process for submitting pull requests to us.
 
 ## License
 
-This project is licensed under the [Your Choice of License] - see the LICENSE.md
-file for details.
+This project is licensed under the Apache License 2.0 - see the LICENSE.md file
+for details.
 
 ## Acknowledgments
 

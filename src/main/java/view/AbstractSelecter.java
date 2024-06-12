@@ -264,6 +264,7 @@ public abstract class AbstractSelecter {
       selectStartRange = range.from();
       selectEndRange = range.to();
       mouseSelectingOngoing = false;
+      caretPosRow = selectStartRange;
       paintRange(range);
     }
   }

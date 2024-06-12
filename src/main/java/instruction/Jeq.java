@@ -5,10 +5,10 @@ import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
 
-public class Jne extends Instruction {
+public class Jeq extends Instruction {
 
-  public Jne(int operand) {
-    super(InstructionFactory.INST_NAME_JNE, operand);
+  public Jeq(int operand) {
+    super(InstructionFactory.INST_NAME_JEQ, operand);
   }
 
   @Override
@@ -24,7 +24,7 @@ public class Jne extends Instruction {
     int a = reg.getValueAt(op1);
     int b = reg.getValueAt(op2);
 
-    if (a != b) {
+    if (a == b) {
       pc.jumpTo(dst);
     }
   }

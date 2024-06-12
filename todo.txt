@@ -70,8 +70,14 @@
 [x] Fixa konstig fönsterstorlek vid auto-resize
 [x] Stoppa exekvering med space (nu endast med Ctrl+Space)
 [x] Scroll automatiskt för att följa PC vid exekvering 
-[] 
-[] 
+[] Ändra instruktioner:
+   [] Ta bort MOV (CPY räcker)
+   [] Lägg till INC (incremend), operand är ett reg index
+   [] Ändra JEQ och JNE så att registerna som jämförs kan anges, ex:
+         JEQ  1001 0000
+      RES R2  0010 0100
+               RES   R2
+[] När man flyttar en selection så flyttas markören också, t.o.m. utanför bounds
 [] 
 [] 
 0100 1010

@@ -181,6 +181,13 @@ public class InstructionTable extends AnchoredFrame {
           pc);
       appendToTable(
           instrTablePanel,
+          InstructionFactory.INST_NAME_INC,
+          InstructionFactory.INST_INC,
+          "<b>Increment</b>: Increments a register value by 1. The 4-bit operand is the register"
+              + " index (0-7) to increment.",
+          pc);
+      appendToTable(
+          instrTablePanel,
           InstructionFactory.INST_NAME_CPY,
           InstructionFactory.INST_CPY,
           "<b>Copy</b>: Copies value from source to destination. The first two operand bits are the"
@@ -230,48 +237,52 @@ public class InstructionTable extends AnchoredFrame {
           InstructionFactory.INST_NAME_JMP,
           InstructionFactory.INST_JMP,
           String.format(
-              "<b>Jump</b>: Jumps (moves program counter) to an address specified by a register."
-                  + " The register index (0-%d) is specified by the operand.",
+              "<b>Jump</b>: Jumps (moves program counter) to the address specified by the following"
+                  + " memory value. Operand has no purpose and is ignored.",
               (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_JEQ,
           InstructionFactory.INST_JEQ,
-          "<b>Jump if Equal</b>: Works like JMP, but only jumps if OP1 and OP2 are equal."
-              + " Otherwise, does nothing.",
+          "<b>Jump if Equal</b>: A conditional jump. The next memory value is split into two 4-bit"
+              + " operands, which are used as register indices. If the values in the registers are"
+              + " <b>equal</b>, the program counter jumps to the address specified by the following"
+              + " memory value. Otherwise, does nothing and continues to the next instruction.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_JNE,
           InstructionFactory.INST_JNE,
-          "<b>Jump if Not Equal</b>: Works like JMP, but only jumps if OP1 and OP2 are not equal."
-              + " Otherwise, does nothing.",
+          "<b>Jump if Not Equal</b>: A conditional jump. The next memory value is split into two"
+              + " 4-bit operands, which are used as register indices. If the values in the"
+              + " registers are <b>not equal</b>, the program counter jumps to the address"
+              + " specified by the following memory value. Otherwise, does nothing and continues to"
+              + " the next instruction.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRT,
           InstructionFactory.INST_PRT,
-          "<b>Print Text</b>: Sends the value in the OUT register, as an ASCII character, to the"
-              + " I/O output channel. Operand has no purpose and is ignored.",
+          "<b>Print Text</b>: Prints the value in the OUT register as an ASCII character. Operand"
+              + " has no purpose and is ignored.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRD,
           InstructionFactory.INST_PRD,
-          "<b>Print Decimal</b>: Sends the value in the OUT register, as a decimal number, to the"
-              + " I/O output channel. Operand has no purpose and is ignored.",
+          "<b>Print Decimal</b>: Prints the value in the OUT register as a decimal number. Operand"
+              + " has no purpose and is ignored.",
           pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRL,
           InstructionFactory.INST_PRL,
-          "<b>Print Loop</b>: Sends a series of values from memory to the I/O output channel, as"
-              + " ASCII characters. The memory address of the first and last character to print"
-              + " must be in the OP1 and OP2 registers, respectively. In each CPU cycle, the value"
-              + " addressed by OP1 is loaded into OUT and printed, and OP1 is incremented. Once OP1"
-              + " is equal to OP2 all characters have been printed and the program counter is"
-              + " incremented.",
+          "<b>Print Loop</b>: Prints a series of values from memory as ASCII characters. The memory"
+              + " address of the first and last character to print must be in the OP1 and OP2"
+              + " registers, respectively. In each CPU cycle, the value addressed by OP1 is loaded"
+              + " into OUT and printed, and OP1 is incremented. Once OP1 is equal to OP2 all"
+              + " characters have been printed and the program counter is incremented.",
           pc);
       appendToTable(
           instrTablePanel,
