@@ -5,37 +5,47 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class JmpTest {
+
+  private Memory mockMemory;
+  private Registry mockRegistry;
+  private ProgramCounter mockPC;
+
+  @BeforeEach
+  void setup() {
+    mockMemory = mock(Memory.class);
+    mockRegistry = mock(Registry.class);
+    mockPC = mock(ProgramCounter.class);
+  }
+
   @Test
   void testJump() {
-    Registry mockRegistry = mock(Registry.class);
-    ProgramCounter mockPC = mock(ProgramCounter.class);
+    int destinationAddress = 20; // Example destination address
 
-    // Assuming the operand specifies the register containing the destination address
-    int operand = 0; // This could be any register index used in your tests
-    int destinationAddress = 100; // Example destination address
+    when(mockMemory.size()).thenReturn(10);
+    when(mockMemory.getValueAt(1)).thenReturn(destinationAddress);
+    when(mockPC.next()).thenReturn(0, 1, 2);
 
-    // Setup the expected behavior to fetch the destination address
-    when(mockRegistry.getValueAt(operand)).thenReturn(destinationAddress);
-
-    Jmp jmpInstruction = new Jmp(operand);
-    jmpInstruction.execute(null, mockRegistry, mockPC, null);
+    Jmp jmpInstruction = new Jmp(0);
+    jmpInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify that jumpTo is called with the correct destination address
     verify(mockPC).jumpTo(destinationAddress);
   }
 
   @Test
-  void testToString() {
-    Jmp jumpOP1 = new Jmp(Registry.nameToIdx(Registry.REG_OP1));
-    Jmp jumpRES = new Jmp(Registry.nameToIdx(Registry.REG_RES));
-    Jmp jumpR3 = new Jmp(Registry.nameToIdx(Registry.REG_R3));
-    assertEquals(InstructionFactory.INST_NAME_JMP + " (dst: OP1)", jumpOP1.toString());
-    assertEquals(InstructionFactory.INST_NAME_JMP + " (dst: RES)", jumpRES.toString());
-    assertEquals(InstructionFactory.INST_NAME_JMP + " (dst: R3)", jumpR3.toString());
+  void testEvaluate() {
+    Jmp jmp = new Jmp(0);
+    int destination = 20;
+    when(mockMemory.size()).thenReturn(10);
+    when(mockMemory.getValueAt(1)).thenReturn(destination);
+    String expected = String.format("%s (dst: %d)", InstructionFactory.INST_NAME_JMP, destination);
+    assertEquals(expected, jmp.evaluate(mockMemory, mockRegistry, 0));
   }
 }

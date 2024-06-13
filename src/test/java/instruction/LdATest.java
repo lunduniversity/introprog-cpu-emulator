@@ -8,15 +8,24 @@ import static org.mockito.Mockito.when;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class LdATest {
+
+  private Memory mockMemory;
+  private Registry mockRegistry;
+  private ProgramCounter mockPC;
+
+  @BeforeEach
+  void setup() {
+    mockMemory = mock(Memory.class);
+    mockRegistry = mock(Registry.class);
+    mockPC = mock(ProgramCounter.class);
+  }
+
   @Test
   void testLoadFromAddressOperation() {
-    Memory mockMemory = mock(Memory.class);
-    Registry mockRegistry = mock(Registry.class);
-    ProgramCounter mockPC = mock(ProgramCounter.class);
-
     // Setup the operand, the intermediate address read from memory, and the final value
     int operand = 0; // The register to load the value into
     int intermediateAddress =
@@ -42,12 +51,18 @@ class LdATest {
   }
 
   @Test
-  void testToString() {
+  void testEvaluate() {
     LdA loadOP1 = new LdA(Registry.nameToIdx(Registry.REG_OP1));
     LdA loadOP2 = new LdA(Registry.nameToIdx(Registry.REG_OP2));
     LdA loadR2 = new LdA(Registry.nameToIdx(Registry.REG_R2));
-    assertEquals(InstructionFactory.INST_NAME_LDA + " (dst: OP1)", loadOP1.toString());
-    assertEquals(InstructionFactory.INST_NAME_LDA + " (dst: OP2)", loadOP2.toString());
-    assertEquals(InstructionFactory.INST_NAME_LDA + " (dst: R2)", loadR2.toString());
+    assertEquals(
+        InstructionFactory.INST_NAME_LDA + " (dst: OP1)",
+        loadOP1.evaluate(mockMemory, mockRegistry, 0));
+    assertEquals(
+        InstructionFactory.INST_NAME_LDA + " (dst: OP2)",
+        loadOP2.evaluate(mockMemory, mockRegistry, 0));
+    assertEquals(
+        InstructionFactory.INST_NAME_LDA + " (dst: R2)",
+        loadR2.evaluate(mockMemory, mockRegistry, 0));
   }
 }

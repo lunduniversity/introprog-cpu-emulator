@@ -72,8 +72,9 @@ class PrLTest {
   }
 
   @Test
-  void testToString() {
+  void testEvaluate() {
     PrL printLoopInstr = new PrL(0);
-    assertEquals(InstructionFactory.INST_NAME_PRL, printLoopInstr.toString());
+    assertEquals(
+        InstructionFactory.INST_NAME_PRL, printLoopInstr.evaluate(mockMemory, mockRegistry, 0));
   }
 }

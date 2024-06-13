@@ -13,11 +13,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import util.ExamplesHandler;
 import util.ExecutionSpeed;
 import util.FileHandler;
 import util.MenuFactory;
 import util.Settings;
-import util.TemplatesHandler;
 
 public class ComputerMenu extends JMenuBar {
 
@@ -38,9 +38,9 @@ public class ComputerMenu extends JMenuBar {
     JMenu menuFile = mf.menu("<u>F</u>ile", "alt F");
     JMenu menuEdit = mf.menu("<u>E</u>dit", "alt E");
     JMenu menuSelect = mf.menu("<u>S</u>elect", "alt S");
-    JMenu menuExecute = mf.menu("E<u>x</u>cute", "alt X");
+    JMenu menuExecute = mf.menu("E<u>x</u>ecute", "alt X");
     JMenu menuView = mf.menu("<u>V</u>iew", "alt V");
-    JMenu menuTemplates = mf.menu("<u>T</u>emplates", "alt T");
+    JMenu menuExamples = mf.menu("Exa<u>m</u>ples", "alt M");
     JMenu menuSettings = mf.menu("<u>C</u>onfigure", "alt C");
     JMenu menuHelp = mf.menu("<u>H</u>elp", "alt H");
     add(menuFile);
@@ -48,7 +48,7 @@ public class ComputerMenu extends JMenuBar {
     add(menuSelect);
     add(menuExecute);
     add(menuView);
-    add(menuTemplates);
+    add(menuExamples);
     add(menuSettings);
     add(menuHelp);
 
@@ -196,13 +196,13 @@ public class ComputerMenu extends JMenuBar {
     menuView.addSeparator();
     menuView.add(itmAutoResize);
 
-    // Templates menu items
-    List<String> templateNames = TemplatesHandler.getTemplateNames();
-    IntStream.range(0, templateNames.size())
+    // Examples menu items
+    List<String> exampleNames = ExamplesHandler.getExampleNames();
+    IntStream.range(0, exampleNames.size())
         .mapToObj(
             i ->
                 mf.item(
-                    templateNames.get(i),
+                    exampleNames.get(i),
                     "ctrl alt " + (i + 1),
                     e -> {
                       boolean load = true;
@@ -210,21 +210,21 @@ public class ComputerMenu extends JMenuBar {
                         int result =
                             JOptionPane.showConfirmDialog(
                                 frame,
-                                "Loading a template will overwrite and replace the current"
+                                "Loading an example will overwrite and replace the current"
                                     + " memory.\n"
                                     + "There is no way to undo this action. Do you want to"
                                     + " continue?",
-                                "Confirm template load",
+                                "Confirm example load",
                                 JOptionPane.OK_CANCEL_OPTION);
                         if (result != JOptionPane.YES_OPTION) {
                           load = false;
                         }
                       }
                       if (load) {
-                        ui.setMemorySnapshot(TemplatesHandler.getTemplate(templateNames.get(i)));
+                        ui.setMemorySnapshot(ExamplesHandler.getExample(exampleNames.get(i)));
                       }
                     }))
-        .forEach(menuTemplates::add);
+        .forEach(menuExamples::add);
 
     // Settings menu items
     JCheckBoxMenuItem itmOpenHelp =

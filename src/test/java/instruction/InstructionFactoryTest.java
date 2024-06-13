@@ -1,13 +1,9 @@
 package instruction;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
-import model.ProgramCounter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +28,9 @@ class InstructionFactoryTest {
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_SUB),
         "INST_SUB should be recognized as an instruction.");
+    assertTrue(
+        factory.isInstruction(InstructionFactory.INST_INC),
+        "INST_INC should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_CPY),
         "INST_CPY should be recognized as an instruction.");
@@ -69,7 +68,7 @@ class InstructionFactoryTest {
 
   @Test
   void testIsInstructionWithInvalidCode() {
-    int invalidCode = 0xF0; // Assuming 0xF0 is not defined as an instruction
+    int invalidCode = 0x100; // Any value greater than 0xFF is invalid
     assertFalse(
         factory.isInstruction(invalidCode),
         "Invalid code should not be recognized as an instruction.");
@@ -90,6 +89,10 @@ class InstructionFactoryTest {
         Sub.class,
         factory.createInstruction(InstructionFactory.INST_SUB),
         "Should create an instance of Sub.");
+    assertInstanceOf(
+        Inc.class,
+        factory.createInstruction(InstructionFactory.INST_INC),
+        "Should create an instance of Inc.");
     assertInstanceOf(
         Cpy.class,
         factory.createInstruction(InstructionFactory.INST_CPY),
@@ -117,7 +120,7 @@ class InstructionFactoryTest {
     assertInstanceOf(
         Jeq.class,
         factory.createInstruction(InstructionFactory.INST_JEQ),
-        "Should create an instance of Je.");
+        "Should create an instance of Jeq.");
     assertInstanceOf(
         Jne.class,
         factory.createInstruction(InstructionFactory.INST_JNE),
@@ -125,11 +128,11 @@ class InstructionFactoryTest {
     assertInstanceOf(
         PrT.class,
         factory.createInstruction(InstructionFactory.INST_PRT),
-        "Should create an instance of Hlt.");
+        "Should create an instance of Prt.");
     assertInstanceOf(
         PrL.class,
         factory.createInstruction(InstructionFactory.INST_PRL),
-        "Should create an instance of Hlt.");
+        "Should create an instance of Prl.");
     assertInstanceOf(
         Hlt.class,
         factory.createInstruction(InstructionFactory.INST_HLT),
@@ -140,14 +143,31 @@ class InstructionFactoryTest {
   void testCreateInstructionWithInvalidCode() {
     // Factory should return a null-object for invalid codes.
     // The null objects should be printable but have no functionality.
-    int invalidCode = 0xF0; // Assuming 0xF0 is not defined as an instruction
-    Instruction invalidInstruction = factory.createInstruction(invalidCode);
-    assertEquals("--", invalidInstruction.toString(), "Invalid instruction should be printable.");
 
-    // If executed, null-object should increment the PC, but throw an exception.
-    ProgramCounter mockPC = mock(ProgramCounter.class);
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> invalidInstruction.execute(null, null, mockPC, null));
+    // Update: There are now 16 total instructions, which is the maximum number of instructions that
+    // can be represented by a 4-bit code. Any value greater than 0xFF is invalid. However, the
+    // factory uses bit operations to extract only the opcode and operand, so even if the code is
+    // greater than 0xFF, the factory will still return an instruction object.
+    // The null object instruction still exists, but can no longer be created by the factory, so
+    // long
+    // as there are 16 instructions.
+
+    int invalidCode = 0x100; // Invalid 1, followed by 0x00, which is NOP
+    Instruction invalidInstruction = factory.createInstruction(invalidCode);
+    assertInstanceOf(Nop.class, invalidInstruction, "Should create an instance of Nop.");
+
+    invalidCode = 0x7B5; // Invalid 7, followed by opcode B, which is JNE
+    invalidInstruction = factory.createInstruction(invalidCode);
+    assertInstanceOf(Jne.class, invalidInstruction, "Should create an instance of Jne.");
+
+    // Old test, that actually tested the null object instruction
+    // assertEquals("--", invalidInstruction.toString(), "Invalid instruction should be
+    // printable.");
+
+    // // If executed, null-object should increment the PC, but throw an exception.
+    // ProgramCounter mockPC = mock(ProgramCounter.class);
+    // assertThrows(
+    //     UnsupportedOperationException.class,
+    //     () -> invalidInstruction.execute(null, null, mockPC, null));
   }
 }

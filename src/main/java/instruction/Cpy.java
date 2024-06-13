@@ -1,7 +1,6 @@
 package instruction;
 
 import io.IO;
-import java.util.ArrayList;
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
@@ -14,91 +13,55 @@ public class Cpy extends Instruction {
 
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    // operand is the 4 right-most bits of the instruction. Out of these 4 bits, use bits 1 and 2
-    // (from the left) for the source, and bits 3 and 4 for the destination, according to this rule:
-    // 00: constant value (only for source, not for destination)
-    // 01: register address/index
-    // 10: memory address
-    int srcType = (operand >> 2) & 0x3;
-    int destType = (operand) & 0x3;
+    // Copy always operates on registers, not memory.
+    // The right-most operand bit is used alter between "copy" and "move".
+    // The next memory cell is split into two 4-bit parts, each representing the source and
+    // destination register index.
 
-    // check for errors first
-    if (srcType != ADDR_TYPE_CONSTANT
-        && srcType != ADDR_TYPE_REGISTER
-        && srcType != ADDR_TYPE_MEMORY) {
-      throw new IllegalArgumentException(
-          String.format("Invalid source type: %s", toBinaryString(srcType, 2)));
-    }
-    if (destType != ADDR_TYPE_MEMORY && destType != ADDR_TYPE_REGISTER) {
-      throw new IllegalArgumentException(
-          String.format("Invalid destination type: %s", toBinaryString(destType, 2)));
-    }
+    // 0 = copy, 1 = move
+    boolean isMove = (operand & 0x1) == 1;
 
-    int src = mem.getValueAt(pc.next());
-    int dst = mem.getValueAt(pc.next());
-    int value = getSrcValue(srcType, src, mem, reg);
+    int value = mem.getValueAt(pc.next());
+    int src = (value >> 4) & 0xF;
+    int dst = value & 0xF;
 
-    if (destType == ADDR_TYPE_MEMORY) {
-      mem.setValueAt(dst, value);
-    } else {
-      reg.setValueAt(dst, value);
+    reg.setValueAt(dst, reg.getValueAt(src));
+    if (isMove) {
+      reg.setValueAt(src, 0);
     }
-  }
-
-  private int getSrcValue(int srcType, int src, Memory mem, Registry reg) {
-    if (srcType == ADDR_TYPE_REGISTER) {
-      return reg.getValueAt(src);
-    } else if (srcType == ADDR_TYPE_MEMORY) {
-      return mem.getValueAt(src);
-    }
-    return src;
   }
 
   @Override
-  protected String printOperand() {
-    return String.format("(%s | %s)", parseAddrMode(operand >> 2), parseAddrMode(operand));
+  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+    if (memIdx + 1 >= mem.size()) {
+      return String.format("(%s %s %s)", INVALID_REG_CHAR, RIGHT_ARROW_CHAR, INVALID_REG_CHAR);
+    }
+    int value = mem.getValueAt(memIdx + 1);
+    int src = (value >> 4) & 0xF;
+    int dst = value & 0xF;
+    return String.format(
+        "(%s %s %s)", Registry.idxToName(src), RIGHT_ARROW_CHAR, Registry.idxToName(dst));
   }
 
   @Override
   public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
     int cur = pc.getCurrentIndex();
-    int srcType = (operand >> 2) & 0x3;
-    int destType = (operand) & 0x3;
-
-    ArrayList<Integer> indices = new ArrayList<>();
-    indices.add(cur);
-    indices.add(cur + 1);
-    indices.add(cur + 2);
-
-    if (srcType == ADDR_TYPE_MEMORY) {
-      indices.add(mem.getValueAt(cur + 1));
-    }
-    if (destType == ADDR_TYPE_MEMORY) {
-      indices.add(mem.getValueAt(cur + 2));
-    }
-
-    return indices.stream().mapToInt(i -> i).toArray();
+    // if (cur + 1 >= mem.size()) {
+    //   return new int[] {cur};
+    // }
+    return new int[] {cur, cur + 1};
   }
 
   @Override
   public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
-    int srcType = (operand >> 2) & 0x3;
-    int destType = (operand) & 0x3;
+    int operatorIdx = pc.getCurrentIndex() + 1;
+    if (operatorIdx >= mem.size()) {
+      return new int[0];
+    }
+    int value = mem.getValueAt(operatorIdx);
+    int src = (value >> 4) & 0xF;
+    int dst = value & 0xF;
 
-    ArrayList<Integer> indices = new ArrayList<>();
-    if (srcType == ADDR_TYPE_REGISTER) {
-      int regIdx = mem.getValueAt(cur + 1);
-      if (Registry.isValidIndex(regIdx)) {
-        indices.add(regIdx);
-      }
-    }
-    if (destType == ADDR_TYPE_REGISTER) {
-      int regIdx = mem.getValueAt(cur + 2);
-      if (Registry.isValidIndex(regIdx)) {
-        indices.add(regIdx);
-      }
-    }
-    return indices.stream().mapToInt(i -> i).toArray();
+    return new int[] {src, dst};
   }
 }

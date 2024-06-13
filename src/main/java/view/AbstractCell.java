@@ -16,6 +16,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import model.Memory;
+import model.Registry;
 import net.miginfocom.swing.MigLayout;
 
 public abstract class AbstractCell {
@@ -53,13 +55,23 @@ public abstract class AbstractCell {
 
   private CellValueListener valueListener;
 
+  private final int index;
+  private final Memory mem;
+  private final Registry reg;
+
   protected AbstractCell(
       Container parent,
       final int index,
       String address,
       String label,
       CellValueListener valueListener,
-      AbstractSelecter cellSelecter) {
+      AbstractSelecter cellSelecter,
+      Memory mem,
+      Registry reg) {
+
+    this.mem = mem;
+    this.reg = reg;
+    this.index = index;
 
     this.valueListener = valueListener;
 
@@ -185,7 +197,7 @@ public abstract class AbstractCell {
     // (0-31 are control characters, 32-126 are printable ascii characters, 127 is DEL)
     if (value >= 32 && value <= 126) lblAscii.setText(Character.toString((char) value));
     else lblAscii.setText("--");
-    lblInstruction.setText(factory.createInstruction(value).toString());
+    lblInstruction.setText(factory.createInstruction(value).evaluate(mem, reg, index));
   }
 
   private static String hex(int value) {

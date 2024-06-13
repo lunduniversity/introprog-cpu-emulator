@@ -30,6 +30,30 @@ class CpyTest {
   }
 
   @Test
+  void testCopy() {
+    // Setup operand for copying from R1 to R2
+    int operand = 0; // Operand is not
+    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R2); // Destination register index
+    int operatorValue = (srcRegister << 4) | destRegister;
+    int value = 123; // Value to be copied
+
+    // Simulate reading source and destination addresses (register indices)
+    when(mockPC.next()).thenReturn(0, 1, 2);
+    when(mockMemory.getValueAt(1)).thenReturn(operatorValue);
+
+    // Simulate reading value from the source register
+    when(mockRegistry.getValueAt(srcRegister)).thenReturn(value);
+
+    Cpy cpyInstruction = new Cpy(operand);
+    cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+
+    // Verify the value is copied to the destination register
+    verify(mockRegistry).getValueAt(srcRegister);
+    verify(mockRegistry).setValueAt(destRegister, value);
+  }
+
+  // @Test - No longer needed, since rework of Cpy class
   void testCopyRegisterToRegister() {
     // Setup operand for copying from register to register (R1 to R2)
     int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_REGISTER;
@@ -52,7 +76,7 @@ class CpyTest {
     verify(mockRegistry).setValueAt(destRegister, value);
   }
 
-  @Test
+  // @Test - No longer needed, since rework of Cpy class
   void testCopyMemoryToRegister() {
     // Similar to previous test, but with operand encoding for memory to register (10 to 01)
     int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_REGISTER;
@@ -73,7 +97,7 @@ class CpyTest {
     verify(mockRegistry).setValueAt(destRegister, value);
   }
 
-  @Test
+  // @Test - No longer needed, since rework of Cpy class
   void testCopyConstantToRegister() {
     // Similar to previous test, but with operand encoding for constant to register (00 to 01)
     int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_REGISTER;
@@ -92,7 +116,7 @@ class CpyTest {
     verify(mockRegistry).setValueAt(destRegister, value);
   }
 
-  @Test
+  // @Test - No longer needed, since rework of Cpy class
   void testCopyRegisterToMemory() {
     // Setup operand for copying from register to memory (R1 to memory address)
     int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_MEMORY;
@@ -114,7 +138,7 @@ class CpyTest {
     verify(mockMemory).setValueAt(memoryAddress, value);
   }
 
-  @Test
+  // @Test - No longer needed, since rework of Cpy class
   void testCopyMemoryToMemory() {
     // Setup operand for copying from memory to memory (memory address to memory address)
     int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_MEMORY;
@@ -136,7 +160,7 @@ class CpyTest {
     verify(mockMemory).setValueAt(destMemoryAddress, value);
   }
 
-  @Test
+  // @Test - No longer needed, since rework of Cpy class
   void testCopyConstantToMemory() {
     // Setup operand for copying from constant to memory (constant value to memory address)
     int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_MEMORY;
@@ -155,7 +179,7 @@ class CpyTest {
     verify(mockMemory).setValueAt(memoryAddress, value);
   }
 
-  @Test
+  // @Test - No longer needed, since rework of Cpy class
   void testInvalidSourceTypeThrowsException() {
     // Setup operand with an invalid source type
     int operand = (ADDR_TYPE_INVALID << 2) | ADDR_TYPE_REGISTER; // Invalid source type (11)
@@ -166,7 +190,7 @@ class CpyTest {
         () -> cpyInstruction.execute(mockMemory, mockRegistry, mockPC, null));
   }
 
-  @Test
+  // @Test - No longer needed, since rework of Cpy class
   void testInvalidDestinationTypeThrowsException() {
     // Setup operand with an invalid destination type
     int operand1 =
@@ -187,14 +211,14 @@ class CpyTest {
   }
 
   @Test
-  void testToString() {
-    // Test all possible operands
-    int[] bits = {ADDR_TYPE_CONSTANT, ADDR_TYPE_REGISTER, ADDR_TYPE_MEMORY, ADDR_TYPE_INVALID};
-    for (int src : bits) {
-      for (int dst : bits) {
-        Cpy cpy = new Cpy((src << 2) | dst);
-        assertEquals(InstructionFactory.INST_NAME_CPY + " " + cpy.printOperand(), cpy.toString());
-      }
-    }
+  void testEvaluate() {
+    Cpy cpy = new Cpy(0); // Operand is not used in evaluate
+    // Set the next memory cell to index registers R1 to R2
+    when(mockMemory.size()).thenReturn(10);
+    when(mockMemory.getValueAt(1))
+        .thenReturn(
+            Registry.nameToIdx(Registry.REG_OP1) << 4 | Registry.nameToIdx(Registry.REG_OP2));
+    String expected = String.format("(OP1 %s OP2)", Instruction.RIGHT_ARROW_CHAR);
+    assertEquals(expected, cpy.internalEvaluate(mockMemory, mockRegistry, 0));
   }
 }

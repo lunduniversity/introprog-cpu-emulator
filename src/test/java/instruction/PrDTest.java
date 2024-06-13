@@ -32,8 +32,8 @@ class PrDTest {
   }
 
   @Test
-  void testToString() {
+  void testEvaluate() {
     PrD printInstruction = new PrD(0);
-    assertEquals(InstructionFactory.INST_NAME_PRD, printInstruction.toString());
+    assertEquals(InstructionFactory.INST_NAME_PRD, printInstruction.evaluate(null, null, 0));
   }
 }

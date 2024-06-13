@@ -6,7 +6,7 @@ import model.ProgramCounter;
 import model.Registry;
 
 public class InstructionFactory {
-  public static final int INST_NOP = 000; // No-op
+  public static final int INST_NOP = 0x00; // No-op
   public static final int INST_ADD = 0x10; // Addition
   public static final int INST_SUB = 0x20; // Subtraction
   public static final int INST_INC = 0x30; // Subtraction
@@ -18,8 +18,8 @@ public class InstructionFactory {
   public static final int INST_JMP = 0x90; // Jump to address
   public static final int INST_JEQ = 0xA0; // Jump if equal
   public static final int INST_JNE = 0xB0; // Jump if not equal
-  public static final int INST_PRT = 0xC0; // Print
-  public static final int INST_PRD = 0xD0; // Print
+  public static final int INST_PRT = 0xC0; // Print text
+  public static final int INST_PRD = 0xD0; // Print decimal
   public static final int INST_PRL = 0xE0; // Print Loop
   public static final int INST_HLT = 0xF0; // Halt
 
@@ -120,7 +120,7 @@ public class InstructionFactory {
     }
 
     @Override
-    protected String printOperand() {
+    protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
       return "";
     }
 

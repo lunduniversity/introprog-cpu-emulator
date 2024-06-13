@@ -8,6 +8,10 @@ import model.Registry;
 public abstract class Instruction {
 
   static final String INVALID_ADDR_CHAR = "\u2013";
+  static final String INVALID_REG_CHAR = "\u26A0";
+  static final String EQUAL_CHAR = "\u003d";
+  static final String NOT_EQUAL_CHAR = "\u2260";
+  static final String RIGHT_ARROW_CHAR = "\u2192";
 
   static final byte ADDR_TYPE_CONSTANT = 0b00;
   static final byte ADDR_TYPE_REGISTER = 0b01;
@@ -28,6 +32,12 @@ public abstract class Instruction {
     this.autoIncrement = autoIncrement;
   }
 
+  public String evaluate(Memory mem, Registry reg, int memIdx) {
+    return String.format("%s %s", name, internalEvaluate(mem, reg, memIdx)).trim();
+  }
+
+  protected abstract String internalEvaluate(Memory mem, Registry reg, int memIdx);
+
   public final void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     if (autoIncrement) {
       pc.next();
@@ -39,10 +49,8 @@ public abstract class Instruction {
 
   @Override
   public String toString() {
-    return String.format("%s %s", name, printOperand()).trim();
+    return name;
   }
-
-  protected abstract String printOperand();
 
   /**
    * Get the indices of all memory cells affected by this instruction. This is used to highlight the
@@ -67,7 +75,7 @@ public abstract class Instruction {
    * @param operand
    * @return
    */
-  protected String parseAddrMode(int operand) {
+  static String parseAddrMode(int operand) {
     int mode = operand & 0x3; // Pick the last 2 bits
     switch (mode) {
       case 0:

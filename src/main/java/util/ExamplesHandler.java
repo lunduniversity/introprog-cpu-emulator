@@ -13,24 +13,24 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Util class for reading templates from the resources folder. Templates are simply example programs
- * that can be loaded into the emulator.
+ * Util class for reading examples from the resources folder. These are example programs that can be
+ * loaded into the emulator via the GUI menu.
  */
-public class TemplatesHandler {
+public class ExamplesHandler {
 
-  private static final String TEMPLATES_PATH = "/templates/";
+  private static final String EXAMPLES_DIR = "/examples/";
 
-  private static Map<String, Path> templateMap = null;
+  private static Map<String, Path> exampleMap = null;
 
-  private TemplatesHandler() {}
+  private ExamplesHandler() {}
 
-  private static Map<String, Path> getTemplateMap() {
-    if (templateMap == null) {
+  private static Map<String, Path> getExampleMap() {
+    if (exampleMap == null) {
       try {
-        templateMap =
+        exampleMap =
             Arrays.stream(
                     Objects.requireNonNull(
-                        new File(TemplatesHandler.class.getResource(TEMPLATES_PATH).toURI())
+                        new File(ExamplesHandler.class.getResource(EXAMPLES_DIR).toURI())
                             .listFiles()))
                 .map(File::toPath) // Convert File to Path
                 .collect(
@@ -47,18 +47,18 @@ public class TemplatesHandler {
                         ));
       } catch (URISyntaxException e) {
         e.printStackTrace();
-        templateMap = Collections.emptyMap();
+        exampleMap = Collections.emptyMap();
       }
     }
-    return templateMap;
+    return exampleMap;
   }
 
-  public static List<String> getTemplateNames() {
-    return getTemplateMap().keySet().stream().sorted().collect(Collectors.toList());
+  public static List<String> getExampleNames() {
+    return getExampleMap().keySet().stream().sorted().collect(Collectors.toList());
   }
 
-  public static String[] getTemplate(String name) {
-    Path path = getTemplateMap().get(name);
+  public static String[] getExample(String name) {
+    Path path = getExampleMap().get(name);
     if (path == null) {
       return new String[0];
     }

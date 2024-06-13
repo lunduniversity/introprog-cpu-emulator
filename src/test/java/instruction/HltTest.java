@@ -30,8 +30,8 @@ class HltTest {
   }
 
   @Test
-  void testToString() {
-    Hlt hltInstruction = new Hlt(0);
-    assertEquals(InstructionFactory.INST_NAME_HLT, hltInstruction.toString());
+  void testEvaluate() {
+    Hlt haltInstruction = new Hlt(0);
+    assertEquals(InstructionFactory.INST_NAME_HLT, haltInstruction.evaluate(null, null, 0));
   }
 }

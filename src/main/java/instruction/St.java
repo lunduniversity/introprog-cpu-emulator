@@ -21,7 +21,7 @@ public class St extends Instruction {
   }
 
   @Override
-  protected String printOperand() {
+  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
     return String.format("(src: %s)", Registry.idxToName(operand));
   }
 

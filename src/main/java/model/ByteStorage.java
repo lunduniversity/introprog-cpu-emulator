@@ -290,16 +290,16 @@ public class ByteStorage implements Memory {
 
   @Override
   public void deleteCells(int startIdx, int endIdx) {
-    // Check if the range is valid
-    if (startIdx < 0 || endIdx >= store.length || startIdx > endIdx) {
+    // Check if the range is valid. endIdx is exclusive.
+    if (startIdx < 0 || endIdx > store.length || startIdx >= endIdx) {
       return;
     }
 
-    int numberOfElementsToDelete = endIdx - startIdx + 1;
-    int elementsToMove = store.length - endIdx - 1;
+    int numberOfElementsToDelete = endIdx - startIdx;
+    int elementsToMove = store.length - endIdx;
 
     // Move elements up
-    System.arraycopy(store, endIdx + 1, store, startIdx, elementsToMove);
+    System.arraycopy(store, endIdx, store, startIdx, elementsToMove);
 
     // Fill vacated slots with zeros
     Arrays.fill(store, store.length - numberOfElementsToDelete, store.length, 0);

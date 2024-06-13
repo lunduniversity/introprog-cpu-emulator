@@ -35,6 +35,10 @@ public class Settings implements java.io.Serializable {
   private boolean moveCaretAfterInput;
   private int currentFontSize;
 
+  // Hidden values
+  private String lastOpenedFilePath;
+
+  // Constants for font size
   public static final int DEFAULT_FONT_SIZE = 14;
   public static final int MIN_FONT_SIZE = 8;
   public static final int MAX_FONT_SIZE = 30;
@@ -169,6 +173,10 @@ public class Settings implements java.io.Serializable {
     return currentFontSize;
   }
 
+  public String getLastOpenedFilePath() {
+    return lastOpenedFilePath;
+  }
+
   public void setExecutionSpeed(ExecutionSpeed executionSpeed) {
     ExecutionSpeed oldExecutionSpeed = this.executionSpeed;
     this.executionSpeed = executionSpeed;
@@ -224,6 +232,11 @@ public class Settings implements java.io.Serializable {
     int oldFontSize = this.currentFontSize;
     this.currentFontSize = currentFontSize;
     pcs.firePropertyChange(CURRENT_FONT_SIZE, oldFontSize, currentFontSize);
+    save();
+  }
+
+  public void setLastOpenedFilePath(String lastOpenedFilePath) {
+    this.lastOpenedFilePath = lastOpenedFilePath;
     save();
   }
 

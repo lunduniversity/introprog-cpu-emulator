@@ -33,8 +33,8 @@ class PrTTest {
   }
 
   @Test
-  void testToString() {
+  void testEvaluate() {
     PrT printInstruction = new PrT(0);
-    assertEquals(InstructionFactory.INST_NAME_PRT, printInstruction.toString());
+    assertEquals(InstructionFactory.INST_NAME_PRT, printInstruction.evaluate(null, null, 0));
   }
 }

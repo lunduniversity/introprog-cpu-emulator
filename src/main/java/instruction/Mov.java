@@ -60,7 +60,7 @@ public class Mov extends Instruction {
   }
 
   @Override
-  protected String printOperand() {
+  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
     return String.format("(%s | %s)", parseAddrMode(operand >> 2), parseAddrMode(operand));
   }
 

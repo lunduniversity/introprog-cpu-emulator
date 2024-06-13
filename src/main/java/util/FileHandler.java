@@ -16,6 +16,7 @@ public class FileHandler {
   private final JFileChooser fileChooser;
   private final JFrame parent;
   private final TitleSetter titleSetter;
+  private final Settings settings;
   private final PropertyChangeSupport pcs;
 
   private File openedFile;
@@ -25,15 +26,34 @@ public class FileHandler {
     void setTitle(String title);
   }
 
-  public FileHandler(JFrame parent, TitleSetter titleSetter) {
-    fileChooser = new JFileChooser();
-    fileChooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
+  public FileHandler(JFrame parent, TitleSetter titleSetter, Settings settings) {
     this.parent = parent;
     this.titleSetter = titleSetter;
+    this.settings = settings;
     pcs = new PropertyChangeSupport(this);
+
+    fileChooser = new JFileChooser();
+    fileChooser.setFileFilter(new FileNameExtensionFilter("Text files", "txt"));
+    fileChooser.setCurrentDirectory(getExistingDirectory(settings.getLastOpenedFilePath()));
 
     openedFile = null;
     isModified = false;
+  }
+
+  private File getExistingDirectory(String directoryPath) {
+    if (directoryPath == null || directoryPath.isEmpty()) {
+      return new File(System.getProperty("user.home"));
+    }
+    File directory = new File(directoryPath);
+    while (!directory.exists() || !directory.isDirectory()) {
+      File parentDirectory = directory.getParentFile();
+      if (parentDirectory == null) {
+        directory = new File(System.getProperty("user.home"));
+        break;
+      }
+      directory = parentDirectory;
+    }
+    return directory;
   }
 
   public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -84,6 +104,7 @@ public class FileHandler {
     int result = fileChooser.showOpenDialog(parent);
     if (result == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
+      settings.setLastOpenedFilePath(selectedFile.getAbsolutePath());
       try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
         String[] lines =
             reader

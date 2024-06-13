@@ -19,8 +19,9 @@ public class Jmp extends Instruction {
   }
 
   @Override
-  protected String printOperand() {
-    return "";
+  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+    int dst = mem.getValueAt(memIdx + 1);
+    return String.format("(dst: %d)", dst);
   }
 
   @Override

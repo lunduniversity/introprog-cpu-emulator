@@ -28,8 +28,8 @@ class AddTest {
   }
 
   @Test
-  void testToString() {
+  void testEvaluate() {
     Add addInstruction = new Add(0);
-    assertEquals(InstructionFactory.INST_NAME_ADD, addInstruction.toString());
+    assertEquals(InstructionFactory.INST_NAME_ADD, addInstruction.evaluate(null, null, 0));
   }
 }

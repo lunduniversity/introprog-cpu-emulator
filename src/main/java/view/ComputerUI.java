@@ -210,7 +210,8 @@ public class ComputerUI implements FocusRequester {
     fileHandler =
         new FileHandler(
             frame,
-            title -> inv(() -> frame.setTitle("c3pu" + (title != null ? " - " + title : ""))));
+            title -> inv(() -> frame.setTitle("c3pu" + (title != null ? " - " + title : ""))),
+            settings);
     menu = new ComputerMenu(this, fileHandler);
     frame.setJMenuBar(menu);
 
@@ -268,7 +269,13 @@ public class ComputerUI implements FocusRequester {
       for (int i = 0; i < memory.size(); i++) {
         final int idx = i;
         memCells[i] =
-            new Cell(memoryCellsPanel, i, value -> memory.setValueAt(idx, value), cellSelecter);
+            new Cell(
+                memoryCellsPanel,
+                i,
+                value -> memory.setValueAt(idx, value),
+                cellSelecter,
+                memory,
+                registry);
       }
 
       memory.addListener(
@@ -310,7 +317,9 @@ public class ComputerUI implements FocusRequester {
                 i,
                 Registry.REGISTER_NAMES[i],
                 value -> registry.setValueAt(idx, value),
-                regSelecter);
+                regSelecter,
+                memory,
+                registry);
         if (idx == 2) {
           registerPanel.add(Box.createRigidArea(new Dimension(10, 10)), "wrap");
         }
@@ -320,7 +329,13 @@ public class ComputerUI implements FocusRequester {
 
       Register pcCell =
           new Register(
-              registerPanel, Registry.NUM_REGISTERS - 1, "PC", pc::setCurrentIndex, regSelecter);
+              registerPanel,
+              Registry.NUM_REGISTERS - 1,
+              "PC",
+              pc::setCurrentIndex,
+              regSelecter,
+              memory,
+              registry);
       regCells[Registry.NUM_REGISTERS - 1] = pcCell;
 
       {

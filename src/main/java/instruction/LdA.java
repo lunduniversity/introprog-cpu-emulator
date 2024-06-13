@@ -18,7 +18,7 @@ public class LdA extends Instruction {
   }
 
   @Override
-  protected String printOperand() {
+  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
     return String.format("(dst: %s)", Registry.idxToName(operand));
   }
 

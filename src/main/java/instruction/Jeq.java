@@ -30,8 +30,15 @@ public class Jeq extends Instruction {
   }
 
   @Override
-  protected String printOperand() {
-    return "";
+  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+    int value = mem.getValueAt(memIdx + 1);
+    int op1 = value >> 4;
+    int op2 = value & 0xF;
+    int dst = mem.getValueAt(memIdx + 2);
+
+    return String.format(
+        "(%s%s%s %s %d)",
+        Registry.idxToName(op1), EQUAL_CHAR, Registry.idxToName(op2), RIGHT_ARROW_CHAR, dst);
   }
 
   @Override

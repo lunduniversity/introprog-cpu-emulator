@@ -205,13 +205,16 @@ class MovTest {
   }
 
   @Test
-  void testToString() {
+  void testEvaluate() {
     // Test all possible operands
     int[] bits = {ADDR_TYPE_CONSTANT, ADDR_TYPE_REGISTER, ADDR_TYPE_MEMORY, ADDR_TYPE_INVALID};
     for (int src : bits) {
       for (int dst : bits) {
         Mov mov = new Mov((src << 2) | dst);
-        assertEquals(InstructionFactory.INST_NAME_MOV + " " + mov.printOperand(), mov.toString());
+        String expected =
+            String.format(
+                "(%s | %s)", Instruction.parseAddrMode(src), Instruction.parseAddrMode(dst));
+        assertEquals(expected, mov.internalEvaluate(mockMemory, mockRegistry, 0));
       }
     }
   }
