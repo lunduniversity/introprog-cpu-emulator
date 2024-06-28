@@ -33,8 +33,8 @@ class CpyTest {
   void testCopy() {
     // Setup operand for copying from R1 to R2
     int operand = 0; // Operand is not
-    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
-    int destRegister = Registry.nameToIdx(Registry.REG_R2); // Destination register index
+    int srcRegister = Registry.nameToIdx(Registry.REG_R0); // Source register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
     int operatorValue = (srcRegister << 4) | destRegister;
     int value = 123; // Value to be copied
 
@@ -57,8 +57,8 @@ class CpyTest {
   void testCopyRegisterToRegister() {
     // Setup operand for copying from register to register (R1 to R2)
     int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_REGISTER;
-    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
-    int destRegister = Registry.nameToIdx(Registry.REG_R2); // Destination register index
+    int srcRegister = Registry.nameToIdx(Registry.REG_R0); // Source register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
     int value = 123; // Value to be copied
 
     // Simulate reading source and destination addresses (register indices)
@@ -81,7 +81,7 @@ class CpyTest {
     // Similar to previous test, but with operand encoding for memory to register (10 to 01)
     int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_REGISTER;
     int memoryAddress = 16; // Example memory address
-    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R0); // Destination register index
     int value = 456; // Value at the memory address to be copied
 
     // Set up mock behavior
@@ -101,7 +101,7 @@ class CpyTest {
   void testCopyConstantToRegister() {
     // Similar to previous test, but with operand encoding for constant to register (00 to 01)
     int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_REGISTER;
-    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R0); // Destination register index
     int value = 89; // Constant value to be copied
 
     // Set up mock behavior
@@ -120,7 +120,7 @@ class CpyTest {
   void testCopyRegisterToMemory() {
     // Setup operand for copying from register to memory (R1 to memory address)
     int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_MEMORY;
-    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
+    int srcRegister = Registry.nameToIdx(Registry.REG_R0); // Source register index
     int memoryAddress = 10; // Destination memory address
     int value = 123; // Value to be copied
 
@@ -219,6 +219,6 @@ class CpyTest {
         .thenReturn(
             Registry.nameToIdx(Registry.REG_OP1) << 4 | Registry.nameToIdx(Registry.REG_OP2));
     String expected = String.format("(OP1 %s OP2)", Instruction.RIGHT_ARROW_CHAR);
-    assertEquals(expected, cpy.internalEvaluate(mockMemory, mockRegistry, 0));
+    assertEquals(expected, cpy.internalPrettyPrint(mockMemory, mockRegistry, 0));
   }
 }

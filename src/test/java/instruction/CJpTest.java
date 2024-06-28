@@ -13,7 +13,7 @@ import model.Registry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class JneTest {
+class CJpTest {
 
   private Memory mockMemory;
   private Registry mockRegistry;
@@ -27,42 +27,42 @@ class JneTest {
   }
 
   @Test
-  void testJumpWhenNotEqual() {
+  void testJumpWhenEqual() {
     int destinationAddress = 20; // Example destination address, not used in this test
     int operatorValue =
-        Registry.nameToIdx(Registry.REG_RES) << 4 | Registry.nameToIdx(Registry.REG_R3);
+        Registry.nameToIdx(Registry.REG_RES) << 4 | Registry.nameToIdx(Registry.REG_R2);
 
     // Setup conditions where OP1 does not equal OP2
     when(mockMemory.size()).thenReturn(10);
     when(mockMemory.getValueAt(1)).thenReturn(operatorValue);
     when(mockMemory.getValueAt(2)).thenReturn(destinationAddress);
     when(mockRegistry.getValueAt(Registry.nameToIdx(Registry.REG_RES))).thenReturn(5);
-    when(mockRegistry.getValueAt(Registry.nameToIdx(Registry.REG_R3))).thenReturn(10);
+    when(mockRegistry.getValueAt(Registry.nameToIdx(Registry.REG_R2))).thenReturn(5);
     when(mockPC.next()).thenReturn(0, 1, 2);
 
-    Jne jneInstruction = new Jne(0);
-    jneInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+    CJp jeInstruction = new CJp(0);
+    jeInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify jumpTo is called with the correct destination address
     verify(mockPC).jumpTo(destinationAddress);
   }
 
   @Test
-  void testNoJumpWhenEqual() {
+  void testNoJumpWhenNotEqual() {
     int destinationAddress = 20; // Example destination address, not used in this test
     int operatorValue =
-        Registry.nameToIdx(Registry.REG_RES) << 4 | Registry.nameToIdx(Registry.REG_R3);
+        Registry.nameToIdx(Registry.REG_RES) << 4 | Registry.nameToIdx(Registry.REG_R2);
 
     // Setup conditions where OP1 does not equal OP2
     when(mockMemory.size()).thenReturn(10);
     when(mockMemory.getValueAt(1)).thenReturn(operatorValue);
     when(mockMemory.getValueAt(2)).thenReturn(destinationAddress);
     when(mockRegistry.getValueAt(Registry.nameToIdx(Registry.REG_RES))).thenReturn(5);
-    when(mockRegistry.getValueAt(Registry.nameToIdx(Registry.REG_R3))).thenReturn(5);
+    when(mockRegistry.getValueAt(Registry.nameToIdx(Registry.REG_R2))).thenReturn(10);
     when(mockPC.next()).thenReturn(0, 1, 2);
 
-    Jne jneInstruction = new Jne(0);
-    jneInstruction.execute(mockMemory, mockRegistry, mockPC, null);
+    CJp jeInstruction = new CJp(0);
+    jeInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify jumpTo is never called since the conditions for jumping are not met
     verify(mockPC, never()).jumpTo(anyInt());
@@ -70,18 +70,16 @@ class JneTest {
 
   @Test
   void testEvaluate() {
-    Jne jne = new Jne(0); // Operand is not used in evaluate
+    CJp jeq = new CJp(0); // Operand is not used in evaluate
     when(mockMemory.size()).thenReturn(10);
     when(mockMemory.getValueAt(1))
         .thenReturn(
-            Registry.nameToIdx(Registry.REG_RES) << 4 | Registry.nameToIdx(Registry.REG_R3));
+            Registry.nameToIdx(Registry.REG_RES) << 4 | Registry.nameToIdx(Registry.REG_R2));
     when(mockMemory.getValueAt(2)).thenReturn(20);
     String expected =
         String.format(
             "%s (RES%sR3 %s 20)",
-            InstructionFactory.INST_NAME_JNE,
-            Instruction.NOT_EQUAL_CHAR,
-            Instruction.RIGHT_ARROW_CHAR);
-    assertEquals(expected, jne.evaluate(mockMemory, mockRegistry, 0));
+            InstructionFactory.INST_NAME_CJP, Instruction.EQUAL_CHAR, Instruction.RIGHT_ARROW_CHAR);
+    assertEquals(expected, jeq.prettyPrint(mockMemory, mockRegistry, 0));
   }
 }

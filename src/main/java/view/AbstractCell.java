@@ -197,7 +197,7 @@ public abstract class AbstractCell {
     // (0-31 are control characters, 32-126 are printable ascii characters, 127 is DEL)
     if (value >= 32 && value <= 126) lblAscii.setText(Character.toString((char) value));
     else lblAscii.setText("--");
-    lblInstruction.setText(factory.createInstruction(value).evaluate(mem, reg, index));
+    lblInstruction.setText(factory.createInstruction(value).prettyPrint(mem, reg, index));
   }
 
   private static String hex(int value) {

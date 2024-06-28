@@ -35,6 +35,6 @@ class PrTTest {
   @Test
   void testEvaluate() {
     PrT printInstruction = new PrT(0);
-    assertEquals(InstructionFactory.INST_NAME_PRT, printInstruction.evaluate(null, null, 0));
+    assertEquals(InstructionFactory.INST_NAME_PRT, printInstruction.prettyPrint(null, null, 0));
   }
 }

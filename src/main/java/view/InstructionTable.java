@@ -237,29 +237,33 @@ public class InstructionTable extends AnchoredFrame {
           InstructionFactory.INST_NAME_JMP,
           InstructionFactory.INST_JMP,
           String.format(
-              "<b>Jump</b>: Jumps (moves program counter) to the address specified by the following"
-                  + " memory value. Operand has no purpose and is ignored.",
+              "<b>Jump</b>: Jumps (moves program counter) to the address specified by a register."
+                  + " The 4-bit operand is the register index (0-%d).",
               (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(
           instrTablePanel,
-          InstructionFactory.INST_NAME_JEQ,
-          InstructionFactory.INST_JEQ,
-          "<b>Jump if Equal</b>: A conditional jump. The next memory value is split into two 4-bit"
-              + " operands, which are used as register indices. If the values in the registers are"
-              + " <b>equal</b>, the program counter jumps to the address specified by the following"
-              + " memory value. Otherwise, does nothing and continues to the next instruction.",
+          InstructionFactory.INST_NAME_CJP,
+          InstructionFactory.INST_CJP,
+          "<b>Conditional Jump</b>: A jump that occurs if a specified comparison between two"
+              + " register values is true; otherwise, it is ignored. The operand determines the"
+              + " comparison type: <b>equal</b> (0x1), <b>not equal</b> (0x2), <b>less than</b>"
+              + " (0x3), <b>greater than</b> (0x4), <b>less than or equal</b> (0x5), <b>greater"
+              + " than or equal</b> (0x6). The next memory cell is split into two 4-bit indices,"
+              + " indicating the registers to be compared. The destination address is read from the"
+              + " RES register.",
           pc);
-      appendToTable(
-          instrTablePanel,
-          InstructionFactory.INST_NAME_JNE,
-          InstructionFactory.INST_JNE,
-          "<b>Jump if Not Equal</b>: A conditional jump. The next memory value is split into two"
-              + " 4-bit operands, which are used as register indices. If the values in the"
-              + " registers are <b>not equal</b>, the program counter jumps to the address"
-              + " specified by the following memory value. Otherwise, does nothing and continues to"
-              + " the next instruction.",
-          pc);
+      // appendToTable(
+      //     instrTablePanel,
+      //     InstructionFactory.INST_NAME_JNE,
+      //     InstructionFactory.INST_JNE,
+      //     "<b>Jump if Not Equal</b>: A conditional jump. The next memory value is split into two"
+      //         + " 4-bit operands, which are used as register indices. If the values in the"
+      //         + " registers are <b>not equal</b>, the program counter jumps to the address"
+      //         + " specified by the following memory value. Otherwise, does nothing and continues
+      // to"
+      //         + " the next instruction.",
+      //     pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRT,

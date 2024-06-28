@@ -35,31 +35,30 @@ public class PrL extends Instruction {
   }
 
   @Override
-  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+  protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
     return "";
   }
 
   @Override
-  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
     int start = reg.getRegister(Registry.REG_OP1);
     int end = reg.getRegister(Registry.REG_OP2);
 
     ArrayList<Integer> indices = new ArrayList<>();
-    indices.add(cur);
+    indices.add(memIdx);
     if (start >= end) {
-      indices.add(cur + 1);
+      indices.add(memIdx + 1);
     } else {
       for (int i = start; i <= end; i++) {
         indices.add(i);
       }
     }
 
-    return new int[] {pc.getCurrentIndex()};
+    return new int[] {memIdx};
   }
 
   @Override
-  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+  public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
     return new int[] {Registry.nameToIdx(Registry.REG_OUT)};
   }
 }

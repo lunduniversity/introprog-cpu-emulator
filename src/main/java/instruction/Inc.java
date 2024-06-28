@@ -18,17 +18,17 @@ public class Inc extends Instruction {
   }
 
   @Override
-  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+  protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
     return String.format("(%s)", Registry.idxToName(operand));
   }
 
   @Override
-  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    return new int[] {pc.getCurrentIndex()};
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
+    return new int[] {memIdx};
   }
 
   @Override
-  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+  public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
     return new int[] {operand};
   }
 }

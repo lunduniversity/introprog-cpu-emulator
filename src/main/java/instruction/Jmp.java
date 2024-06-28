@@ -13,26 +13,24 @@ public class Jmp extends Instruction {
 
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    // Read the next value, use as the destination address.
-    int dst = mem.getValueAt(pc.next());
+    // Operand is the register that holds the destination address.
+    int dst = reg.getValueAt(operand);
     pc.jumpTo(dst);
   }
 
   @Override
-  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
-    int dst = mem.getValueAt(memIdx + 1);
-    return String.format("(dst: %d)", dst);
+  protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
+    return String.format("(dst: *%s)", Registry.idxToName(operand));
   }
 
   @Override
-  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
-    int dst = mem.getValueAt(cur + 1);
-    return new int[] {cur, cur + 1, dst};
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
+    int dst = reg.getValueAt(operand);
+    return new int[] {memIdx, dst};
   }
 
   @Override
-  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
-    return new int[0];
+  public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
+    return new int[] {operand};
   }
 }

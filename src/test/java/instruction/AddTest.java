@@ -30,6 +30,6 @@ class AddTest {
   @Test
   void testEvaluate() {
     Add addInstruction = new Add(0);
-    assertEquals(InstructionFactory.INST_NAME_ADD, addInstruction.evaluate(null, null, 0));
+    assertEquals(InstructionFactory.INST_NAME_ADD, addInstruction.prettyPrint(null, null, 0));
   }
 }

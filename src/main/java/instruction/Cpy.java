@@ -32,7 +32,7 @@ public class Cpy extends Instruction {
   }
 
   @Override
-  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+  protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
     if (memIdx + 1 >= mem.size()) {
       return String.format("(%s %s %s)", INVALID_REG_CHAR, RIGHT_ARROW_CHAR, INVALID_REG_CHAR);
     }
@@ -44,21 +44,19 @@ public class Cpy extends Instruction {
   }
 
   @Override
-  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
-    // if (cur + 1 >= mem.size()) {
-    //   return new int[] {cur};
-    // }
-    return new int[] {cur, cur + 1};
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
+    if (memIdx >= mem.size()) {
+      return new int[] {memIdx};
+    }
+    return new int[] {memIdx, memIdx + 1};
   }
 
   @Override
-  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
-    int operatorIdx = pc.getCurrentIndex() + 1;
-    if (operatorIdx >= mem.size()) {
+  public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
+    if (memIdx >= mem.size()) {
       return new int[0];
     }
-    int value = mem.getValueAt(operatorIdx);
+    int value = mem.getValueAt(memIdx + 1);
     int src = (value >> 4) & 0xF;
     int dst = value & 0xF;
 

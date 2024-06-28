@@ -13,27 +13,35 @@ public class St extends Instruction {
 
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    // Register src is specified by the operand.
-    // Read the destination address from the next memory location.
-    int value = reg.getValueAt(operand);
-    int dst = mem.getValueAt(pc.next());
+    // Read the next memory value, and split into two 4-bit parts.
+    int addresses = mem.getValueAt(pc.next());
+    int src = (addresses >> 4) & 0xF;
+    int dst = addresses & 0xF;
+
+    int value = reg.getValueAt(src);
     mem.setValueAt(dst, value);
   }
 
   @Override
-  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
-    return String.format("(src: %s)", Registry.idxToName(operand));
+  protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
+    // Read the next memory value, and split into two 4-bit parts.
+    int addresses = mem.getValueAt(memIdx + 1);
+    int src = (addresses >> 4) & 0xF;
+    int dst = addresses & 0xF;
+
+    return String.format(
+        "(%s %s *%s)",
+        Registry.idxToName(src), Instruction.RIGHT_ARROW_CHAR, Registry.idxToName(dst));
   }
 
   @Override
-  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
-    int dst = mem.getValueAt(cur + 1);
-    return new int[] {cur, cur + 1, dst};
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
+    int dst = mem.getValueAt(memIdx + 1);
+    return new int[] {memIdx, memIdx + 1, dst};
   }
 
   @Override
-  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+  public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
     return new int[] {operand};
   }
 }

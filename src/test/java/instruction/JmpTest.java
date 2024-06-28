@@ -46,6 +46,6 @@ class JmpTest {
     when(mockMemory.size()).thenReturn(10);
     when(mockMemory.getValueAt(1)).thenReturn(destination);
     String expected = String.format("%s (dst: %d)", InstructionFactory.INST_NAME_JMP, destination);
-    assertEquals(expected, jmp.evaluate(mockMemory, mockRegistry, 0));
+    assertEquals(expected, jmp.prettyPrint(mockMemory, mockRegistry, 0));
   }
 }

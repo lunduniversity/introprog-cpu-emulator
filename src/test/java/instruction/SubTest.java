@@ -48,6 +48,6 @@ class SubTest {
   @Test
   void testEvaluate() {
     Sub subInstruction = new Sub(0);
-    assertEquals(InstructionFactory.INST_NAME_SUB, subInstruction.evaluate(null, null, 0));
+    assertEquals(InstructionFactory.INST_NAME_SUB, subInstruction.prettyPrint(null, null, 0));
   }
 }

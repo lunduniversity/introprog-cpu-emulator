@@ -32,6 +32,6 @@ class HltTest {
   @Test
   void testEvaluate() {
     Hlt haltInstruction = new Hlt(0);
-    assertEquals(InstructionFactory.INST_NAME_HLT, haltInstruction.evaluate(null, null, 0));
+    assertEquals(InstructionFactory.INST_NAME_HLT, haltInstruction.prettyPrint(null, null, 0));
   }
 }

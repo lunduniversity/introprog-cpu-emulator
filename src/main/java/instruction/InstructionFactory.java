@@ -16,8 +16,8 @@ public class InstructionFactory {
   public static final int INST_LDA = 0x70; // Load address (resolve first) into registry
   public static final int INST_STO = 0x80; // Store register value in memory
   public static final int INST_JMP = 0x90; // Jump to address
-  public static final int INST_JEQ = 0xA0; // Jump if equal
-  public static final int INST_JNE = 0xB0; // Jump if not equal
+  public static final int INST_CJP = 0xA0; // Conditional Jump
+  // public static final int INST_JNE = 0xB0; // Jump if not equal
   public static final int INST_PRT = 0xC0; // Print text
   public static final int INST_PRD = 0xD0; // Print decimal
   public static final int INST_PRL = 0xE0; // Print Loop
@@ -36,8 +36,8 @@ public class InstructionFactory {
   public static final String INST_NAME_LDA = "LDA";
   public static final String INST_NAME_STO = "ST";
   public static final String INST_NAME_JMP = "JMP";
-  public static final String INST_NAME_JEQ = "JEQ";
-  public static final String INST_NAME_JNE = "JNE";
+  public static final String INST_NAME_CJP = "CJP";
+  // public static final String INST_NAME_JNE = "JNE";
   public static final String INST_NAME_PRT = "PRT";
   public static final String INST_NAME_PRD = "PRD";
   public static final String INST_NAME_PRL = "PRL";
@@ -54,8 +54,8 @@ public class InstructionFactory {
         || code == INST_LDA
         || code == INST_STO
         || code == INST_JMP
-        || code == INST_JEQ
-        || code == INST_JNE
+        || code == INST_CJP
+        // || code == INST_JNE
         || code == INST_PRT
         || code == INST_PRD
         || code == INST_PRL
@@ -87,10 +87,10 @@ public class InstructionFactory {
         return new St(operand);
       case INST_JMP:
         return new Jmp(operand);
-      case INST_JEQ:
-        return new Jeq(operand);
-      case INST_JNE:
-        return new Jne(operand);
+      case INST_CJP:
+        return new CJp(operand);
+        // case INST_JNE:
+        //   return new Jne(operand);
       case INST_PRT:
         return new PrT(operand);
       case INST_PRD:
@@ -120,17 +120,17 @@ public class InstructionFactory {
     }
 
     @Override
-    protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+    protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
       return "";
     }
 
     @Override
-    public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-      return new int[] {pc.getCurrentIndex()};
+    public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
+      return new int[] {memIdx};
     }
 
     @Override
-    public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
+    public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
       return new int[0];
     }
   }

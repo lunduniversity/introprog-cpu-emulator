@@ -50,7 +50,7 @@ class InstructionFactoryTest {
         factory.isInstruction(InstructionFactory.INST_JMP),
         "INST_JMP should be recognized as an instruction.");
     assertTrue(
-        factory.isInstruction(InstructionFactory.INST_JEQ),
+        factory.isInstruction(InstructionFactory.INST_CJP),
         "INST__JE should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_JNE),
@@ -118,8 +118,8 @@ class InstructionFactoryTest {
         factory.createInstruction(InstructionFactory.INST_JMP),
         "Should create an instance of Jmp.");
     assertInstanceOf(
-        Jeq.class,
-        factory.createInstruction(InstructionFactory.INST_JEQ),
+        CJp.class,
+        factory.createInstruction(InstructionFactory.INST_CJP),
         "Should create an instance of Jeq.");
     assertInstanceOf(
         Jne.class,

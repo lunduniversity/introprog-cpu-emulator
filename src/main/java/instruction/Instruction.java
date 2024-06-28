@@ -11,6 +11,11 @@ public abstract class Instruction {
   static final String INVALID_REG_CHAR = "\u26A0";
   static final String EQUAL_CHAR = "\u003d";
   static final String NOT_EQUAL_CHAR = "\u2260";
+  static final String LESS_THAN_CHAR = "\u003C";
+  static final String GREATER_THAN_CHAR = "\u003E";
+  static final String LESS_THAN_OR_EQUAL_TO_CHAR = "\u2264";
+  static final String GREATER_THAN_OR_EQUAL_TO_CHAR = "\u2265";
+
   static final String RIGHT_ARROW_CHAR = "\u2192";
 
   static final byte ADDR_TYPE_CONSTANT = 0b00;
@@ -32,11 +37,11 @@ public abstract class Instruction {
     this.autoIncrement = autoIncrement;
   }
 
-  public String evaluate(Memory mem, Registry reg, int memIdx) {
-    return String.format("%s %s", name, internalEvaluate(mem, reg, memIdx)).trim();
+  public String prettyPrint(Memory mem, Registry reg, int memIdx) {
+    return String.format("%s %s", name, internalPrettyPrint(mem, reg, memIdx)).trim();
   }
 
-  protected abstract String internalEvaluate(Memory mem, Registry reg, int memIdx);
+  protected abstract String internalPrettyPrint(Memory mem, Registry reg, int memIdx);
 
   public final void execute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     if (autoIncrement) {
@@ -58,7 +63,7 @@ public abstract class Instruction {
    *
    * @return an array of memory cell indices, which will always include at least itself.
    */
-  public abstract int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc);
+  public abstract int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx);
 
   /**
    * Get the indices of all registers affected by this instruction. This is used to highlight the
@@ -66,7 +71,7 @@ public abstract class Instruction {
    *
    * @return an array of register indices, which may be empty.
    */
-  public abstract int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc);
+  public abstract int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx);
 
   /**
    * Parse the addressing mode of an operand. The mode is a 2-bit value, and must occupy the last

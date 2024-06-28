@@ -75,6 +75,10 @@
      [x] Operanden kan betyda copy eller move
      [x] Nästa minnescell delas i två 4-bit registerindex
    [] Ta ev. bort MOV instruktionen?
+   [x] Lägg till JCM (Jump compare) instruktion (operand kan bestämma alla jämförelser, < > = !=)
+     [] Uppdatera testfallen!
+   [] Lägg till STA (Store address). Nästa minnescell ger två reg, src och dst-address
+   [] Ändra tillbaka hoppinstruktionerna, så att dst läses från ett register.
    [x] Lägg till INC (incremend), operand är ett reg index
    [x] Ändra JEQ och JNE så att registerna som jämförs kan anges, ex:
          JEQ  1001 0000
@@ -82,6 +86,11 @@
                RES   R2
 [x] När man flyttar en selection så flyttas markören också, t.o.m. utanför bounds
 [x] Check bound in instructions.evaluate
+[] Instruktioner vars utskrift beror på nästa cell behöver uppdateras när nästa cell ändras
+[] Instruktionsfönstret line wrap slutar fungera vid horisontal resize på bredden. Fixar sig vertikal.
+[] Efter man stänger en öppnad fil så finns "-" kvar i fönstertiteln
+[] IndexOutOfBounds när reg 10 försöker skrivas ut, borde istället ignoreras
+[] Markering av hoppinstruktioner inte korrekt. Markerar dst cell endast när den INTE kommer hoppa.
 [] 
 0100 1010
 0001 0000

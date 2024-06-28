@@ -13,24 +13,39 @@ public class LdA extends Instruction {
 
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    int address = mem.getValueAt(pc.next());
-    reg.setValueAt(operand, mem.getValueAt(address));
+    // Operand is unused.
+    // Read next value and split into two 4-bit parts, src and dst.
+    int addresses = mem.getValueAt(pc.next());
+    int src = (addresses >> 4) & 0xF;
+    int dst = addresses & 0xF;
+
+    reg.setValueAt(dst, mem.getValueAt(src));
   }
 
   @Override
-  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
-    return String.format("(dst: %s)", Registry.idxToName(operand));
+  protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
+    int addresses = mem.getValueAt(memIdx);
+    int src = (addresses >> 4) & 0xF;
+    int dst = addresses & 0xF;
+    return String.format(
+        // e.g. LDA (*RES -> R0)
+        "(*%s %s %s)",
+        Registry.idxToName(src), Instruction.RIGHT_ARROW_CHAR, Registry.idxToName(dst));
   }
 
   @Override
-  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
-    int address = mem.getValueAt(cur + 1);
-    return new int[] {cur, cur + 1, address};
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
+    int addresses = mem.getValueAt(memIdx);
+    int src = (addresses >> 4) & 0xF;
+    int srcAddress = mem.getValueAt(src);
+    return new int[] {memIdx, memIdx + 1, srcAddress};
   }
 
   @Override
-  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
-    return new int[] {operand};
+  public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
+    int addresses = mem.getValueAt(memIdx);
+    int src = (addresses >> 4) & 0xF;
+    int dst = addresses & 0xF;
+    return new int[] {src, dst};
   }
 }

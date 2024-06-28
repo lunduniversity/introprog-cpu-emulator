@@ -48,15 +48,15 @@ class LdTest {
   void testEvaluate() {
     Ld loadOP1 = new Ld(Registry.nameToIdx(Registry.REG_OP1));
     Ld loadOP2 = new Ld(Registry.nameToIdx(Registry.REG_OP2));
-    Ld loadR2 = new Ld(Registry.nameToIdx(Registry.REG_R2));
+    Ld loadR2 = new Ld(Registry.nameToIdx(Registry.REG_R1));
     assertEquals(
         InstructionFactory.INST_NAME_LOD + " (dst: OP1)",
-        loadOP1.evaluate(mockMemory, mockRegistry, 0));
+        loadOP1.prettyPrint(mockMemory, mockRegistry, 0));
     assertEquals(
         InstructionFactory.INST_NAME_LOD + " (dst: OP2)",
-        loadOP2.evaluate(mockMemory, mockRegistry, 0));
+        loadOP2.prettyPrint(mockMemory, mockRegistry, 0));
     assertEquals(
         InstructionFactory.INST_NAME_LOD + " (dst: R2)",
-        loadR2.evaluate(mockMemory, mockRegistry, 0));
+        loadR2.prettyPrint(mockMemory, mockRegistry, 0));
   }
 }

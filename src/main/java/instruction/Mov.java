@@ -60,46 +60,44 @@ public class Mov extends Instruction {
   }
 
   @Override
-  protected String internalEvaluate(Memory mem, Registry reg, int memIdx) {
+  protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
     return String.format("(%s | %s)", parseAddrMode(operand >> 2), parseAddrMode(operand));
   }
 
   @Override
-  public int[] getAffectedMemoryCells(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
+  public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
     int srcType = (operand >> 2) & 0x3;
     int destType = (operand) & 0x3;
 
     ArrayList<Integer> indices = new ArrayList<>();
-    indices.add(cur);
-    indices.add(cur + 1);
-    indices.add(cur + 2);
+    indices.add(memIdx);
+    indices.add(memIdx + 1);
+    indices.add(memIdx + 2);
 
     if (srcType == ADDR_TYPE_MEMORY) {
-      indices.add(mem.getValueAt(cur + 1));
+      indices.add(mem.getValueAt(memIdx + 1));
     }
     if (destType == ADDR_TYPE_MEMORY) {
-      indices.add(mem.getValueAt(cur + 2));
+      indices.add(mem.getValueAt(memIdx + 2));
     }
 
     return indices.stream().mapToInt(i -> i).toArray();
   }
 
   @Override
-  public int[] getAffectedRegisters(Memory mem, Registry reg, ProgramCounter pc) {
-    int cur = pc.getCurrentIndex();
+  public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
     int srcType = (operand >> 2) & 0x3;
     int destType = (operand) & 0x3;
 
     ArrayList<Integer> indices = new ArrayList<>();
     if (srcType == ADDR_TYPE_REGISTER) {
-      int regIdx = mem.getValueAt(cur + 1);
+      int regIdx = mem.getValueAt(memIdx + 1);
       if (Registry.isValidIndex(regIdx)) {
         indices.add(regIdx);
       }
     }
     if (destType == ADDR_TYPE_REGISTER) {
-      int regIdx = mem.getValueAt(cur + 2);
+      int regIdx = mem.getValueAt(memIdx + 2);
       if (Registry.isValidIndex(regIdx)) {
         indices.add(regIdx);
       }

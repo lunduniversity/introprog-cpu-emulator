@@ -33,8 +33,8 @@ class MovTest {
   void testMoveRegisterToRegister() {
     // Setup operand for copying from register to register (R1 to R2)
     int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_REGISTER;
-    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
-    int destRegister = Registry.nameToIdx(Registry.REG_R2); // Destination register index
+    int srcRegister = Registry.nameToIdx(Registry.REG_R0); // Source register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
     int value = 123; // Value to be copied
 
     // Simulate reading source and destination addresses (register indices)
@@ -60,7 +60,7 @@ class MovTest {
     // Similar to previous test, but with operand encoding for memory to register (10 to 01)
     int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_REGISTER;
     int memoryAddress = 16; // Example memory address
-    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R0); // Destination register index
     int value = 456; // Value at the memory address to be copied
 
     // Set up mock behavior
@@ -83,7 +83,7 @@ class MovTest {
   void testMoveConstantToRegister() {
     // Similar to previous test, but with operand encoding for constant to register (00 to 01)
     int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_REGISTER;
-    int destRegister = Registry.nameToIdx(Registry.REG_R1); // Destination register index
+    int destRegister = Registry.nameToIdx(Registry.REG_R0); // Destination register index
     int value = 89; // Constant value to be copied
 
     // Set up mock behavior
@@ -105,7 +105,7 @@ class MovTest {
   void testMoveRegisterToMemory() {
     // Setup operand for copying from register to memory (R1 to memory address)
     int operand = (ADDR_TYPE_REGISTER << 2) | ADDR_TYPE_MEMORY;
-    int srcRegister = Registry.nameToIdx(Registry.REG_R1); // Source register index
+    int srcRegister = Registry.nameToIdx(Registry.REG_R0); // Source register index
     int memoryAddress = 10; // Destination memory address
     int value = 123; // Value to be copied
 
@@ -214,7 +214,7 @@ class MovTest {
         String expected =
             String.format(
                 "(%s | %s)", Instruction.parseAddrMode(src), Instruction.parseAddrMode(dst));
-        assertEquals(expected, mov.internalEvaluate(mockMemory, mockRegistry, 0));
+        assertEquals(expected, mov.internalPrettyPrint(mockMemory, mockRegistry, 0));
       }
     }
   }

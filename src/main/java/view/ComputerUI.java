@@ -1004,9 +1004,10 @@ public class ComputerUI implements FocusRequester {
     if (pc.getCurrentIndex() < 0 || pc.getCurrentIndex() >= memory.size()) {
       return false;
     }
-    Instruction instr = factory.createInstruction(memory.getValueAt(pc.getCurrentIndex()));
-    int[] affectedMemory = instr.getAffectedMemoryCells(memory, registry, pc);
-    int[] affectedRegisters = instr.getAffectedRegisters(memory, registry, pc);
+    int currentIdx = pc.getCurrentIndex();
+    Instruction instr = factory.createInstruction(memory.getValueAt(currentIdx));
+    int[] affectedMemory = instr.getAffectedMemoryCells(memory, registry, currentIdx);
+    int[] affectedRegisters = instr.getAffectedRegisters(memory, registry, currentIdx);
     AbstractCell[] cells =
         Stream.concat(
                 Arrays.stream(affectedMemory).mapToObj(i -> this.memCells[i]),
