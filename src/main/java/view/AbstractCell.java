@@ -74,6 +74,7 @@ public abstract class AbstractCell {
   private final int index;
   private final Memory mem;
   private final Registry reg;
+  private boolean showInstruction;
 
   protected AbstractCell(
       Container parent,
@@ -83,16 +84,17 @@ public abstract class AbstractCell {
       CellValueListener valueListener,
       AbstractSelecter cellSelecter,
       Memory mem,
-      Registry reg) {
+      Registry reg,
+      boolean showInstruction) {
 
     this.mem = mem;
     this.reg = reg;
     this.index = index;
+    this.showInstruction = showInstruction;
 
     this.valueListener = valueListener;
 
-    lblAddress = new JLabel(address);
-    lblAddress.setBorder(null);
+    lblAddress = lbl(address, "bold mono");
     parent.add(lblAddress);
 
     if (label != null) {
@@ -186,9 +188,11 @@ public abstract class AbstractCell {
     lblAscii.setBorder(null);
     parent.add(lblAscii);
 
-    lblInstruction = lbl("", "mono");
-    lblInstruction.setBorder(null);
-    parent.add(lblInstruction);
+    if (showInstruction) {
+      lblInstruction = lbl("", "mono");
+      lblInstruction.setBorder(null);
+      parent.add(lblInstruction);
+    }
 
     updateValue();
   }
@@ -212,7 +216,9 @@ public abstract class AbstractCell {
     // (0-31 are control characters, 32-126 are printable ascii characters, 127 is DEL)
     if (value >= 32 && value <= 126) lblAscii.setText(Character.toString((char) value));
     else lblAscii.setText("--");
-    lblInstruction.setText(factory.createInstruction(value).prettyPrint(mem, reg, index));
+    if (showInstruction) {
+      lblInstruction.setText(factory.createInstruction(value).prettyPrint(mem, reg, index));
+    }
   }
 
   private static String hex(int value) {
@@ -230,7 +236,7 @@ public abstract class AbstractCell {
   }
 
   static String pad(int value) {
-    return String.format("%02d", value);
+    return String.format("%03d", value);
   }
 
   public void setValue(int value, boolean isExecuting) {

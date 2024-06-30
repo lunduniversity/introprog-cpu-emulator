@@ -14,6 +14,6 @@ public class Register extends AbstractCell {
       RegisterSelecter registerSelecter,
       Memory mem,
       Registry reg) {
-    super(parent, index, pad(index), name, valueListener, registerSelecter, mem, reg);
+    super(parent, index, pad(index), name, valueListener, registerSelecter, mem, reg, false);
   }
 }

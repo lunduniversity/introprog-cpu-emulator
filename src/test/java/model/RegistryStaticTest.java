@@ -3,6 +3,7 @@ package model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import instruction.Instruction;
 import org.junit.jupiter.api.Test;
 
 class RegistryStaticTest {
@@ -20,8 +21,8 @@ class RegistryStaticTest {
 
   @Test
   void testInvalidIdxToNameReturnsInvalidRegisterConstant() {
-    assertEquals(Registry.INVALID_REGISTER, Registry.idxToName(-1));
-    assertEquals(Registry.INVALID_REGISTER, Registry.idxToName(8));
+    assertEquals(Instruction.INVALID_REG_CHAR, Registry.idxToName(-1));
+    assertEquals(Instruction.INVALID_REG_CHAR, Registry.idxToName(8));
   }
 
   @Test

@@ -1,5 +1,7 @@
 package view;
 
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
@@ -29,6 +31,11 @@ public class InstructionHighlighter {
   }
 
   public void switchCells(AbstractCell newFocus, AbstractCell... newCells) {
+    // If the new focus cell is the same as the previous focus cell, do nothing
+    if (Objects.equals(newFocus, pcFocusCell) && Arrays.equals(newCells, memoryCells)) {
+      return;
+    }
+
     // Clear the previous focus cell and highlights
     if (pcFocusCell != null) {
       loseFocusConsumer.accept(pcFocusCell);

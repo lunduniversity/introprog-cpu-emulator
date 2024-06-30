@@ -60,6 +60,15 @@ public class Cpy extends Instruction {
     int src = (value >> 4) & 0xF;
     int dst = value & 0xF;
 
-    return new int[] {src, dst};
+    if (src >= 0 && src < Registry.NUM_REGISTERS && dst >= 0 && dst < Registry.NUM_REGISTERS) {
+      return new int[] {src, dst};
+    }
+    if (src >= 0 && src < Registry.NUM_REGISTERS) {
+      return new int[] {src};
+    }
+    if (dst >= 0 && dst < Registry.NUM_REGISTERS) {
+      return new int[] {dst};
+    }
+    return new int[0];
   }
 }

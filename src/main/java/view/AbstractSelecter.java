@@ -192,10 +192,15 @@ public abstract class AbstractSelecter {
   }
 
   public void clearCaret() {
-    Range oldPos = new Range(caretPosRow, caretPosRow + 1);
-    caretPosRow = -1;
-    caretPosCol = -1;
+    Range oldPos = new Range(caretPosRow);
+    caretPosRow = 0;
+    caretPosCol = 0;
     paintRange(oldPos);
+    paintRange(new Range(0));
+  }
+
+  public void refreshCaret() {
+    paintRange(new Range(caretPosRow));
   }
 
   public void setSelectedCell(int selectedCell) {

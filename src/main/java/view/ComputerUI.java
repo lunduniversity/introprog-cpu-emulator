@@ -3,6 +3,7 @@ package view;
 import static util.LazySwing.action;
 import static util.LazySwing.colorToHex;
 import static util.LazySwing.inv;
+import static util.LazySwing.lbl;
 import static util.LazySwing.runSafely;
 
 import instruction.Instruction;
@@ -61,6 +62,7 @@ import model.Registry;
 import net.miginfocom.swing.MigLayout;
 import util.ExecutionSpeed;
 import util.FileHandler;
+import util.FileHandler.TitleSetter;
 import util.LazySwing;
 import util.Settings;
 import util.SizedLabel;
@@ -193,12 +195,6 @@ public class ComputerUI implements FocusRequester {
             menu.triggerManuallyHelp();
           }
         });
-
-    // showBorders(frame);
-
-    // Example programs:
-    // Print hello: UBJRF8DQ:12:SEVMTE8h
-    // Infinite loop: UwdUF4M=:2:hA==:15:gw==
   }
 
   /** Initialize the contents of the frame. */
@@ -215,11 +211,8 @@ public class ComputerUI implements FocusRequester {
     frame.setTitle("c3pu");
     frame.getContentPane().setLayout(new MigLayout("fillx", "[][][]", "[]"));
 
-    fileHandler =
-        new FileHandler(
-            frame,
-            title -> inv(() -> frame.setTitle("c3pu" + (title != null ? " - " + title : ""))),
-            settings);
+    TitleSetter ts = title -> frame.setTitle("c3pu" + (title == null ? "" : " - " + title));
+    fileHandler = new FileHandler(frame, title -> inv(() -> ts.setTitle(title)), settings);
     menu = new ComputerMenu(this, fileHandler);
     frame.setJMenuBar(menu);
 
@@ -300,13 +293,6 @@ public class ComputerUI implements FocusRequester {
                     for (int i = 0; i < values.length; i++) {
                       memCells[startIdx + i].setValue(values[i], executing);
                     }
-                    // Removed highlighting based on PC focus, and instead highlight based on cursor
-                    // If any of the changed cells are highlighted, redo highlighting
-                    // AbstractCell[] cells =
-                    //     Arrays.copyOfRange(memCells, startIdx, startIdx + values.length);
-                    // if (instructionHighlighter.isAffected(cells)) {
-                    //   highlightInstructions();
-                    // }
                   }));
 
       appendHeaderToCellPanel(memoryCellsPanel, null, false, true);
@@ -362,12 +348,6 @@ public class ComputerUI implements FocusRequester {
                       for (int i = 0; i < values.length; i++) {
                         regCells[startIdx + i].setValue(values[i], executing);
                       }
-                      // If any of the changed cells are highlighted, redo highlighting
-                      // AbstractCell[] cells =
-                      //     Arrays.copyOfRange(regCells, startIdx, startIdx + values.length);
-                      // if (instructionHighlighter.isAffected(cells)) {
-                      //   highlightInstructions();
-                      // }
                     }));
         pc.addListener(
             new ProgramCounterListener() {
@@ -384,17 +364,10 @@ public class ComputerUI implements FocusRequester {
 
                       boolean executing = isExecuting.get();
                       pcCell.setValue(newIdx, executing);
-                      if (executing) {
-                        highlightInstructions(newIdx);
+                      if (executing && !highlightInstructions(newIdx)) {
+                        instructionHighlighter.clearCells();
+                        pcCell.highlightError();
                       }
-                      // if (!highlightInstructions()) {
-                      //   instructionHighlighter.clearCells();
-                      //   pcCell.highlightError();
-                      // }
-                      // memoryCellsPanel.revalidate();
-                      // memoryCellsPanel.repaint();
-                      // registerPanel.revalidate();
-                      // registerPanel.repaint();
                     });
               }
 
@@ -417,7 +390,7 @@ public class ComputerUI implements FocusRequester {
       }
     }
 
-    // Divider between registers and controls
+    // Horizontal divider between registers and controls
     frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 2 4, top");
 
     // Execution controls
@@ -940,7 +913,18 @@ public class ComputerUI implements FocusRequester {
       runSafely(fileHandler::closeOpenedFile);
       cellSelecter.reset();
       regSelecter.reset();
-      executor.schedule(() -> inv(this::resetCellColors), 700, TimeUnit.MILLISECONDS);
+      instructionHighlighter.clearCells();
+      memCells[0].scrollTo();
+      executor.schedule(
+          () ->
+              inv(
+                  () -> {
+                    resetCellColors(); // Removes all highlights
+                    cellSelecter.refreshCaret(); // Highlight cursors again
+                    regSelecter.refreshCaret();
+                  }),
+          700,
+          TimeUnit.MILLISECONDS);
     }
   }
 
@@ -1152,46 +1136,46 @@ public class ComputerUI implements FocusRequester {
         });
   }
 
-  private JPanel createCellPanel(boolean includeLabel) {
+  private JPanel createCellPanel(boolean isRegPanel) {
     JPanel cellPanel = new JPanel();
     cellPanel.setBorder(null);
-    int numCols = includeLabel ? 7 : 6;
     cellPanel.setLayout(
         new MigLayout(
-            "gap 10 0,insets 0,fillx,wrap " + numCols,
-            // (includeLabel ? "[30px:30px:30px]" : "")
-            //     +
-            // "[30px:30px:30px][108px:108px:108px][30px:30px:30px][30px:30px:30px][30px:30px:30px][110px::,grow]",
-            // "[][][]"
+            "gap 10 0,insets 0,fillx,wrap 6",
             "[sg addr, right]"
-                + (includeLabel ? "[sg name, right]" : "")
-                + "[sg value, center][sg hex, left][sg dec, left][sg ascii, left]10[sg"
-                + " instr, left, grow, shrink]10",
+                + (isRegPanel ? "[sg name, right]" : "")
+                + "[sg value, center][sg hex, left][sg dec, left][sg ascii, left]10"
+                + (isRegPanel ? "" : "[sg instr, left]10"),
             "[]"));
 
     return cellPanel;
   }
 
   private JPanel appendHeaderToCellPanel(
-      JPanel cellPanel, String header, boolean includeLabel, boolean hidden) {
-    int numCols = includeLabel ? 7 : 6;
+      JPanel cellPanel, String header, boolean isRegPanel, boolean hidden) {
     if (header != null) {
       JLabel lblHeader = new SizedLabel(header, 2, true);
-      cellPanel.add(lblHeader, "left, wrap, span " + numCols);
+      cellPanel.add(lblHeader, "left, wrap, span 6");
 
       cellPanel.add(Box.createRigidArea(new Dimension(20, 10)), "wrap");
     }
 
     cellPanel.add(header("Addr", hidden));
-    if (includeLabel) {
+    if (isRegPanel) {
       cellPanel.add(header("Name", hidden));
     }
     cellPanel.add(header("Value", hidden, SwingConstants.CENTER));
     cellPanel.add(header("Hex", hidden));
     cellPanel.add(header("Dec", hidden));
     cellPanel.add(header("Ascii", hidden));
-    cellPanel.add(
-        header(hidden ? "CMD (REG=REG-->REG)" : "Instr", hidden)); // Longest possible instruction
+    if (!isRegPanel) {
+      if (hidden) {
+        // Longest possible instruction, +1 for slight margin
+        cellPanel.add(lbl("CMD (REG<>REG-->*REG)", "hidden"));
+      } else {
+        cellPanel.add(header("Instr", hidden));
+      }
+    }
 
     return cellPanel;
   }

@@ -13,6 +13,6 @@ public class Cell extends AbstractCell {
       CellSelecter cellSelecter,
       Memory mem,
       Registry reg) {
-    super(parent, index, pad(index), null, valueListener, cellSelecter, mem, reg);
+    super(parent, index, pad(index), null, valueListener, cellSelecter, mem, reg, true);
   }
 }

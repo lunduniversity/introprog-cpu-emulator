@@ -197,28 +197,34 @@
       <p>
         Memory and register cells consists of 8 bits (i.e. one byte), and can be
         edited using your keyboard, quite similar to regular text editors. Both
-        the memory and registers has a highlighted bit that indicates a cursor -
-        initially the top left bit. Their cursors are separate and can be moved
-        independently, but only one is active at a time. Move the active cursor
-        through its grid using the keyboard arrow keys or the mouse (left
-        click). Switch focus between memory and register cursors using the Tab
-        key, or with the mouse by simply clicking on the desired cell. The
-        memory can be scrolled vertically with the mouse wheel or the Page
-        Up/Down keys.
+        the memory and register area has a cursor, highlighted by a
+        <span style="background-color: #91b7e7; padding: 0 2px"
+          >light blue shade</span
+        >, pointing to a single bit. Switch focus between the memory and
+        register cursor using the Tab key. For the memory cells, there is an
+        additional
+        <span style="background-color: #ffd1ff; padding: 0 2px"
+          >light magenta shade</span
+        >
+        highlighting, showing which cells that would be affected or involved if
+        the currently focused memory cell where to be executed as an
+        instruction. You can scroll through the memory using the Page Up/Down
+        keys.
       </p>
 
       <p>
         Pressing the F key ("flip") will toggle the value of the current cell,
         alternating between 0 and 1. You can also press the 0 and 1 keys to set
         the value directly. By default, the cursor will move to the next bit of
-        the cell after editing - although, this can be disabled in the Configure
-        menu - and you can press Enter to jump down to the next cell.
+        the cell after editing - although, this can be disabled in the
+        Configuration menu - and you can press Enter to jump down to the next
+        cell.
       </p>
 
       <p>
-        The mouse can be used to navigate and edit the memory and registers as
-        well. Clicking on a cell will move the cursor there, and you can change
-        bit values by double or right clicking on the bit you want to change.
+        The mouse can also be used for navigation and editing. Move the cursor
+        by clicking on any bit in the memory or registry, and toggle bit values
+        by double or right clicking them.
       </p>
     </div>
 
@@ -227,46 +233,46 @@
       <p>
         Programs are sequences of instructions stored in memory cells. These
         instructions are executed by the processor, which reads the memory cells
-        sequentially and performs the corresponding operations. To run a
-        program, you can either step through it one instruction at a time or run
+        sequentially and performs the corresponding operations. To run a program
+        in c3pu, you can either step through it one instruction at a time or run
         it continuously until completion.
       </p>
       <p>
-        Computers use a special register called the program counter to keep
-        track of the current instruction being executed. The program counter
-        points to the memory cell that contains the next instruction to be
-        executed. When an instruction is executed, the program counter is
-        updated to point to the next instruction in memory. c3pu highlights the
-        memory cell pointed to by the program counter with a
-        <span style="border: 2px solid magenta; padding: 0 2px"
-          >magenta border</span
-        >
-        to indicate the current instruction. In addition, all memory and
-        register cells that would be affected by the current instruction are
-        highlighted with a
+        Like real computers, c3pu use a special register called the program
+        counter to keep track of the current instruction being executed. The
+        program counter points to the memory cell that contains the next
+        instruction to be executed. When an instruction is executed, the program
+        counter is updated to point to the next instruction in memory. During
+        execution, the
         <span style="background-color: #ffd1ff; padding: 0 2px"
           >light magenta shade</span
-        >, to show which cells will be read from or written to. After an
-        instruction is executed, cells that were modified will be highlighted
-        with a
+        >
+        that shows which cells would be affected by an instruction follows the
+        program counter rather than the cursor. After an instruction is
+        executed, cells that were modified will be highlighted with a
         <span style="background-color: #ffffc8; padding: 0 2px"
           >light yellow shade</span
         >
       </p>
       <p>
         To step through a program, press the Space bar. This will execute the
-        current instruction and move the program counter to the next cell. To
-        run the program continuously, press Ctrl+Space. This will continue to
-        execute instructions until the program reaches a halt instruction or an
-        error occurs. You can pause the execution at any time by pressing the
-        Space bar again. Note that the execution speed can be adjusted in the
-        Configure menu.
+        current instruction pointed to by the program counter, and move the
+        program counter to the next cell. Some instructions reads additional
+        information from the memory, causing the program counter to move
+        multiple steps. Holding the Ctrl key while pressing space will
+        &quot;run&quot; the program rather than just taking a single step. This
+        simply means that the program will continue to be stepped through at a
+        fixed rate, until the program reaches a halt instruction or an error
+        occurs. You can stop the execution at any time by pressing the Space bar
+        again. Aslo note that the execution speed can be adjusted in the
+        Configuration menu.
       </p>
       <p>
         The program's output, and any error messages, will be displayed in the
         text area below the execution controls. You can also reset the program
         by pressing the Reset button, which sets all registers to zero while
-        leaving memory unchanged.
+        leaving the memory unchanged. That is, your program will remain in
+        memory, ready to be executed again.
       </p>
     </div>
 
@@ -308,15 +314,16 @@
       </p>
       <p>
         The <i>Instruction Descriptions window</i> provides detailed information
-        about each instruction that the processor can execute. It explains the
-        operation performed by the instruction and any operands it requires.
-        This can help you understand how to write programs that utilize the full
-        capabilities of the processor.
+        about each instruction that the c3pu processor can execute. It explains
+        the operation performed by the instruction and any operands it requires.
+        Refer to this window when writing programs, to understand the purpose
+        and effect of each instruction, and to make sure you use them correctly.
       </p>
       <p>
-        You can access all additional windows through the Help menu or by using
-        the keyboard shortcuts: F1 for this help, F2 for the ASCII Table and F3
-        for the Instruction Descriptions.
+        All help windows are opened on startup by default, but you can always
+        access them through the Help menu or by using the keyboard shortcuts: F1
+        for this help, F2 for the ASCII Table and F3 for the Instruction
+        Descriptions.
       </p>
     </div>
 
@@ -351,23 +358,24 @@
         selected cells up or down by holding the Alt key and pressing the up or
         down arrow keys. This will shift the cells in the direction of the arrow
         key, moving the other cells accordingly. To clear the selected cells,
-        press the Delete key. This will set the values of the selected cells to
-        zero. Alternatively, you can press Ctrl+Delete to completely remove the
-        selected cells, shifting all lower cells up to fill the gap. Browse the
-        Edit menu for all available options.
+        i.e. set their values to zero, press the Delete key. Alternatively, you
+        can press Ctrl+Delete to completely remove the selected cells, shifting
+        all cells below upwards to fill the gap. Browse the Edit menu for all
+        available options.
       </p>
 
       <h3>Note on copy and paste</h3>
       <p>
-        Copying cells will copy the binary values of the cells, e.g.
-        <span class="code">1010 1010</span>, to the clipboard. For pasting to
-        work, the clipboard content must adhere to this format (although, extra
-        spaces are ignored). Pasting will overwrite the values of the selected
-        cells with the copied values. If the copied values are longer than the
-        selection, the values will still be pasted, outside the range of the
-        selection. If the copied values are shorter, the additional selected
-        cells will remain unchanged. If the pasted values would exceed the
-        memory or register size, the excess values will be ignored.
+        Copying cells will only copy the binary values of the cells, e.g.
+        <span class="code">1010 1010</span>, to the clipboard. Pasting will
+        overwrite the values of the selected cells with the copied values. If
+        the copied values are longer than the selection, the values will still
+        be pasted, outside the range of the selection. If the copied values are
+        shorter, the additional selected cells will remain unchanged. If the
+        pasted values would exceed the memory or register size, the excess
+        values will be ignored. So long as you adhere to the same format
+        (although, spaces are ignored), you can copy and paste to and from other
+        sources as well, such as text editors.
       </p>
     </div>
 
@@ -401,7 +409,7 @@
         instructions to understand how to write similar programs. You can also
         modify the example to experiment with different instructions and
         operations. This can be a valuable learning tool to explore the
-        capabilities of the system and deepen your understanding of computer
+        capabilities of the tool and deepen your understanding of computer
         architecture.
       </p>
     </div>
@@ -431,8 +439,8 @@
         improving the application, please feel free to contact me at
         <a href="mailto:mattias.nordahl@cs.lth.se">mattias.nordahl@cs.lth.se</a
         >, via Discord or by creating an issue on the Gitlab repository at
-        <a href="https://git.cs.lth.se/courses/dod/c3pu/-/issues"
-          >https://git.cs.lth.se/courses/dod/c3pu/-/issues</a
+        <a href="https://github.com/lunduniversity/introprog-computer-intro"
+          >https://github.com/lunduniversity/introprog-computer-intro</a
         >. If you want to contribute to the development of the application, you
         are welcome to submit a merge request on the repository. Look at the
         Gitlab repository for more information.

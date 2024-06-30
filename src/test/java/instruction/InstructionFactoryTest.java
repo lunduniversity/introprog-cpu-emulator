@@ -53,9 +53,6 @@ class InstructionFactoryTest {
         factory.isInstruction(InstructionFactory.INST_CJP),
         "INST__JE should be recognized as an instruction.");
     assertTrue(
-        factory.isInstruction(InstructionFactory.INST_JNE),
-        "INST_JNE should be recognized as an instruction.");
-    assertTrue(
         factory.isInstruction(InstructionFactory.INST_PRT),
         "INST_PRT should be recognized as an instruction.");
     assertTrue(
@@ -98,10 +95,6 @@ class InstructionFactoryTest {
         factory.createInstruction(InstructionFactory.INST_CPY),
         "Should create an instance of Cpy.");
     assertInstanceOf(
-        Mov.class,
-        factory.createInstruction(InstructionFactory.INST_MOV),
-        "Should create an instance of Mov.");
-    assertInstanceOf(
         Ld.class,
         factory.createInstruction(InstructionFactory.INST_LOD),
         "Should create an instance of Ld.");
@@ -121,10 +114,6 @@ class InstructionFactoryTest {
         CJp.class,
         factory.createInstruction(InstructionFactory.INST_CJP),
         "Should create an instance of Jeq.");
-    assertInstanceOf(
-        Jne.class,
-        factory.createInstruction(InstructionFactory.INST_JNE),
-        "Should create an instance of Jne.");
     assertInstanceOf(
         PrT.class,
         factory.createInstruction(InstructionFactory.INST_PRT),
@@ -156,9 +145,9 @@ class InstructionFactoryTest {
     Instruction invalidInstruction = factory.createInstruction(invalidCode);
     assertInstanceOf(Nop.class, invalidInstruction, "Should create an instance of Nop.");
 
-    invalidCode = 0x7B5; // Invalid 7, followed by opcode B, which is JNE
+    invalidCode = 0x7A5; // Invalid 7, followed by opcode A, which is CJp
     invalidInstruction = factory.createInstruction(invalidCode);
-    assertInstanceOf(Jne.class, invalidInstruction, "Should create an instance of Jne.");
+    assertInstanceOf(CJp.class, invalidInstruction, "Should create an instance of CJp.");
 
     // Old test, that actually tested the null object instruction
     // assertEquals("--", invalidInstruction.toString(), "Invalid instruction should be

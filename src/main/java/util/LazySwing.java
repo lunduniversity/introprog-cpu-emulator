@@ -149,12 +149,15 @@ public class LazySwing {
     int fontSize = defaultFont.getSize(); // Default font size
     int fontStyle = defaultFont.getStyle(); // Default font style
     String fontFamily = defaultFont.getFamily(); // Default font family
+    boolean hidden = false;
 
     for (String option : options) {
       if (option.equalsIgnoreCase("mono")) {
         fontFamily = "Monospaced";
       } else if (option.equalsIgnoreCase("bold")) {
         fontStyle = Font.BOLD;
+      } else if (option.equalsIgnoreCase("hidden")) {
+        hidden = true;
       } else {
         try {
           int size = Integer.parseInt(option);
@@ -167,6 +170,9 @@ public class LazySwing {
 
     // Apply the computed font settings to the label
     label.setFont(new Font(fontFamily, fontStyle, fontSize));
+    if (hidden) { // If hidden option is set, set foreground color to same as background
+      label.setForeground(UIManager.getColor("Panel.background"));
+    }
     return label;
   }
 

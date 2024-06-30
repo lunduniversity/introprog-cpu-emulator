@@ -74,7 +74,7 @@
    [x] Ändra CPY till att bara operera på register
      [x] Operanden kan betyda copy eller move
      [x] Nästa minnescell delas i två 4-bit registerindex
-   [] Ta ev. bort MOV instruktionen?
+   [x] Ta ev. bort MOV instruktionen?
    [x] Lägg till JCM (Jump compare) instruktion (operand kan bestämma alla jämförelser, < > = !=)
      [] Uppdatera testfallen!
    [] Lägg till STA (Store address). Nästa minnescell ger två reg, src och dst-address
@@ -86,11 +86,12 @@
                RES   R2
 [x] När man flyttar en selection så flyttas markören också, t.o.m. utanför bounds
 [x] Check bound in instructions.evaluate
-[] Instruktioner vars utskrift beror på nästa cell behöver uppdateras när nästa cell ändras
-[] Instruktionsfönstret line wrap slutar fungera vid horisontal resize på bredden. Fixar sig vertikal.
-[] Efter man stänger en öppnad fil så finns "-" kvar i fönstertiteln
-[] IndexOutOfBounds när reg 10 försöker skrivas ut, borde istället ignoreras
-[] Markering av hoppinstruktioner inte korrekt. Markerar dst cell endast när den INTE kommer hoppa.
+[x] Instruktioner vars utskrift beror på nästa cell behöver uppdateras när nästa cell ändras
+[] Instruktionsfönstret line wrap slutar fungera vid horisontal resize på bredden. Fixar sig efter vertikal resize.
+[x] Efter man stänger en öppnad fil så finns "-" kvar i fönstertiteln
+[x] IndexOutOfBounds när reg 10 försöker skrivas ut, borde istället ignoreras
+[x] Markering av hoppinstruktioner inte korrekt. Markerar dst cell endast när den INTE kommer hoppa.
+[x] Delete all data resets cursors to (-1, -1), which means they are not shown. Set to (0, 0) instead.
 [] 
 0100 1010
 0001 0000
