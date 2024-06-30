@@ -40,7 +40,7 @@ class JmpTest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     Jmp jmp = new Jmp(0);
     int destination = 20;
     when(mockMemory.size()).thenReturn(10);

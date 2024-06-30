@@ -51,7 +51,7 @@ class LdATest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     LdA loadOP1 = new LdA(Registry.nameToIdx(Registry.REG_OP1));
     LdA loadOP2 = new LdA(Registry.nameToIdx(Registry.REG_OP2));
     LdA loadR2 = new LdA(Registry.nameToIdx(Registry.REG_R1));

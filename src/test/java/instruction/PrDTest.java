@@ -32,7 +32,7 @@ class PrDTest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     PrD printInstruction = new PrD(0);
     assertEquals(InstructionFactory.INST_NAME_PRD, printInstruction.prettyPrint(null, null, 0));
   }

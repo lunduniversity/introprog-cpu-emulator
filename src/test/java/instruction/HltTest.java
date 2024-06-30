@@ -30,7 +30,7 @@ class HltTest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     Hlt haltInstruction = new Hlt(0);
     assertEquals(InstructionFactory.INST_NAME_HLT, haltInstruction.prettyPrint(null, null, 0));
   }

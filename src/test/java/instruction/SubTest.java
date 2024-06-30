@@ -46,7 +46,7 @@ class SubTest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     Sub subInstruction = new Sub(0);
     assertEquals(InstructionFactory.INST_NAME_SUB, subInstruction.prettyPrint(null, null, 0));
   }

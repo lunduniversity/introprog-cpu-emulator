@@ -211,7 +211,7 @@ class CpyTest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     Cpy cpy = new Cpy(0); // Operand is not used in evaluate
     // Set the next memory cell to index registers R1 to R2
     when(mockMemory.size()).thenReturn(10);

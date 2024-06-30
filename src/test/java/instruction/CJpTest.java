@@ -69,7 +69,7 @@ class CJpTest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     CJp jeq = new CJp(0); // Operand is not used in evaluate
     when(mockMemory.size()).thenReturn(10);
     when(mockMemory.getValueAt(1))

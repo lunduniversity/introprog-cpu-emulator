@@ -72,7 +72,7 @@ class PrLTest {
   }
 
   @Test
-  void testEvaluate() {
+  void testPrettyPrint() {
     PrL printLoopInstr = new PrL(0);
     assertEquals(
         InstructionFactory.INST_NAME_PRL, printLoopInstr.prettyPrint(mockMemory, mockRegistry, 0));
