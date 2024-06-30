@@ -20,12 +20,17 @@ public class LdA extends Instruction {
     int src = (addresses >> 4) & 0xF;
     int dst = addresses & 0xF;
 
-    reg.setValueAt(dst, mem.getValueAt(src));
+    int memoryAddress = reg.getValueAt(src);
+
+    reg.setValueAt(dst, mem.getValueAt(memoryAddress));
   }
 
   @Override
   protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
-    int addresses = mem.getValueAt(memIdx);
+    if (memIdx >= mem.size()) {
+      return "(" + Instruction.INVALID_REG_CHAR + ")";
+    }
+    int addresses = mem.getValueAt(memIdx + 1);
     int src = (addresses >> 4) & 0xF;
     int dst = addresses & 0xF;
     return String.format(

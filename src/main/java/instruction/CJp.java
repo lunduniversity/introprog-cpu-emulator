@@ -7,12 +7,12 @@ import model.Registry;
 
 public class CJp extends Instruction {
 
-  private static final int EQUAL = 0x1;
-  private static final int NOT_EQUAL = 0x2;
-  private static final int LESS_THAN = 0x3;
-  private static final int GREATER_THAN = 0x4;
-  private static final int LESS_THAN_OR_EQUAL = 0x5;
-  private static final int GREATER_THAN_OR_EQUAL = 0x6;
+  static final int EQUAL = 0x1;
+  static final int NOT_EQUAL = 0x2;
+  static final int LESS_THAN = 0x3;
+  static final int GREATER_THAN = 0x4;
+  static final int LESS_THAN_OR_EQUAL = 0x5;
+  static final int GREATER_THAN_OR_EQUAL = 0x6;
 
   public CJp(int operand) {
     super(InstructionFactory.INST_NAME_CJP, operand);
@@ -68,9 +68,9 @@ public class CJp extends Instruction {
       case GREATER_THAN:
         return GREATER_THAN_CHAR;
       case LESS_THAN_OR_EQUAL:
-        return LESS_THAN_OR_EQUAL_TO_CHAR;
+        return LESS_THAN_OR_EQUAL_CHAR;
       case GREATER_THAN_OR_EQUAL:
-        return GREATER_THAN_OR_EQUAL_TO_CHAR;
+        return GREATER_THAN_OR_EQUAL_CHAR;
       default:
         return INVALID_OPERATOR_CHAR;
     }

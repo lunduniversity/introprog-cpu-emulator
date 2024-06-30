@@ -48,7 +48,7 @@ class LdTest {
   void testPrettyPrint() {
     Ld loadOP1 = new Ld(Registry.nameToIdx(Registry.REG_OP1));
     Ld loadOP2 = new Ld(Registry.nameToIdx(Registry.REG_OP2));
-    Ld loadR2 = new Ld(Registry.nameToIdx(Registry.REG_R1));
+    Ld loadR2 = new Ld(Registry.nameToIdx(Registry.REG_R2));
     assertEquals(
         InstructionFactory.INST_NAME_LOD + " (dst: OP1)",
         loadOP1.prettyPrint(mockMemory, mockRegistry, 0));

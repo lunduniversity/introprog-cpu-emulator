@@ -22,47 +22,50 @@ class LdATest {
     mockMemory = mock(Memory.class);
     mockRegistry = mock(Registry.class);
     mockPC = mock(ProgramCounter.class);
+    when(mockMemory.size()).thenReturn(50);
   }
 
   @Test
   void testLoadFromAddressOperation() {
-    // Setup the operand, the intermediate address read from memory, and the final value
-    int operand = 0; // The register to load the value into
-    int intermediateAddress =
-        2; // The address read from memory indicating where the actual value is stored
-    int finalValue = 123; // The value to be loaded from the second memory address
-    int memoryAddress =
-        1; // The next address in the program counter, pointing to the intermediate address
+    // Setup the operand, containing the source and destination registers
+    int srcReg = Registry.nameToIdx(Registry.REG_RES);
+    int destReg = Registry.nameToIdx(Registry.REG_R1);
+    int operand = (srcReg << 4) | destReg;
+
+    int value = 123; // The value to be loaded from memory
+    int memoryAddress = 33; // The address in memory where value is stored
 
     // Simulate the program counter pointing to the next memory address
-    when(mockPC.next()).thenReturn(memoryAddress);
+    when(mockPC.next()).thenReturn(1);
 
-    // Simulate memory returning an address at the first read
-    when(mockMemory.getValueAt(memoryAddress)).thenReturn(intermediateAddress);
+    // Simulate memory returning the operand on the first read
+    when(mockMemory.getValueAt(1)).thenReturn(operand);
 
-    // Simulate memory returning the actual value at the second read, from the intermediate address
-    when(mockMemory.getValueAt(intermediateAddress)).thenReturn(finalValue);
+    // Simulate registry returning the memory address from srcReg
+    when(mockRegistry.getValueAt(srcReg)).thenReturn(memoryAddress);
+
+    // Simulate memory returning the value from the memory address
+    when(mockMemory.getValueAt(memoryAddress)).thenReturn(value);
 
     LdA ldaInstruction = new LdA(operand);
     ldaInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify the registry's setRegister method is called with the correct value
-    verify(mockRegistry).setValueAt(operand, finalValue);
+    verify(mockRegistry).setValueAt(destReg, value);
   }
 
   @Test
   void testPrettyPrint() {
-    LdA loadOP1 = new LdA(Registry.nameToIdx(Registry.REG_OP1));
-    LdA loadOP2 = new LdA(Registry.nameToIdx(Registry.REG_OP2));
-    LdA loadR2 = new LdA(Registry.nameToIdx(Registry.REG_R1));
+    // Setup the operand, containing the source and destination registers
+    int srcReg = Registry.nameToIdx(Registry.REG_RES);
+    int destReg = Registry.nameToIdx(Registry.REG_R1);
+    int operand = (srcReg << 4) | destReg;
+
+    when(mockMemory.getValueAt(1)).thenReturn(operand);
+
+    LdA load = new LdA(0);
     assertEquals(
-        InstructionFactory.INST_NAME_LDA + " (dst: OP1)",
-        loadOP1.prettyPrint(mockMemory, mockRegistry, 0));
-    assertEquals(
-        InstructionFactory.INST_NAME_LDA + " (dst: OP2)",
-        loadOP2.prettyPrint(mockMemory, mockRegistry, 0));
-    assertEquals(
-        InstructionFactory.INST_NAME_LDA + " (dst: R2)",
-        loadR2.prettyPrint(mockMemory, mockRegistry, 0));
+        InstructionFactory.INST_NAME_LDA + " (*RES " + Instruction.RIGHT_ARROW_CHAR + " R1)",
+        load.prettyPrint(mockMemory, mockRegistry, 0));
   }
 }
