@@ -7,14 +7,16 @@ import model.Registry;
 
 public abstract class Instruction {
 
-  static final String INVALID_ADDR_CHAR = "\u2013";
-  static final String INVALID_REG_CHAR = "\u26A0";
-  static final String EQUAL_CHAR = "\u003d";
-  static final String NOT_EQUAL_CHAR = "\u2260";
-  static final String LESS_THAN_CHAR = "\u003C";
-  static final String GREATER_THAN_CHAR = "\u003E";
-  static final String LESS_THAN_OR_EQUAL_TO_CHAR = "\u2264";
-  static final String GREATER_THAN_OR_EQUAL_TO_CHAR = "\u2265";
+  public static final String INVALID_ADDR_CHAR = "\u2013"; // en dash
+  public static final String INVALID_REG_CHAR = "\u26A0"; // warning sign
+  public static final String INVALID_OPERATOR_CHAR = "\u26A0"; // warning sign
+
+  static final String EQUAL_CHAR = "\u003d"; // equals sign
+  static final String NOT_EQUAL_CHAR = "\u2260"; // not equal to sign
+  static final String LESS_THAN_CHAR = "\u003C"; // less than sign
+  static final String GREATER_THAN_CHAR = "\u003E"; // greater than sign
+  static final String LESS_THAN_OR_EQUAL_TO_CHAR = "\u2264"; // less than or equal to sign
+  static final String GREATER_THAN_OR_EQUAL_TO_CHAR = "\u2265"; // greater than or equal to sign
 
   static final String RIGHT_ARROW_CHAR = "\u2192";
 

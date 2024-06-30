@@ -15,6 +15,7 @@ public class LdA extends Instruction {
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Operand is unused.
     // Read next value and split into two 4-bit parts, src and dst.
+    // src is register index holding memory source address, dst is the destination register index.
     int addresses = mem.getValueAt(pc.next());
     int src = (addresses >> 4) & 0xF;
     int dst = addresses & 0xF;
@@ -35,15 +36,21 @@ public class LdA extends Instruction {
 
   @Override
   public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
-    int addresses = mem.getValueAt(memIdx);
+    if (memIdx >= mem.size()) {
+      return new int[] {memIdx};
+    }
+    int addresses = mem.getValueAt(memIdx + 1);
     int src = (addresses >> 4) & 0xF;
-    int srcAddress = mem.getValueAt(src);
+    int srcAddress = reg.getValueAt(src);
     return new int[] {memIdx, memIdx + 1, srcAddress};
   }
 
   @Override
   public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
-    int addresses = mem.getValueAt(memIdx);
+    if (memIdx >= mem.size()) {
+      return new int[0];
+    }
+    int addresses = mem.getValueAt(memIdx + 1);
     int src = (addresses >> 4) & 0xF;
     int dst = addresses & 0xF;
     return new int[] {src, dst};

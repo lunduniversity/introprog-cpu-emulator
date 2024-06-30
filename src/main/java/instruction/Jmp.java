@@ -25,12 +25,17 @@ public class Jmp extends Instruction {
 
   @Override
   public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
-    int dst = reg.getValueAt(operand);
-    return new int[] {memIdx, dst};
+    if (operand >= 0 && operand < Registry.NUM_REGISTERS) {
+      return new int[] {memIdx, reg.getValueAt(operand)};
+    }
+    return new int[] {memIdx};
   }
 
   @Override
   public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
-    return new int[] {operand};
+    if (operand >= 0 && operand < Registry.NUM_REGISTERS) {
+      return new int[] {operand};
+    }
+    return new int[0];
   }
 }

@@ -13,12 +13,15 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 public class LazySwing {
+
   private static final Random r = new Random();
 
   public static void inv(Runnable runnable) {
@@ -131,5 +134,51 @@ public class LazySwing {
     }
     Font newFont = font.deriveFont((float) (currentFontSize));
     comp.setFont(newFont);
+  }
+
+  /**
+   * Creates a JLabel with specified text and formatting options.
+   *
+   * @param text The text to display on the label.
+   * @param options An array of formatting options such as "mono", "bold", or font size.
+   * @return Configured JLabel.
+   */
+  public static JLabel lbl(String text, String... options) {
+    JLabel label = new JLabel(text);
+    Font defaultFont = UIManager.getFont("Label.font"); // Fetch default font from UIManager
+    int fontSize = defaultFont.getSize(); // Default font size
+    int fontStyle = defaultFont.getStyle(); // Default font style
+    String fontFamily = defaultFont.getFamily(); // Default font family
+
+    for (String option : options) {
+      if (option.equalsIgnoreCase("mono")) {
+        fontFamily = "Monospaced";
+      } else if (option.equalsIgnoreCase("bold")) {
+        fontStyle = Font.BOLD;
+      } else {
+        try {
+          int size = Integer.parseInt(option);
+          fontSize = size;
+        } catch (NumberFormatException e) {
+          // If the option is not a number, ignore it
+        }
+      }
+    }
+
+    // Apply the computed font settings to the label
+    label.setFont(new Font(fontFamily, fontStyle, fontSize));
+    return label;
+  }
+
+  /**
+   * Splits the given options string by commas or spaces and creates a JLabel.
+   *
+   * @param text The text of the label.
+   * @param options Single string of options separated by commas or spaces.
+   * @return Configured JLabel.
+   * @see #lbl(String, String...)
+   */
+  public static JLabel lbl(String text, String options) {
+    return lbl(text, options.split("[,\\s]+")); // Split on comma or space
   }
 }

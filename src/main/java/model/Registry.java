@@ -1,5 +1,7 @@
 package model;
 
+import instruction.Instruction;
+
 public interface Registry extends ObservableStorage {
 
   static final String REG_R0 = "R0";
@@ -14,7 +16,6 @@ public interface Registry extends ObservableStorage {
     REG_R0, REG_R1, REG_R2, REG_OP1, REG_OP2, REG_RES, REG_OUT, REG_PC
   };
   static final int NUM_REGISTERS = REGISTER_NAMES.length;
-  static final String INVALID_REGISTER = "\u2013";
 
   int getRegister(String name);
 
@@ -22,7 +23,7 @@ public interface Registry extends ObservableStorage {
 
   static String idxToName(int idx) {
     if (idx >= 0 && idx < REGISTER_NAMES.length) return REGISTER_NAMES[idx];
-    else return INVALID_REGISTER;
+    else return Instruction.INVALID_REG_CHAR;
   }
 
   static int nameToIdx(String name) {

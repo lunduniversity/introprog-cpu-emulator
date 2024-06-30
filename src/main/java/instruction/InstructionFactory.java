@@ -77,8 +77,8 @@ public class InstructionFactory {
         return new Inc(operand);
       case INST_CPY:
         return new Cpy(operand);
-      case INST_MOV:
-        return new Mov(operand);
+        // case INST_MOV:
+        //   return new Mov(operand);
       case INST_LOD:
         return new Ld(operand);
       case INST_LDA:

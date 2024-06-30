@@ -1,10 +1,11 @@
 package view;
 
+import static util.LazySwing.lbl;
+
 import instruction.InstructionFactory;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -26,17 +27,32 @@ public abstract class AbstractCell {
   private static final Border PC_NO_FOCUS_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
 
   private static final Color DEFAULT_BG_COLOR = UIManager.getColor("TextField.background");
-  private static final Color HIGHLIGHT_BG_COLOR = new Color(255, 255, 200);
-  private static final Color HIGHLIGHT_PC_BG_COLOR = new Color(1.0f, 0.1f, 1.0f, 0.2f);
+
+  /** Color when cell value is changed during execution step. */
+  private static final Color HIGHLIGHT_CHANGED_DURING_EXECUTION_COLOR = new Color(255, 255, 200);
+
+  /**
+   * Color to indicate which cells would be affected by the instruction the cursor is currently at.
+   */
+  private static final Color HIGHLIGHT_CURSOR_AFFECTED_COLOR = new Color(1.0f, 0.1f, 1.0f, 0.2f);
+
+  /** Highlight color for errors. */
   private static final Color HIGHLIGHT_ERROR_BG_COLOR = new Color(240, 150, 150);
+
+  /** PC highlight color after succesful execution, i.e. halt instruction. */
   private static final Color HIGHLIGHT_COMPLETED_BG_COLOR = new Color(150, 240, 150);
+
+  /** Highlight color for selected cells. */
   private static final Color SELECT_BG_COLOR = new Color(200, 255, 200);
+
+  /** Highlight color for selected cells, when focus is lost. */
+  private static final Color INACTIVE_SELECT_BG_COLOR = new Color(220, 240, 220);
+
+  /** Highlight color for caret, i.e. a single bit. */
   private static final Color CARET_BG_COLOR = new Color(50, 230, 210);
 
-  private static final Color INACTIVE_SELECT_BG_COLOR = new Color(220, 240, 220);
+  /** Highlight color for caret, when focus is lost. */
   private static final Color INACTIVE_CARET_BG_COLOR = new Color(150, 180, 160);
-
-  private static final Font MONOSPACED = new Font("Monospaced", Font.PLAIN, 14);
 
   private static HexFormat hexFormat = HexFormat.of().withUpperCase();
 
@@ -87,7 +103,7 @@ public abstract class AbstractCell {
 
     bitPanel = new JPanel();
     bitPanel.setBorder(PC_NO_FOCUS_BORDER);
-    bitPanel.setBackground(UIManager.getColor("TextField.background"));
+    bitPanel.setBackground(DEFAULT_BG_COLOR);
     parent.add(bitPanel);
     bitPanel.setLayout(new MigLayout("flowx, gap 0 0, insets 0", "[sg bit]", ""));
     bitPanel.addMouseListener(
@@ -116,10 +132,9 @@ public abstract class AbstractCell {
     bits = new JLabel[8];
     for (int i = 0; i < bits.length; i++) {
       final int bitIdx = i;
-      JLabel bit = new JLabel("0");
+      JLabel bit = lbl("0", "mono");
       bit.setBorder(null);
       bit.setOpaque(true);
-      bit.setFont(MONOSPACED);
       bit.setBackground(DEFAULT_BG_COLOR);
       bit.setPreferredSize(new Dimension(10, 20));
       bit.setHorizontalAlignment(SwingConstants.CENTER);
@@ -159,19 +174,19 @@ public abstract class AbstractCell {
     }
     bitPanel.add(Box.createRigidArea(new Dimension(2, 5)), "gap 0");
 
-    lblHex = new JLabel(hex(0));
+    lblHex = lbl(hex(0), "mono");
     lblHex.setBorder(null);
     parent.add(lblHex);
 
-    lblDec = new JLabel(pad(0));
+    lblDec = lbl(pad(0), "mono");
     lblDec.setBorder(null);
     parent.add(lblDec);
 
-    lblAscii = new JLabel("");
+    lblAscii = lbl("", "mono");
     lblAscii.setBorder(null);
     parent.add(lblAscii);
 
-    lblInstruction = new JLabel();
+    lblInstruction = lbl("", "mono");
     lblInstruction.setBorder(null);
     parent.add(lblInstruction);
 
@@ -184,7 +199,7 @@ public abstract class AbstractCell {
     valueListener.onCellChanged(currentValue);
   }
 
-  private void updateValue() {
+  void updateValue() {
     int value = 0;
     for (int i = 0; i < bits.length; i++) {
       int b = bits[i].getText().equals("1") ? 1 : 0;
@@ -234,7 +249,7 @@ public abstract class AbstractCell {
 
   // Highlighting is used to indicate that the cell is being executed
   public AbstractCell highlight() {
-    setBgColor(HIGHLIGHT_BG_COLOR);
+    setBgColor(HIGHLIGHT_CHANGED_DURING_EXECUTION_COLOR);
     return this;
   }
 
@@ -309,7 +324,7 @@ public abstract class AbstractCell {
   }
 
   public void setProgramCounterHighlight() {
-    setCellColor(HIGHLIGHT_PC_BG_COLOR);
+    setCellColor(HIGHLIGHT_CURSOR_AFFECTED_COLOR);
   }
 
   public void clearProgramCounterHighlight() {

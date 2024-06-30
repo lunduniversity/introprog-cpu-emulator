@@ -78,7 +78,7 @@
    [x] Lägg till JCM (Jump compare) instruktion (operand kan bestämma alla jämförelser, < > = !=)
      [] Uppdatera testfallen!
    [] Lägg till STA (Store address). Nästa minnescell ger två reg, src och dst-address
-   [] Ändra tillbaka hoppinstruktionerna, så att dst läses från ett register.
+   [x] Ändra tillbaka hoppinstruktionerna, så att dst läses från ett register.
    [x] Lägg till INC (incremend), operand är ett reg index
    [x] Ändra JEQ och JNE så att registerna som jämförs kan anges, ex:
          JEQ  1001 0000

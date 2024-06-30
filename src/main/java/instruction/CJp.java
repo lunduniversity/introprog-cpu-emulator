@@ -57,7 +57,7 @@ public class CJp extends Instruction {
     }
   }
 
-  private String operandToString() {
+  private String getOperatorString() {
     switch (operand) {
       case EQUAL:
         return EQUAL_CHAR;
@@ -72,7 +72,7 @@ public class CJp extends Instruction {
       case GREATER_THAN_OR_EQUAL:
         return GREATER_THAN_OR_EQUAL_TO_CHAR;
       default:
-        throw new IllegalArgumentException("Invalid operand type: " + operand);
+        return INVALID_OPERATOR_CHAR;
     }
   }
 
@@ -83,10 +83,10 @@ public class CJp extends Instruction {
     int op2 = value & 0xF;
 
     return String.format(
-        // e.g. CJP (R0 < R1 -> *RES)
+        // e.g. CJP (R0<R1 -> *RES)
         "(%s%s%s %s *%s)",
         Registry.idxToName(op1),
-        operandToString(),
+        getOperatorString(),
         Registry.idxToName(op2),
         RIGHT_ARROW_CHAR,
         Registry.REG_RES);
@@ -95,6 +95,9 @@ public class CJp extends Instruction {
   @Override
   public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
     int dst = reg.getRegister(Registry.REG_RES);
+    if (mem.size() <= memIdx + 1) {
+      return new int[] {memIdx, dst};
+    }
     return new int[] {memIdx, memIdx + 1, dst};
   }
 
@@ -104,6 +107,15 @@ public class CJp extends Instruction {
     int op1 = value >> 4;
     int op2 = value & 0xF;
 
-    return new int[] {op1, op2};
+    if (op1 > 0 && op1 < Registry.NUM_REGISTERS && op2 > 0 && op2 < Registry.NUM_REGISTERS) {
+      return new int[] {op1, op2};
+    }
+    if (op1 > 0 && op1 < Registry.NUM_REGISTERS) {
+      return new int[] {op1};
+    }
+    if (op2 > 0 && op2 < Registry.NUM_REGISTERS) {
+      return new int[] {op2};
+    }
+    return new int[0];
   }
 }

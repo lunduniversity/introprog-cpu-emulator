@@ -29,6 +29,9 @@ public class Inc extends Instruction {
 
   @Override
   public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
-    return new int[] {operand};
+    if (operand >= 0 && operand < Registry.NUM_REGISTERS) {
+      return new int[] {operand};
+    }
+    return new int[0];
   }
 }

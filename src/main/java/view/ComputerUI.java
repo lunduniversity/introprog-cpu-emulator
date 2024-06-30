@@ -151,7 +151,15 @@ public class ComputerUI implements FocusRequester {
         (address, isSelected, caretPos, active) ->
             regCells[address].setSelected(isSelected, caretPos, active);
     this.cellSelecter =
-        new CellSelecter(memory, cellPainter, this, idx -> memCells[idx].scrollTo());
+        new CellSelecter(
+            memory,
+            cellPainter,
+            this,
+            idx -> {
+              // This lambda is triggered when the caret is moved
+              memCells[idx].scrollTo(); // Scroll to the caret
+              highlightInstructions(idx); // Highlight affected cells
+            });
     this.regSelecter = new RegisterSelecter(registry, regPainter, this);
 
     this.instructionHighlighter =
@@ -283,21 +291,28 @@ public class ComputerUI implements FocusRequester {
               inv(
                   () -> {
                     boolean executing = isExecuting.get();
+                    // Update the two preceding cells, without changing them, in case any of them
+                    // are an instruction that uses the modified one(s)
+                    if (startIdx > 0) memCells[startIdx - 1].updateValue();
+                    if (startIdx > 1) memCells[startIdx - 2].updateValue();
+
+                    // Update the modified cells
                     for (int i = 0; i < values.length; i++) {
                       memCells[startIdx + i].setValue(values[i], executing);
                     }
+                    // Removed highlighting based on PC focus, and instead highlight based on cursor
                     // If any of the changed cells are highlighted, redo highlighting
-                    AbstractCell[] cells =
-                        Arrays.copyOfRange(memCells, startIdx, startIdx + values.length);
-                    if (instructionHighlighter.isAffected(cells)) {
-                      highlightInstructions();
-                    }
+                    // AbstractCell[] cells =
+                    //     Arrays.copyOfRange(memCells, startIdx, startIdx + values.length);
+                    // if (instructionHighlighter.isAffected(cells)) {
+                    //   highlightInstructions();
+                    // }
                   }));
 
       appendHeaderToCellPanel(memoryCellsPanel, null, false, true);
     }
 
-    // Divider between memory and registers
+    // Vertical divider between memory and registers
     frame.getContentPane().add(Box.createRigidArea(new Dimension(10, 30)), "cell 1 3");
 
     // Registers and program counter
@@ -348,11 +363,11 @@ public class ComputerUI implements FocusRequester {
                         regCells[startIdx + i].setValue(values[i], executing);
                       }
                       // If any of the changed cells are highlighted, redo highlighting
-                      AbstractCell[] cells =
-                          Arrays.copyOfRange(regCells, startIdx, startIdx + values.length);
-                      if (instructionHighlighter.isAffected(cells)) {
-                        highlightInstructions();
-                      }
+                      // AbstractCell[] cells =
+                      //     Arrays.copyOfRange(regCells, startIdx, startIdx + values.length);
+                      // if (instructionHighlighter.isAffected(cells)) {
+                      //   highlightInstructions();
+                      // }
                     }));
         pc.addListener(
             new ProgramCounterListener() {
@@ -367,15 +382,19 @@ public class ComputerUI implements FocusRequester {
                         r.clearProgramCounterFocus();
                       }
 
-                      pcCell.setValue(newIdx, isExecuting.get());
-                      if (!highlightInstructions()) {
-                        instructionHighlighter.clearCells();
-                        pcCell.highlightError();
+                      boolean executing = isExecuting.get();
+                      pcCell.setValue(newIdx, executing);
+                      if (executing) {
+                        highlightInstructions(newIdx);
                       }
-                      memoryCellsPanel.revalidate();
-                      memoryCellsPanel.repaint();
-                      registerPanel.revalidate();
-                      registerPanel.repaint();
+                      // if (!highlightInstructions()) {
+                      //   instructionHighlighter.clearCells();
+                      //   pcCell.highlightError();
+                      // }
+                      // memoryCellsPanel.revalidate();
+                      // memoryCellsPanel.repaint();
+                      // registerPanel.revalidate();
+                      // registerPanel.repaint();
                     });
               }
 
@@ -1000,20 +1019,23 @@ public class ComputerUI implements FocusRequester {
 
   // Private methods, used internally
 
-  private boolean highlightInstructions() {
-    if (pc.getCurrentIndex() < 0 || pc.getCurrentIndex() >= memory.size()) {
+  /*
+   * Highlights the instruction at the specified memory cell, and any cell that
+   * would be affected by executing that instruction.
+   */
+  private boolean highlightInstructions(int memIdx) {
+    if (memIdx < 0 || memIdx >= memory.size()) {
       return false;
     }
-    int currentIdx = pc.getCurrentIndex();
-    Instruction instr = factory.createInstruction(memory.getValueAt(currentIdx));
-    int[] affectedMemory = instr.getAffectedMemoryCells(memory, registry, currentIdx);
-    int[] affectedRegisters = instr.getAffectedRegisters(memory, registry, currentIdx);
+    Instruction instr = factory.createInstruction(memory.getValueAt(memIdx));
+    int[] affectedMemory = instr.getAffectedMemoryCells(memory, registry, memIdx);
+    int[] affectedRegisters = instr.getAffectedRegisters(memory, registry, memIdx);
     AbstractCell[] cells =
         Stream.concat(
                 Arrays.stream(affectedMemory).mapToObj(i -> this.memCells[i]),
                 Arrays.stream(affectedRegisters).mapToObj(i -> this.regCells[i]))
             .toArray(AbstractCell[]::new);
-    AbstractCell pcCell = this.memCells[pc.getCurrentIndex()];
+    AbstractCell pcCell = this.memCells[memIdx];
     instructionHighlighter.switchCells(pcCell, cells);
     inv(
         () -> {
@@ -1168,7 +1190,8 @@ public class ComputerUI implements FocusRequester {
     cellPanel.add(header("Hex", hidden));
     cellPanel.add(header("Dec", hidden));
     cellPanel.add(header("Ascii", hidden));
-    cellPanel.add(header("Instr             ", hidden));
+    cellPanel.add(
+        header(hidden ? "CMD (REG=REG-->REG)" : "Instr", hidden)); // Longest possible instruction
 
     return cellPanel;
   }

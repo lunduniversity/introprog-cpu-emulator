@@ -36,12 +36,20 @@ public class St extends Instruction {
 
   @Override
   public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
-    int dst = mem.getValueAt(memIdx + 1);
-    return new int[] {memIdx, memIdx + 1, dst};
+    if (memIdx >= mem.size()) {
+      return new int[] {memIdx};
+    }
+    int addresses = mem.getValueAt(memIdx + 1);
+    int dstRegIdx = addresses & 0xF;
+    int dstMemAddr = reg.getValueAt(dstRegIdx);
+    return new int[] {memIdx, memIdx + 1, dstMemAddr};
   }
 
   @Override
   public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
-    return new int[] {operand};
+    if (operand >= 0 && operand < Registry.NUM_REGISTERS) {
+      return new int[] {operand};
+    }
+    return new int[0];
   }
 }
