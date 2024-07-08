@@ -889,7 +889,10 @@ public class ComputerUI implements FocusRequester {
   void handleResetState() {
     pc.reset();
     registry.reset();
-    inv(this::resetCellColors);
+    resetCellColors(); // Removes all highlights
+    cellSelecter.refreshCaret(); // Highlight cursors again
+    regSelecter.refreshCaret();
+    highlightInstructions(cellSelecter.getCaretRow());
   }
 
   void handleClearOutput() {

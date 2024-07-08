@@ -13,14 +13,11 @@ public class St extends Instruction {
 
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
-    // Read the next memory value, and split into two 4-bit parts.
-    int addresses = mem.getValueAt(pc.next());
-    int src = (addresses >> 4) & 0xF;
-    int dst = addresses & 0xF;
+    // Read the next memory value, use it as the address to store the value.
+    int address = mem.getValueAt(pc.next());
 
-    int value = reg.getValueAt(src);
-    int memoryAddress = reg.getValueAt(dst);
-    mem.setValueAt(memoryAddress, value);
+    int value = reg.getValueAt(operand);
+    mem.setValueAt(address, value);
   }
 
   @Override
@@ -29,13 +26,10 @@ public class St extends Instruction {
       return Instruction.INVALID_REG_CHAR;
     }
     // Read the next memory value, and split into two 4-bit parts.
-    int addresses = mem.getValueAt(memIdx + 1);
-    int src = (addresses >> 4) & 0xF;
-    int dst = addresses & 0xF;
+    int address = mem.getValueAt(memIdx + 1);
 
     return String.format(
-        "(%s %s *%s)",
-        Registry.idxToName(src), Instruction.RIGHT_ARROW_CHAR, Registry.idxToName(dst));
+        "(%s %s m[%d])", Registry.idxToName(operand), Instruction.RIGHT_ARROW_CHAR, address);
   }
 
   @Override
@@ -43,29 +37,14 @@ public class St extends Instruction {
     if (memIdx >= mem.size()) {
       return new int[] {memIdx};
     }
-    int addresses = mem.getValueAt(memIdx + 1);
-    int dstRegIdx = addresses & 0xF;
-    int dstMemAddr = reg.getValueAt(dstRegIdx);
-    return new int[] {memIdx, memIdx + 1, dstMemAddr};
+    int address = mem.getValueAt(memIdx + 1);
+    return new int[] {memIdx, memIdx + 1, address};
   }
 
   @Override
   public int[] getAffectedRegisters(Memory mem, Registry reg, int memIdx) {
-    if (memIdx >= mem.size()) {
-      return new int[0];
-    }
-    int addresses = mem.getValueAt(memIdx + 1);
-    int src = (addresses >> 4) & 0xF;
-    int dst = addresses & 0xF;
-
-    if (src >= 0 && src < Registry.NUM_REGISTERS && dst >= 0 && dst < Registry.NUM_REGISTERS) {
-      return new int[] {src, dst};
-    }
-    if (src >= 0 && src < Registry.NUM_REGISTERS) {
-      return new int[] {src};
-    }
-    if (dst >= 0 && dst < Registry.NUM_REGISTERS) {
-      return new int[] {dst};
+    if (operand >= 0 && operand < Registry.NUM_REGISTERS) {
+      return new int[] {operand};
     }
     return new int[0];
   }

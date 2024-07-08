@@ -22,6 +22,7 @@ class LdTest {
     mockMemory = mock(Memory.class);
     mockRegistry = mock(Registry.class);
     mockPC = mock(ProgramCounter.class);
+    when(mockMemory.size()).thenReturn(10);
   }
 
   @Test
@@ -46,17 +47,20 @@ class LdTest {
 
   @Test
   void testPrettyPrint() {
+    when(mockMemory.getValueAt(1)).thenReturn(17);
+    when(mockMemory.getValueAt(3)).thenReturn(3);
+    when(mockMemory.getValueAt(5)).thenReturn(64);
     Ld loadOP1 = new Ld(Registry.nameToIdx(Registry.REG_OP1));
     Ld loadOP2 = new Ld(Registry.nameToIdx(Registry.REG_OP2));
     Ld loadR2 = new Ld(Registry.nameToIdx(Registry.REG_R2));
     assertEquals(
-        InstructionFactory.INST_NAME_LOD + " (dst: OP1)",
+        InstructionFactory.INST_NAME_LOD + " (17 " + Instruction.RIGHT_ARROW_CHAR + " OP1)",
         loadOP1.prettyPrint(mockMemory, mockRegistry, 0));
     assertEquals(
-        InstructionFactory.INST_NAME_LOD + " (dst: OP2)",
-        loadOP2.prettyPrint(mockMemory, mockRegistry, 0));
+        InstructionFactory.INST_NAME_LOD + " (3 " + Instruction.RIGHT_ARROW_CHAR + " OP2)",
+        loadOP2.prettyPrint(mockMemory, mockRegistry, 2));
     assertEquals(
-        InstructionFactory.INST_NAME_LOD + " (dst: R2)",
-        loadR2.prettyPrint(mockMemory, mockRegistry, 0));
+        InstructionFactory.INST_NAME_LOD + " (64 " + Instruction.RIGHT_ARROW_CHAR + " R2)",
+        loadR2.prettyPrint(mockMemory, mockRegistry, 4));
   }
 }

@@ -11,17 +11,16 @@ public class InstructionFactory {
   public static final int INST_SUB = 0x20; // Subtraction
   public static final int INST_INC = 0x30; // Subtraction
   public static final int INST_CPY = 0x40; // Copy value from one cell to another
-  public static final int INST_MOV = 0x50; // Move value from one cell to another
-  public static final int INST_LOD = 0x60; // Load the next value from memory into registry
-  public static final int INST_LDA = 0x70; // Load address (resolve first) into registry
-  public static final int INST_STO = 0x80; // Store register value in memory
+  public static final int INST_LOD = 0x50; // Load the next value from memory into registry
+  public static final int INST_LDA = 0x60; // Load address (resolve first) into registry
+  public static final int INST_STO = 0x70; // Store register value in memory
+  public static final int INST_STA = 0x80; // Store register value in memory based on address
   public static final int INST_JMP = 0x90; // Jump to address
   public static final int INST_CJP = 0xA0; // Conditional Jump
-  // public static final int INST_JNE = 0xB0; // Jump if not equal
-  public static final int INST_PRT = 0xC0; // Print text
-  public static final int INST_PRD = 0xD0; // Print decimal
-  public static final int INST_PRL = 0xE0; // Print Loop
-  public static final int INST_HLT = 0xF0; // Halt
+  public static final int INST_PRT = 0xB0; // Print text
+  public static final int INST_PRD = 0xC0; // Print decimal
+  public static final int INST_PRL = 0xD0; // Print Loop
+  public static final int INST_HLT = 0xE0; // Halt
 
   // PRT
   // Add 2 columns: Instr, Char
@@ -31,10 +30,10 @@ public class InstructionFactory {
   public static final String INST_NAME_SUB = "SUB";
   public static final String INST_NAME_INC = "INC";
   public static final String INST_NAME_CPY = "CPY";
-  public static final String INST_NAME_MOV = "MOV";
   public static final String INST_NAME_LOD = "LD";
   public static final String INST_NAME_LDA = "LDA";
   public static final String INST_NAME_STO = "ST";
+  public static final String INST_NAME_STA = "STA";
   public static final String INST_NAME_JMP = "JMP";
   public static final String INST_NAME_CJP = "CJP";
   // public static final String INST_NAME_JNE = "JNE";
@@ -49,13 +48,12 @@ public class InstructionFactory {
         || code == INST_SUB
         || code == INST_INC
         || code == INST_CPY
-        || code == INST_MOV
         || code == INST_LOD
         || code == INST_LDA
         || code == INST_STO
+        || code == INST_STA
         || code == INST_JMP
         || code == INST_CJP
-        // || code == INST_JNE
         || code == INST_PRT
         || code == INST_PRD
         || code == INST_PRL
@@ -77,20 +75,18 @@ public class InstructionFactory {
         return new Inc(operand);
       case INST_CPY:
         return new Cpy(operand);
-        // case INST_MOV:
-        //   return new Mov(operand);
       case INST_LOD:
         return new Ld(operand);
       case INST_LDA:
         return new LdA(operand);
       case INST_STO:
         return new St(operand);
+      case INST_STA:
+        return new StA(operand);
       case INST_JMP:
         return new Jmp(operand);
       case INST_CJP:
         return new CJp(operand);
-        // case INST_JNE:
-        //   return new Jne(operand);
       case INST_PRT:
         return new PrT(operand);
       case INST_PRD:

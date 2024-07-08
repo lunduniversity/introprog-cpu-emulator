@@ -18,7 +18,12 @@ public class Ld extends Instruction {
 
   @Override
   protected String internalPrettyPrint(Memory mem, Registry reg, int memIdx) {
-    return String.format("(dst: %s)", Registry.idxToName(operand));
+    if (memIdx >= mem.size()) {
+      return "(" + Instruction.INVALID_REG_CHAR + ")";
+    }
+    int value = mem.getValueAt(memIdx + 1);
+    return String.format(
+        "(%d %s %s)", value, Instruction.RIGHT_ARROW_CHAR, Registry.idxToName(operand));
   }
 
   @Override

@@ -92,6 +92,14 @@
 [x] IndexOutOfBounds när reg 10 försöker skrivas ut, borde istället ignoreras
 [x] Markering av hoppinstruktioner inte korrekt. Markerar dst cell endast när den INTE kommer hoppa.
 [x] Delete all data resets cursors to (-1, -1), which means they are not shown. Set to (0, 0) instead.
+[x] Reset no longer resets highlights!
+[] Cell highlighting when editing and executing should be different colors... 
+[x] Make it possible to hide instruction column for individual mem rows
+[] Advanced hiding:
+  [] Move the hidden status with the cells when moving/deleting values
+  [] Let it reflect in file format, i.e. restore on reload
+[] Fix test for St (no longer StA)
+[] Update example programs, after instruction changes (again...)
 [] 
 0100 1010
 0001 0000

@@ -2,7 +2,7 @@ package util;
 
 public enum ExecutionSpeed {
   INSTANT(0),
-  VERY_FAST(10),
+  VERY_FAST(50),
   FAST(150),
   MEDIUM(500),
   SLOW(1000),

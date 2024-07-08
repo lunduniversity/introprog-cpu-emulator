@@ -189,7 +189,7 @@ public abstract class AbstractCell {
     parent.add(lblAscii);
 
     if (showInstruction) {
-      lblInstruction = lbl("", "mono");
+      lblInstruction = lbl("", "mono hideable");
       lblInstruction.setBorder(null);
       parent.add(lblInstruction);
     }

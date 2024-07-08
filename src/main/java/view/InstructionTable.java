@@ -190,16 +190,8 @@ public class InstructionTable extends AnchoredFrame {
           instrTablePanel,
           InstructionFactory.INST_NAME_CPY,
           InstructionFactory.INST_CPY,
-          "<b>Copy</b>: Copies value from source to destination. The first two operand bits are the"
-              + " addressing type<b>*</b> for the source, next two bits are the addressing"
-              + " type<b>*</b> for the destination. The destination cannot be a constant.",
-          pc);
-      appendToTable(
-          instrTablePanel,
-          InstructionFactory.INST_NAME_MOV,
-          InstructionFactory.INST_MOV,
-          "<b>Move</b>: Moves value from source to destination. The first two operand bits are the"
-              + " addressing type<b>*</b> for the source, next two bits are the addressing"
+          "<b>Copy</b>: Copies a value from one register to another. The first two operand bits are"
+              + " the addressing type<b>*</b> for the source, next two bits are the addressing"
               + " type<b>*</b> for the destination. The destination cannot be a constant.",
           pc);
       appendToTable(
@@ -230,6 +222,17 @@ public class InstructionTable extends AnchoredFrame {
                   + " value and interprets it as the memory destination address, at which the"
                   + " register value is stored. The 4-bit operand is the source register index"
                   + " (0-%d).",
+              (Registry.NUM_REGISTERS - 1)),
+          pc);
+      appendToTable(
+          instrTablePanel,
+          InstructionFactory.INST_NAME_STA,
+          InstructionFactory.INST_STA,
+          String.format(
+              "<b>Store Address</b>: Stores a value from a register into memory. The next memory"
+                  + " value is split into two 4-bit indices, indicating the indecies (0-%d) of the"
+                  + " source register and the register containing the destination memory address."
+                  + " Operand has no purpose and is ignored.",
               (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(

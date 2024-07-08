@@ -144,7 +144,7 @@ public class LazySwing {
    * @return Configured JLabel.
    */
   public static JLabel lbl(String text, String... options) {
-    JLabel label = new JLabel(text);
+    HideableLabel label = new HideableLabel(text);
     Font defaultFont = UIManager.getFont("Label.font"); // Fetch default font from UIManager
     int fontSize = defaultFont.getSize(); // Default font size
     int fontStyle = defaultFont.getStyle(); // Default font style
@@ -158,6 +158,8 @@ public class LazySwing {
         fontStyle = Font.BOLD;
       } else if (option.equalsIgnoreCase("hidden")) {
         hidden = true;
+      } else if (option.equalsIgnoreCase("hideable")) {
+        label.setHideable(true);
       } else {
         try {
           int size = Integer.parseInt(option);

@@ -35,23 +35,23 @@ class InstructionFactoryTest {
         factory.isInstruction(InstructionFactory.INST_CPY),
         "INST_CPY should be recognized as an instruction.");
     assertTrue(
-        factory.isInstruction(InstructionFactory.INST_MOV),
-        "INST_MOV should be recognized as an instruction.");
-    assertTrue(
         factory.isInstruction(InstructionFactory.INST_LOD),
-        "INST__LD should be recognized as an instruction.");
+        "INST_LOD should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_LDA),
         "INST_LDA should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_STO),
-        "INST__ST should be recognized as an instruction.");
+        "INST_STO should be recognized as an instruction.");
+    assertTrue(
+        factory.isInstruction(InstructionFactory.INST_STA),
+        "INST_STA should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_JMP),
         "INST_JMP should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_CJP),
-        "INST__JE should be recognized as an instruction.");
+        "INST_CJP should be recognized as an instruction.");
     assertTrue(
         factory.isInstruction(InstructionFactory.INST_PRT),
         "INST_PRT should be recognized as an instruction.");
@@ -107,13 +107,17 @@ class InstructionFactoryTest {
         factory.createInstruction(InstructionFactory.INST_STO),
         "Should create an instance of St.");
     assertInstanceOf(
+        StA.class,
+        factory.createInstruction(InstructionFactory.INST_STA),
+        "Should create an instance of StA.");
+    assertInstanceOf(
         Jmp.class,
         factory.createInstruction(InstructionFactory.INST_JMP),
         "Should create an instance of Jmp.");
     assertInstanceOf(
         CJp.class,
         factory.createInstruction(InstructionFactory.INST_CJP),
-        "Should create an instance of Jeq.");
+        "Should create an instance of CJp.");
     assertInstanceOf(
         PrT.class,
         factory.createInstruction(InstructionFactory.INST_PRT),
