@@ -4,12 +4,9 @@ import static util.LazySwing.checkEDT;
 import static util.LazySwing.inv;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -52,16 +49,14 @@ public class HelpWindow extends JDialog {
     // Schedule a non-EDT task to load the html content
     new Thread(
             () -> {
-              Path path;
-              try {
-                path = Paths.get(helpUrl.toURI());
-                byte[] fileBytes = Files.readAllBytes(path);
+              try (InputStream inputStream = getClass().getResourceAsStream("/help/help.html")) {
+                byte[] fileBytes = inputStream.readAllBytes();
                 inv(
                     () -> {
                       helpContent.setText(new String(fileBytes, StandardCharsets.UTF_8));
                       helpContent.setCaretPosition(0);
                     });
-              } catch (URISyntaxException | IOException e) {
+              } catch (IOException e) {
                 inv(
                     () ->
                         helpContent.setText(

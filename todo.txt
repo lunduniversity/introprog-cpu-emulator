@@ -102,6 +102,8 @@
 [x] Update example programs, after instruction changes (again...)
 [] Add config/view option to turn off auto scroll to active cell
 [] Think about: Should conditional jump use another dst register, e.g. R2? (Instead of RES)
+[x] Resources failed to load when building and running from JAR. Fix!
+[] Set up a Logger, that can collect errors in a local file.$
 [] 
 0100 1010
 0001 0000

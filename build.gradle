@@ -4,8 +4,11 @@ plugins {
     id 'application'
 }
 
+// Set project properties
 group 'dod-c3pu'
-version '0.2'
+version 'v0.1'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 repositories {
     mavenCentral()
@@ -92,10 +95,36 @@ tasks.withType(Test) {
     }
 }
 
+task generateExampleList {
+    doLast {
+        // Define the directory and output file
+        def examplesDir = new File('src/main/resources/examples')
+        def outputFile = new File('src/main/resources/examples/_example_list')
+
+        // Ensure the output file exists
+        outputFile.text = ''
+
+        // List files and write their names to the output file
+        examplesDir.eachFile { File file ->
+            if (file.isFile() && file.name.endsWith('.txt')) {
+                outputFile.append(file.name + '\n')
+            }
+        }
+    }
+}
+
+// Ensure this task is run before the jar is built
+jar.dependsOn(generateExampleList)
+
+
 // Create a FAT JAR including all dependencies
 jar {
+    archiveBaseName.set('c3pu')
+    archiveVersion.set(version)
     manifest {
-        attributes 'Main-Class': 'view.Main'
+        attributes 'Main-Class': 'view.Main',
+        'Implementation-Title': archiveBaseName.get(),
+        'Implementation-Version': archiveVersion.get()
     }
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
