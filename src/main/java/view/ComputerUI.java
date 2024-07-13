@@ -211,7 +211,8 @@ public class ComputerUI implements FocusRequester {
     frame.setTitle("c3pu");
     frame.getContentPane().setLayout(new MigLayout("fillx", "[][][]", "[]"));
 
-    TitleSetter ts = title -> frame.setTitle("c3pu" + (title == null ? "" : " - " + title));
+    TitleSetter ts =
+        title -> frame.setTitle("c3pu" + (title == null || title.isBlank() ? "" : " - " + title));
     fileHandler = new FileHandler(frame, title -> inv(() -> ts.setTitle(title)), settings);
     menu = new ComputerMenu(this, fileHandler);
     frame.setJMenuBar(menu);

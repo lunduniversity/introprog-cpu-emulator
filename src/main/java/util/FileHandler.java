@@ -23,6 +23,11 @@ public class FileHandler {
   private boolean isModified;
 
   public interface TitleSetter {
+    /**
+     * Sets the title of the parent frame.
+     *
+     * @param title the new title. Must not be null.
+     */
     void setTitle(String title);
   }
 

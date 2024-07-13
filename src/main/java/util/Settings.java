@@ -132,8 +132,12 @@ public class Settings implements java.io.Serializable {
 
     // Create the file if it does not exist
     File settingsFile = new File(settingsFilePath);
-    if (!settingsFile.createNewFile()) {
-      // If the file already exists, still return it
+    if (settingsFile.createNewFile()) {
+      // If the file was created, log the path
+      System.out.println("Settings file created at: " + settingsFilePath);
+    } else {
+      // If the file already exists, log the path
+      System.out.println("Settings file found at: " + settingsFilePath);
     }
 
     return settingsFile;
