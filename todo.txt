@@ -98,7 +98,7 @@
 [] Advanced hiding:
   [] Move the hidden status with the cells when moving/deleting values
   [] Let it reflect in file format, i.e. restore on reload
-[] Fix test for St (no longer StA)
+[x] Fix test for St (no longer StA)
 [x] Update example programs, after instruction changes (again...)
 [] Add config/view option to turn off auto scroll to active cell
 [] Think about: Should conditional jump use another dst register, e.g. R2? (Instead of RES)

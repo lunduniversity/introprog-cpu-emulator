@@ -30,9 +30,7 @@ class StTest {
   void testStoreOperation() {
 
     // Setup source and destination registers
-    int op1 = Registry.nameToIdx(Registry.REG_R1);
-    int op2 = Registry.nameToIdx(Registry.REG_RES);
-    int operand = (op1 << 4) | op2;
+    int operand = Registry.nameToIdx(Registry.REG_RES);
     int registerValue = 35; // The value stored in the source register
     int memoryAddress = 8; // The destination address in memory where the value should be stored
     int nextMemoryLocation = 1; // The next memory location according to the program counter
@@ -41,14 +39,13 @@ class StTest {
     // destination address
     when(mockPC.next()).thenReturn(nextMemoryLocation);
 
-    // Simulate fetching the operand from memory
-    when(mockMemory.getValueAt(nextMemoryLocation)).thenReturn(operand);
+    // Simulate fetching the destination address from the memory
+    when(mockMemory.getValueAt(nextMemoryLocation)).thenReturn(memoryAddress);
 
     // Simulate fetching the value from the register specified by the operand
-    when(mockRegistry.getValueAt(op1)).thenReturn(registerValue);
-    when(mockRegistry.getValueAt(op2)).thenReturn(memoryAddress);
+    when(mockRegistry.getValueAt(operand)).thenReturn(registerValue);
 
-    St stInstruction = new St(0);
+    St stInstruction = new St(operand);
     stInstruction.execute(mockMemory, mockRegistry, mockPC, null);
 
     // Verify memory's setValueAt method is called with the correct destination address and value
@@ -58,13 +55,15 @@ class StTest {
 
   @Test
   void testPrettyPrint() {
-    St store = new St(0);
-    int leftOp = Registry.nameToIdx(Registry.REG_R2);
-    int rightOp = Registry.nameToIdx(Registry.REG_OP1);
-    int operand = (leftOp << 4) | rightOp;
-    when(mockMemory.getValueAt(1)).thenReturn(operand);
+    // Setup source and destination registers
+    int operand = Registry.nameToIdx(Registry.REG_RES);
+    int memoryAddress = 8; // The destination address in memory where the value should be stored
+
+    when(mockMemory.getValueAt(1)).thenReturn(memoryAddress);
+
+    St store = new St(operand);
     assertEquals(
-        InstructionFactory.INST_NAME_STO + " (R2 " + Instruction.RIGHT_ARROW_CHAR + " *OP1)",
+        InstructionFactory.INST_NAME_STO + " (RES " + Instruction.RIGHT_ARROW_CHAR + " m[8])",
         store.prettyPrint(mockMemory, mockRegistry, 0));
   }
 }
