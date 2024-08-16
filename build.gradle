@@ -96,12 +96,21 @@ tasks.withType(Test) {
 }
 
 task generateExampleList {
-    doLast {
-        // Define the directory and output file
-        def examplesDir = new File('src/main/resources/examples')
-        def outputFile = new File('src/main/resources/examples/_example_list')
+    // Define the directory and output file
+    def examplesDir = file('src/main/resources/examples')
+    def outputFile = file('src/main/resources/examples/_example_list')
 
-        // Ensure the output file exists
+    // Declare the output file as a task output. Otherwise, Gradle is not aware
+    // of it and does not include it in the jar file.
+    outputs.file(outputFile)
+
+    doLast {
+        // Ensure the output directory exists
+        if (!examplesDir.exists()) {
+            examplesDir.mkdirs()
+        }
+
+        // Ensure the output file exists and is empty
         outputFile.text = ''
 
         // List files and write their names to the output file
@@ -111,13 +120,14 @@ task generateExampleList {
             }
         }
     }
+
 }
 
-// Ensure this task is run before the jar is built
-jar.dependsOn(generateExampleList)
+// Since the generateExampleList task generates a file in the resources directory,
+// we need to ensure it is run before the resources are processed.
+processResources.dependsOn generateExampleList
 
-
-// Create a FAT JAR including all dependencies
+// Configure the jar task
 jar {
     archiveBaseName.set('c3pu')
     archiveVersion.set(version)
@@ -129,6 +139,12 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    // Include the output of the generateExampleList task
+    from(generateExampleList)
+
     // Specify how to handle duplicate entries
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// Ensure this task is run before the jar is built
+jar.dependsOn(generateExampleList)
