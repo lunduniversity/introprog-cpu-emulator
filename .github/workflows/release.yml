@@ -19,6 +19,9 @@ jobs:
           java-version: "17"
           distribution: "temurin" # AdoptOpenJDK builds from Eclipse Foundation
 
+      - name: Set execute permissions for Gradle wrapper
+        run: chmod +x ./gradlew
+
       - name: Build with Gradle
         run: ./gradlew build
 
