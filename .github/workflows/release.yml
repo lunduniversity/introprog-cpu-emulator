@@ -25,7 +25,7 @@ jobs:
       - name: Set TAG_NAME and JAR_NAME environment variable
         run: |
           echo "TAG_NAME=${GITHUB_REF#refs/tags/release_}" >> $GITHUB_ENV
-          echo "JAR_NAME=c3pu-${{ env.TAG_NAME }}.jar" >> $GITHUB_ENV
+          echo "JAR_NAME=c3pu-${GITHUB_REF#refs/tags/release_}.jar" >> $GITHUB_ENV
         env:
           GITHUB_REF: ${{ github.ref }}
 
