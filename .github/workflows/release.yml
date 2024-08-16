@@ -22,16 +22,18 @@ jobs:
       - name: Set execute permissions for Gradle wrapper
         run: chmod +x ./gradlew
 
+      - name: Set TAG_NAME and JAR_NAME environment variable
+        run: |
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/release_}" >> $GITHUB_ENV
+          echo "JAR_NAME=c3pu-$TAG_NAME.jar" >> $GITHUB_ENV
+        env:
+          GITHUB_REF: ${{ github.ref }}
+
       - name: Build with Gradle
         run: ./gradlew build
 
       - name: Rename JAR File
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/release_}
-          JAR_NAME=c3pu-$TAG_NAME.jar
-          mv build/libs/c3pu-*.jar build/libs/$JAR_NAME
-        env:
-          GITHUB_REF: ${{ github.ref }}
+        run: mv build/libs/c3pu-*.jar build/libs/$JAR_NAME
 
       - name: Create Release
         id: create_release
