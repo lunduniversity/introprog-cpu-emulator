@@ -33,7 +33,7 @@ jobs:
         run: ./gradlew build
 
       - name: Rename JAR File
-        run: mv build/libs/c3pu-*.jar build/libs/$JAR_NAME
+        run: mv build/libs/c3pu-*.jar build/libs/${{ env.JAR_NAME }}
 
       - name: Create Release
         id: create_release
@@ -52,6 +52,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/$JAR_NAME
-          asset_name: $JAR_NAME
+          asset_path: ./build/libs/${{ env.JAR_NAME }}
+          asset_name: ${{ env.JAR_NAME }}
           asset_content_type: application/java-archive
