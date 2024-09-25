@@ -208,9 +208,11 @@ public class InstructionTable extends AnchoredFrame {
           InstructionFactory.INST_NAME_LDA,
           InstructionFactory.INST_LDA,
           String.format(
-              "<b>Load Address</b>: Reads the next memory value and interprets it as a memory"
-                  + " address. Then, reads the addressed value and loads it into a register. The"
-                  + " 4-bit operand is the destination register index (0-%d).",
+              "<b>Load Address</b>: Loads a memory value from a dynamic address into a register."
+                  + " The next memory value is split into two 4-bit indices, indicating the"
+                  + " indecies (0-%d) of the source and destination register. The source register"
+                  + " is interpreted as a memory address, from which the wanted value is read."
+                  + " Operand has no purpose and is ignored.",
               (Registry.NUM_REGISTERS - 1)),
           pc);
       appendToTable(
