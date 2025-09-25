@@ -7,8 +7,8 @@ plugins {
 // Set project properties
 group 'dod-c3pu'
 version 'v0.1'
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
@@ -16,18 +16,18 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
 
     // https://mvnrepository.com/artifact/org.mockito/mockito-core
-    testImplementation 'org.mockito:mockito-core:+'
+    testImplementation 'org.mockito:mockito-core:5.14.2'
 
 
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-swing
-    implementation 'com.miglayout:miglayout-swing:+'
+    implementation 'com.miglayout:miglayout-swing:11.4.2'
     // https://mvnrepository.com/artifact/com.miglayout/miglayout-core
-    implementation 'com.miglayout:miglayout-core:+'
+    implementation 'com.miglayout:miglayout-core:11.4.2'
 
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
     // implementation 'com.google.code.gson:gson:+'
@@ -36,8 +36,8 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 application {
