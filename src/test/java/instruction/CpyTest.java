@@ -10,11 +10,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import model.Memory;
 import model.ProgramCounter;
 import model.Registry;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class CpyTest {
 
@@ -78,7 +79,8 @@ class CpyTest {
 
   // @Test - No longer needed, since rework of Cpy class
   void testCopyMemoryToRegister() {
-    // Similar to previous test, but with operand encoding for memory to register (10 to 01)
+    // Similar to previous test, but with operand encoding for memory to register
+    // (10 to 01)
     int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_REGISTER;
     int memoryAddress = 16; // Example memory address
     int destRegister = Registry.nameToIdx(Registry.REG_R0); // Destination register index
@@ -99,7 +101,8 @@ class CpyTest {
 
   // @Test - No longer needed, since rework of Cpy class
   void testCopyConstantToRegister() {
-    // Similar to previous test, but with operand encoding for constant to register (00 to 01)
+    // Similar to previous test, but with operand encoding for constant to register
+    // (00 to 01)
     int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_REGISTER;
     int destRegister = Registry.nameToIdx(Registry.REG_R0); // Destination register index
     int value = 89; // Constant value to be copied
@@ -140,7 +143,8 @@ class CpyTest {
 
   // @Test - No longer needed, since rework of Cpy class
   void testCopyMemoryToMemory() {
-    // Setup operand for copying from memory to memory (memory address to memory address)
+    // Setup operand for copying from memory to memory (memory address to memory
+    // address)
     int operand = (ADDR_TYPE_MEMORY << 2) | ADDR_TYPE_MEMORY;
     int srcMemoryAddress = 5; // Source memory address
     int destMemoryAddress = 15; // Destination memory address
@@ -162,7 +166,8 @@ class CpyTest {
 
   // @Test - No longer needed, since rework of Cpy class
   void testCopyConstantToMemory() {
-    // Setup operand for copying from constant to memory (constant value to memory address)
+    // Setup operand for copying from constant to memory (constant value to memory
+    // address)
     int operand = (ADDR_TYPE_CONSTANT << 2) | ADDR_TYPE_MEMORY;
     int memoryAddress = 20; // Destination memory address
     int value = 89; // Constant value to be copied
@@ -193,12 +198,10 @@ class CpyTest {
   // @Test - No longer needed, since rework of Cpy class
   void testInvalidDestinationTypeThrowsException() {
     // Setup operand with an invalid destination type
-    int operand1 =
-        (ADDR_TYPE_CONSTANT << 2)
-            | ADDR_TYPE_CONSTANT; // Invalid destination type (00, constant value)
-    int operand2 =
-        (ADDR_TYPE_CONSTANT << 2)
-            | ADDR_TYPE_INVALID; // Invalid destination type (11, illegal value)
+    int operand1 = (ADDR_TYPE_CONSTANT << 2)
+        | ADDR_TYPE_CONSTANT; // Invalid destination type (00, constant value)
+    int operand2 = (ADDR_TYPE_CONSTANT << 2)
+        | ADDR_TYPE_INVALID; // Invalid destination type (11, illegal value)
 
     Cpy cpyInstruction1 = new Cpy(operand1);
     assertThrows(
@@ -212,13 +215,25 @@ class CpyTest {
 
   @Test
   void testPrettyPrint() {
-    Cpy cpy = new Cpy(0); // Operand is not used in evaluate
+    Cpy cpy = new Cpy(0); // Operand without move flag (i.e. copy)
     // Set the next memory cell to index registers R1 to R2
     when(mockMemory.size()).thenReturn(10);
     when(mockMemory.getValueAt(1))
         .thenReturn(
             Registry.nameToIdx(Registry.REG_OP1) << 4 | Registry.nameToIdx(Registry.REG_OP2));
-    String expected = String.format("(OP1 %s OP2)", Instruction.RIGHT_ARROW_CHAR);
-    assertEquals(expected, cpy.internalPrettyPrint(mockMemory, mockRegistry, 0));
+    String expected = String.format("%s (OP1 %s OP2)", InstructionFactory.INST_NAME_CPY, Instruction.RIGHT_ARROW_CHAR);
+    assertEquals(expected, cpy.prettyPrint(mockMemory, mockRegistry, 0));
+  }
+
+  @Test
+  void testPrettyPrintWithMoveFlag() {
+    Cpy cpy = new Cpy(1); // Operand with move flag set (i.e. move)
+    // Set the next memory cell to index registers R1 to R2
+    when(mockMemory.size()).thenReturn(10);
+    when(mockMemory.getValueAt(1))
+        .thenReturn(
+            Registry.nameToIdx(Registry.REG_OP1) << 4 | Registry.nameToIdx(Registry.REG_OP2));
+    String expected = String.format("%s (OP1 %s OP2)", InstructionFactory.INST_NAME_MOV, Instruction.RIGHT_ARROW_CHAR);
+    assertEquals(expected, cpy.prettyPrint(mockMemory, mockRegistry, 0));
   }
 }
