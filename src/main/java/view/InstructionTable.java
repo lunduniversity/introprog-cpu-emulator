@@ -122,15 +122,14 @@ public class InstructionTable extends AnchoredFrame {
 
     // Legend
     {
-      JLabel lblLegend =
-          new JLabel(
-              "<html><b>*</b> An addressing <i>type</i> is two bits:<br>\t00=constant, 01=register,"
-                  + " 10=memory</html>");
+      JLabel lblLegend = new JLabel(
+          "<html><b>*</b> An addressing <i>type</i> is two bits:<br>\t00=constant, 01=register,"
+              + " 10=memory</html>");
       add(lblLegend, "top,gap 5 5");
     }
 
     Component headerFiller = Box.createRigidArea(new Dimension(10, 0));
-    String[] headerNames = new String[] {"Instr", "Op code", "Description"};
+    String[] headerNames = new String[] { "Instr", "Op code", "Description" };
     // Header for the instruction table
     {
       headerPanel = new JPanel(new MigLayout("gap 7 0, insets 0"));
@@ -146,11 +145,10 @@ public class InstructionTable extends AnchoredFrame {
     // Instruction table
     {
       instructionPanel = new JPanel(new MigLayout("filly,wrap 1,insets 0"));
-      scrollPane =
-          new JScrollPane(
-              instructionPanel,
-              ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-              ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+      scrollPane = new JScrollPane(
+          instructionPanel,
+          ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+          ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
       scrollPane.getVerticalScrollBar().setUnitIncrement(16);
       scrollPane.setBorder(null);
       add(scrollPane, "top,grow");
@@ -190,9 +188,11 @@ public class InstructionTable extends AnchoredFrame {
           instrTablePanel,
           InstructionFactory.INST_NAME_CPY,
           InstructionFactory.INST_CPY,
-          "<b>Copy</b>: Copies a value from one register to another. The first two operand bits are"
-              + " the addressing type<b>*</b> for the source, next two bits are the addressing"
-              + " type<b>*</b> for the destination. The destination cannot be a constant.",
+          "<b>Copy</b>: Copies a value from one register to another. The right-most operand bit is"
+              + " a <i>move</i> flag. If set to 1, the copy command becomes a move command,"
+              + " which means the source register is cleared (set to 0) after the copy."
+              + " The next memory cell is split into two 4-bit parts, each representing the"
+              + " source and destination register index.",
           pc);
       appendToTable(
           instrTablePanel,
@@ -259,16 +259,18 @@ public class InstructionTable extends AnchoredFrame {
               + " RES register.",
           pc);
       // appendToTable(
-      //     instrTablePanel,
-      //     InstructionFactory.INST_NAME_JNE,
-      //     InstructionFactory.INST_JNE,
-      //     "<b>Jump if Not Equal</b>: A conditional jump. The next memory value is split into two"
-      //         + " 4-bit operands, which are used as register indices. If the values in the"
-      //         + " registers are <b>not equal</b>, the program counter jumps to the address"
-      //         + " specified by the following memory value. Otherwise, does nothing and continues
+      // instrTablePanel,
+      // InstructionFactory.INST_NAME_JNE,
+      // InstructionFactory.INST_JNE,
+      // "<b>Jump if Not Equal</b>: A conditional jump. The next memory value is split
+      // into two"
+      // + " 4-bit operands, which are used as register indices. If the values in the"
+      // + " registers are <b>not equal</b>, the program counter jumps to the address"
+      // + " specified by the following memory value. Otherwise, does nothing and
+      // continues
       // to"
-      //         + " the next instruction.",
-      //     pc);
+      // + " the next instruction.",
+      // pc);
       appendToTable(
           instrTablePanel,
           InstructionFactory.INST_NAME_PRT,
@@ -382,9 +384,12 @@ public class InstructionTable extends AnchoredFrame {
   }
 
   private void synchronizeColumnWidths() {
-    // Note to self: There are 3 columns in the instruction table, but 4 in the header panel due to
-    // the filler that accounts for the vertical scrollbar width. Also, the first component in the
-    // instruction table is a separator, so the first column component is at index 1.
+    // Note to self: There are 3 columns in the instruction table, but 4 in the
+    // header panel due to
+    // the filler that accounts for the vertical scrollbar width. Also, the first
+    // component in the
+    // instruction table is a separator, so the first column component is at index
+    // 1.
     for (int i = 0; i < headerPanel.getComponentCount() - 1; i++) {
       Component c = headerPanel.getComponent(i);
       int newWidth = Math.max(c.getWidth(), instrTablePanel.getComponent(i + 1).getWidth());
@@ -417,17 +422,16 @@ public class InstructionTable extends AnchoredFrame {
   }
 
   private StorageListener createMemoryListener(int opcode, ProgramCounter pc, JLabel lblInstr) {
-    return (startIdx, values) ->
-        inv(
-            () -> {
-              // If the current PC is in the modified range
-              if (startIdx <= pc.getCurrentIndex()
-                  && pc.getCurrentIndex() < startIdx + values.length) {
-                lblInstr.setBorder(
-                    (values[pc.getCurrentIndex() - startIdx] & 0xF0) == opcode
-                        ? INSTR_FOCUS_BORDER
-                        : INSTR_NO_FOCUS_BORDER);
-              }
-            });
+    return (startIdx, values) -> inv(
+        () -> {
+          // If the current PC is in the modified range
+          if (startIdx <= pc.getCurrentIndex()
+              && pc.getCurrentIndex() < startIdx + values.length) {
+            lblInstr.setBorder(
+                (values[pc.getCurrentIndex() - startIdx] & 0xF0) == opcode
+                    ? INSTR_FOCUS_BORDER
+                    : INSTR_NO_FOCUS_BORDER);
+          }
+        });
   }
 }

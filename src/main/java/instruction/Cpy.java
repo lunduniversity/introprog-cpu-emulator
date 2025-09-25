@@ -11,24 +11,36 @@ public class Cpy extends Instruction {
     super(InstructionFactory.INST_NAME_CPY, operand);
   }
 
+  private boolean isMove() {
+    // 0 = copy, 1 = move
+    return (operand & 0x1) == 1;
+  }
+
   @Override
   protected void internalExecute(Memory mem, Registry reg, ProgramCounter pc, IO io) {
     // Copy always operates on registers, not memory.
     // The right-most operand bit is used alter between "copy" and "move".
-    // The next memory cell is split into two 4-bit parts, each representing the source and
+    // The next memory cell is split into two 4-bit parts, each representing the
+    // source and
     // destination register index.
-
-    // 0 = copy, 1 = move
-    boolean isMove = (operand & 0x1) == 1;
 
     int value = mem.getValueAt(pc.next());
     int src = (value >> 4) & 0xF;
     int dst = value & 0xF;
 
     reg.setValueAt(dst, reg.getValueAt(src));
-    if (isMove) {
+    if (isMove()) {
       reg.setValueAt(src, 0);
     }
+  }
+
+  @Override
+  public String prettyPrint(Memory mem, Registry reg, int memIdx) {
+    String base = super.prettyPrint(mem, reg, memIdx);
+    if (isMove()) {
+      return base.replace(InstructionFactory.INST_NAME_CPY, InstructionFactory.INST_NAME_MOV);
+    }
+    return base;
   }
 
   @Override
@@ -46,9 +58,9 @@ public class Cpy extends Instruction {
   @Override
   public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
     if (memIdx >= mem.size()) {
-      return new int[] {memIdx};
+      return new int[] { memIdx };
     }
-    return new int[] {memIdx, memIdx + 1};
+    return new int[] { memIdx, memIdx + 1 };
   }
 
   @Override
@@ -61,13 +73,13 @@ public class Cpy extends Instruction {
     int dst = value & 0xF;
 
     if (src >= 0 && src < Registry.NUM_REGISTERS && dst >= 0 && dst < Registry.NUM_REGISTERS) {
-      return new int[] {src, dst};
+      return new int[] { src, dst };
     }
     if (src >= 0 && src < Registry.NUM_REGISTERS) {
-      return new int[] {src};
+      return new int[] { src };
     }
     if (dst >= 0 && dst < Registry.NUM_REGISTERS) {
-      return new int[] {dst};
+      return new int[] { dst };
     }
     return new int[0];
   }

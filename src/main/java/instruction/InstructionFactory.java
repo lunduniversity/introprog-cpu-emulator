@@ -42,6 +42,9 @@ public class InstructionFactory {
   public static final String INST_NAME_PRL = "PRL";
   public static final String INST_NAME_HLT = "HLT";
 
+  // MOV is an alias for CPY with the "move" flag set. Used in pretty printing.
+  public static final String INST_NAME_MOV = "MOV";
+
   public boolean isInstruction(int code) {
     return code == INST_NOP
         || code == INST_ADD
@@ -122,7 +125,7 @@ public class InstructionFactory {
 
     @Override
     public int[] getAffectedMemoryCells(Memory mem, Registry reg, int memIdx) {
-      return new int[] {memIdx};
+      return new int[] { memIdx };
     }
 
     @Override
